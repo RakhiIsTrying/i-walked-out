@@ -12,4 +12,4 @@ export function getAI(): OpenAI {
   return _client;
 }
 
-export const MODEL = "meta/llama-3.3-70b-instruct";
+export const MODEL = "qwen/qwen3.5-397b-a17b";
