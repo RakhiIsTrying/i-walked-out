@@ -106,6 +106,42 @@ async function getUserLink(chatId: number) {
   return data;
 }
 
+async function getActiveChatMode(userId: string): Promise<"personality" | "dugdug" | null> {
+  const db = getAdmin();
+  const { data } = await db
+    .from("telegram_chat_history")
+    .select("content")
+    .eq("user_id", userId)
+    .eq("role", "assistant")
+    .like("content", "@@MODE:%")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (!data || data.length === 0) return null;
+  const mode = data[0].content.replace("@@MODE:", "");
+  if (mode === "dugdug") return "dugdug";
+  if (mode === "personality") return "personality";
+  return null;
+}
+
+async function setActiveChatMode(userId: string, mode: "personality" | "dugdug") {
+  const db = getAdmin();
+  await db.from("telegram_chat_history").insert({
+    user_id: userId,
+    role: "assistant",
+    content: `@@MODE:${mode}`,
+  });
+}
+
+async function clearActiveChatMode(userId: string) {
+  const db = getAdmin();
+  await db.from("telegram_chat_history").insert({
+    user_id: userId,
+    role: "assistant",
+    content: "@@MODE:off",
+  });
+}
+
 // ─── /start ───
 
 async function handleStart(chatId: number, text: string, username: string | null) {
@@ -547,8 +583,10 @@ async function handleChatMode(chatId: number) {
 
   await db
     .from("telegram_links")
-    .update({ chat_mode: "personality" })
+    .update({ chat_mode: true })
     .eq("telegram_chat_id", chatId);
+
+  await setActiveChatMode(link.user_id, "personality");
 
   await sendMessage(
     chatId,
@@ -563,12 +601,14 @@ async function handleChatMode(chatId: number) {
 
 async function handleExitChat(chatId: number) {
   const link = await getUserLink(chatId);
-  const wasMode = link?.chat_mode;
+  const wasMode = link ? await getActiveChatMode(link.user_id) : null;
   const db = getAdmin();
   await db
     .from("telegram_links")
-    .update({ chat_mode: null })
+    .update({ chat_mode: false })
     .eq("telegram_chat_id", chatId);
+
+  if (link) await clearActiveChatMode(link.user_id);
 
   if (wasMode === "dugdug") {
     await sendMessage(chatId, "dug-dug has left the chat. probably for the best. type /help for commands.");
@@ -656,8 +696,10 @@ async function handleDugDugMode(chatId: number) {
 
   await db
     .from("telegram_links")
-    .update({ chat_mode: "dugdug" })
+    .update({ chat_mode: true })
     .eq("telegram_chat_id", chatId);
+
+  await setActiveChatMode(link.user_id, "dugdug");
 
   await sendMessage(
     chatId,
@@ -733,14 +775,16 @@ async function handleFreeText(chatId: number, text: string) {
     return;
   }
 
-  if (link.chat_mode === "dugdug") {
-    await handleDugDugChat(chatId, link.user_id, text);
-    return;
-  }
-
-  if (link.chat_mode === "personality") {
-    await handlePersonalityChat(chatId, link.user_id, text);
-    return;
+  if (link.chat_mode) {
+    const mode = await getActiveChatMode(link.user_id);
+    if (mode === "dugdug") {
+      await handleDugDugChat(chatId, link.user_id, text);
+      return;
+    }
+    if (mode === "personality") {
+      await handlePersonalityChat(chatId, link.user_id, text);
+      return;
+    }
   }
 
   const { intent, parsed } = await detectIntent(text);
@@ -849,7 +893,7 @@ async function handleDugDugChat(chatId: number, userId: string, text: string) {
     .from("telegram_chat_history")
     .select("role, content")
     .eq("user_id", userId)
-    .eq("chat_mode", "dugdug")
+    .not("content", "like", "@@MODE:%")
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -875,8 +919,8 @@ async function handleDugDugChat(chatId: number, userId: string, text: string) {
   }
 
   await db.from("telegram_chat_history").insert([
-    { user_id: userId, role: "user", content: text, chat_mode: "dugdug" },
-    { user_id: userId, role: "assistant", content: reply, chat_mode: "dugdug" },
+    { user_id: userId, role: "user", content: text },
+    { user_id: userId, role: "assistant", content: reply },
   ]);
 
   await sendMessage(chatId, reply, "Markdown");
@@ -894,7 +938,8 @@ async function handlePersonalityChat(chatId: number, userId: string, text: strin
     .single();
 
   if (!profile) {
-    await db.from("telegram_links").update({ chat_mode: null }).eq("telegram_chat_id", chatId);
+    await db.from("telegram_links").update({ chat_mode: false }).eq("telegram_chat_id", chatId);
+    await clearActiveChatMode(userId);
     await sendMessage(chatId, "No personality profile found. Generate one with /personality first.");
     return;
   }
@@ -903,7 +948,7 @@ async function handlePersonalityChat(chatId: number, userId: string, text: strin
     .from("telegram_chat_history")
     .select("role, content")
     .eq("user_id", userId)
-    .eq("chat_mode", "personality")
+    .not("content", "like", "@@MODE:%")
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -942,8 +987,8 @@ Speak as their future self. Be warm but honest. Reference their patterns. Be spe
   }
 
   await db.from("telegram_chat_history").insert([
-    { user_id: userId, role: "user", content: text, chat_mode: "personality" },
-    { user_id: userId, role: "assistant", content: reply, chat_mode: "personality" },
+    { user_id: userId, role: "user", content: text },
+    { user_id: userId, role: "assistant", content: reply },
   ]);
 
   await sendMessage(chatId, reply, "Markdown");
