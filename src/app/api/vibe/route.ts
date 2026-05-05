@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAI, MODEL } from "@/lib/ai";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const { query } = await request.json();
 
