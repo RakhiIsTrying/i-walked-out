@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
 import { WORDLE_ANSWERS, VALID_GUESSES } from "@/lib/words";
+import { RefreshCw } from "lucide-react";
 
 type CellState = "correct" | "present" | "absent" | "empty";
 
@@ -166,6 +167,15 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+      <button
+        onClick={playAgain}
+        title="New word"
+        className="btn-ghost"
+        style={{ fontSize: 12, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6 }}
+      >
+        <RefreshCw size={14} /> new word
+      </button>
+
       {message && (
         <div className="typewriter" style={{ fontSize: 13, letterSpacing: "0.1em", color: "var(--rose)", textTransform: "uppercase" }}>
           {message}
