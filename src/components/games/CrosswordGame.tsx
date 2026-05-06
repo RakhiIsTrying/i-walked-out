@@ -89,7 +89,9 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
       if (saved) {
         try {
           const { b } = JSON.parse(saved);
-          setBoard(b);
+          if (b?.length === size && b[0]?.length === size) {
+            setBoard(b);
+          }
         } catch {}
       }
     }
