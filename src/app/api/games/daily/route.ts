@@ -82,18 +82,24 @@ async function generateWordle(): Promise<WordlePuzzle> {
   return { answer: seededPick(WORDLE_ANSWERS, rng).toUpperCase() };
 }
 
-// ── Crossword (9×9 with black squares) ──
+// ── Crossword (15×15 with black squares) ──
 
 const CW_TEMPLATE = [
-  "....#....",
-  ".........",
-  ".........",
-  "#....#...",
-  ".........",
-  "...#....#",
-  ".........",
-  ".........",
-  "....#....",
+  "....#.....#....",
+  "....#.....#....",
+  "....#.....#....",
+  ".....#...#.....",
+  "##...#...#...##",
+  ".....#...#.....",
+  "...#.......#...",
+  "...#.......#...",
+  "...#.......#...",
+  ".....#...#.....",
+  "##...#...#...##",
+  ".....#...#.....",
+  "....#.....#....",
+  "....#.....#....",
+  "....#.....#....",
 ];
 
 function numberGrid(rawGrid: (string | null)[][]): {
@@ -185,6 +191,7 @@ const FALLBACK_CW = {
 };
 
 async function generateCrossword(): Promise<CrosswordPuzzle> {
+  const SIZE = CW_TEMPLATE.length;
   const template = CW_TEMPLATE.join("\n");
 
   try {
@@ -199,18 +206,18 @@ async function generateCrossword(): Promise<CrosswordPuzzle> {
         },
         {
           role: "user",
-          content: `Fill this 9×9 crossword grid template. Replace each "." with a letter. Keep all "#" as black squares. Every horizontal and vertical run of letters (between black squares or edges) of length 3+ must be a common English word.
+          content: `Fill this ${SIZE}×${SIZE} crossword grid template. Replace each "." with a letter. Keep all "#" as black squares. Every horizontal and vertical run of letters (between black squares or edges) must be a common English word (minimum 3 letters).
 
 Template:
 ${template}
 
 Return ONLY this JSON:
-{"grid":["XXXX#XXXX","XXXXXXXXX","XXXXXXXXX","#XXXX#XXX","XXXXXXXXX","XXX#XXXX#","XXXXXXXXX","XXXXXXXXX","XXXX#XXXX"],"acrossClues":["clue for each across word in reading order"],"downClues":["clue for each down word in left-to-right, top-to-bottom order"]}
+{"grid":["row1","row2",...],"acrossClues":["clue for each across word in reading order"],"downClues":["clue for each down word in left-to-right, top-to-bottom order"]}
 
-The grid has 13 across words and 13 down words. Provide exactly 13 across clues and 13 down clues.`,
+Each grid row must be exactly ${SIZE} characters. Provide one clue per word in order.`,
         },
       ],
-      max_tokens: 1500,
+      max_tokens: 5000,
       temperature: 0.7,
     });
 
@@ -218,12 +225,12 @@ The grid has 13 across words and 13 down words. Provide exactly 13 across clues 
     text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
     const parsed = JSON.parse(text);
 
-    if (!Array.isArray(parsed.grid) || parsed.grid.length !== 9) throw new Error("bad grid");
+    if (!Array.isArray(parsed.grid) || parsed.grid.length !== SIZE) throw new Error("bad grid");
 
     const rows: string[] = parsed.grid.map((r: string) => r.toUpperCase());
-    for (let i = 0; i < 9; i++) {
-      if (rows[i].length !== 9) throw new Error("bad row length");
-      for (let j = 0; j < 9; j++) {
+    for (let i = 0; i < SIZE; i++) {
+      if (rows[i].length !== SIZE) throw new Error("bad row length");
+      for (let j = 0; j < SIZE; j++) {
         const expected = CW_TEMPLATE[i][j];
         if (expected === "#" && rows[i][j] !== "#") throw new Error("black square mismatch");
         if (expected === "." && !/[A-Z]/.test(rows[i][j])) throw new Error("empty cell");
@@ -237,7 +244,7 @@ The grid has 13 across words and 13 down words. Provide exactly 13 across clues 
     const dc = parsed.downClues ?? parsed.down_clues ?? [];
 
     return {
-      size: 9,
+      size: SIZE,
       grid: rawGrid,
       numbers,
       acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: ac[i] || w.word })),
@@ -248,7 +255,7 @@ The grid has 13 across words and 13 down words. Provide exactly 13 across clues 
   const rawGrid = parseCrosswordGrid(FALLBACK_CW.grid);
   const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
   return {
-    size: 9,
+    size: rawGrid.length,
     grid: rawGrid,
     numbers,
     acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: FALLBACK_CW.acrossClues[i] || w.word })),

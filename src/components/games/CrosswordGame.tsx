@@ -288,9 +288,9 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     activeClueNum = numbers[wr]?.[wc] ?? null;
   }
 
-  const cellSize = size <= 5 ? 52 : size <= 7 ? 42 : 36;
-  const letterSize = size <= 5 ? 22 : size <= 7 ? 18 : 15;
-  const numSize = size <= 5 ? 8 : 7;
+  const cellSize = size <= 5 ? 52 : size <= 7 ? 42 : size <= 9 ? 36 : size <= 12 ? 30 : 28;
+  const letterSize = size <= 5 ? 22 : size <= 7 ? 18 : size <= 9 ? 15 : 12;
+  const numSize = size <= 5 ? 8 : size <= 9 ? 7 : 6;
 
   return (
     <div
