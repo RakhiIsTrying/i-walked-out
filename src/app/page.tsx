@@ -345,23 +345,22 @@ function Hero() {
           <span className="sticker" style={{ fontSize: 12, padding: "8px 14px", background: "var(--rose)", color: "var(--paper-light)", transform: "rotate(-4deg)" }}>VOL · 03</span>
         </div>
         <h1
-          className="display"
+          className="serif"
           style={{
-            fontSize: "clamp(64px, 13vw, 200px)",
-            lineHeight: 0.85,
+            fontSize: "clamp(56px, 11vw, 160px)",
+            lineHeight: 0.9,
             margin: 0,
             color: "var(--ink)",
-            textShadow: "8px 8px 0 var(--rose)",
+            fontWeight: 400,
           }}
         >
-          LET<br />
-          <span className="brush" style={{ color: "var(--rose)", fontSize: "1.3em", textShadow: "none", display: "inline-block", transform: "rotate(-3deg)", marginLeft: "0.05em" }}>that</span>{" "}
-          <span style={{ display: "inline-block", color: "var(--teal)", textShadow: "8px 8px 0 var(--ink)" }}>DREAM</span><br />
-          <span className="rampart" style={{ color: "var(--butter)", fontSize: "1.1em", textShadow: "6px 6px 0 var(--ink)", letterSpacing: "0.02em" }}>GO!!</span>
+          Quit your<br />
+          <em style={{ fontStyle: "italic" }}>dreams.</em>
         </h1>
-        <p style={{ fontSize: 20, color: "var(--ink-soft)", maxWidth: 560, margin: "30px auto 0", lineHeight: 1.5 }}>
-          Pin a dream you&apos;re walking away from. Watch strangers do the same.
-          Lighter together. Louder together.
+        <p style={{ fontSize: 20, color: "var(--ink-soft)", maxWidth: 620, margin: "30px auto 0", lineHeight: 1.5 }}>
+          Most of them weren&apos;t going great anyway. A graceful exit for
+          the marathon you&apos;ll never run, the novel you&apos;ll never finish,
+          and the ex you absolutely should not text.
         </p>
       </div>
 
@@ -373,10 +372,10 @@ function Hero() {
 
       <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 36, flexWrap: "wrap", position: "relative", zIndex: 2 }}>
         <Link href="/feed" className="btn-chunky" style={{ textDecoration: "none" }}>
-          WANDER THE WALL →
+          Read the wall of regrets
         </Link>
         <Link href="/vibe" className="btn-chunky alt" style={{ textDecoration: "none" }}>
-          GET A VIBE
+          I just want a vibe
         </Link>
       </div>
     </section>
@@ -389,12 +388,12 @@ function Hero() {
 
 function Marquee() {
   const items = [
-    "★ 1,247 DREAMS RELEASED TODAY",
-    "✦ KINDEST CORNER OF THE INTERNET",
-    "★ NO ALGORITHM · NO METRICS · NO VIBES POLICE",
-    "✦ TELEGRAM BOT · WHISPER A DREAM · WE'LL KEEP IT",
-    "★ SINCE 2025 · STILL WEIRD",
-    "✦ UNSUBSCRIBE FROM THE HUSTLE",
+    "● 1,247 DREAMS QUIT TODAY · ZERO REFUNDS ISSUED",
+    "✦ DREAMS FORMALLY FIRED",
+    "● $0 SPENT ON THERAPY THIS WEEK",
+    "✦ SMUG 42% · WEIRD ABOUT IT 21% · CRYING IN CVS 11%",
+    "● AVG. TIME TO GIVE UP: 4.7 YEARS",
+    "✦ HONESTLY, HUNGRY 8%",
   ];
   return (
     <div
@@ -799,10 +798,10 @@ function Quote() {
       <div style={{ maxWidth: 720, margin: "0 auto", position: "relative" }}>
         <div style={{ position: "absolute", left: -10, top: -20, fontSize: 100, color: "var(--rose)", opacity: 0.25, fontFamily: "'Fraunces', serif", lineHeight: 1 }}>&ldquo;</div>
         <p className="serif" style={{ fontSize: "clamp(28px, 4vw, 44px)", fontStyle: "italic", fontWeight: 300, lineHeight: 1.25, color: "var(--ink)", margin: 0 }}>
-          Let kindness be the language we all happen to share.
+          The unexamined life is fine actually.
         </p>
         <p className="hand" style={{ fontSize: 22, color: "var(--ink-soft)", marginTop: 28 }}>
-          — pinned to our front door since day one
+          — Socrates, probably
         </p>
       </div>
     </section>
@@ -822,7 +821,7 @@ function TelegramCard() {
             ✦ from your pocket ✦
           </div>
           <h2 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic", marginBottom: 20 }}>
-            whisper a dream to our bot.
+            Text us a dream. We&apos;ll bury it discreetly.
           </h2>
           <p style={{ fontSize: 18, color: "var(--ink-soft)", maxWidth: 520, lineHeight: 1.5, marginBottom: 28 }}>
             Walk away from something on the way to the train? Tell our Telegram bot. It tucks the dream into your folder, automatically. No app. No mood to overcome.
@@ -884,7 +883,7 @@ function Footer() {
         <div style={{ maxWidth: 360 }}>
           <h3 className="serif" style={{ fontSize: 28, margin: 0, fontWeight: 500, marginBottom: 10 }}>i walked out</h3>
           <p className="hand" style={{ fontSize: 22, color: "var(--ink-soft)", margin: 0, lineHeight: 1.3 }}>
-            Hand the world something gentler than it gave you.
+            Quit big. Live small.
           </p>
         </div>
         <div style={{ display: "flex", gap: 50, fontFamily: "'Fraunces', serif", fontSize: 15 }}>

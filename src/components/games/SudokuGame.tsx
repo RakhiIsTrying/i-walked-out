@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getDayNumber, getDailyRng, seededShuffle, getStats, recordWin, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
+import { saveGameResult } from "@/lib/archive";
 
 interface SudokuProps {
   puzzle?: {
@@ -9,6 +10,7 @@ interface SudokuProps {
     solution: number[][];
     given: boolean[][];
   };
+  playDate?: string;
 }
 
 const BASE_GRID = [
@@ -61,20 +63,22 @@ function generateLocal(rng: () => number): { solution: number[][]; puzzle: numbe
   return { solution, puzzle: grid, given };
 }
 
-export default function SudokuGame({ puzzle: puzzleProp }: SudokuProps) {
+export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps) {
   const [solution, setSolution] = useState<number[][]>([]);
   const [board, setBoard] = useState<number[][]>([]);
   const [given, setGiven] = useState<boolean[][]>([]);
   const [selected, setSelected] = useState<[number, number] | null>(null);
-  const [errors, setErrors] = useState<Set<string>>(new Set());
+  const [errorCount, setErrorCount] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
   const [timer, setTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(true);
 
+  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+
   useEffect(() => {
-    if (hasPlayedToday("sudoku")) {
+    if (isToday && hasPlayedToday("sudoku")) {
       setGameOver(true);
       setTimerActive(false);
       setStats(getStats("sudoku"));
@@ -111,20 +115,19 @@ export default function SudokuGame({ puzzle: puzzleProp }: SudokuProps) {
     next[r][c] = num;
     setBoard(next);
 
-    const newErrors = new Set(errors);
-    const key = `${r},${c}`;
     if (num !== 0 && num !== solution[r][c]) {
-      newErrors.add(key);
-    } else {
-      newErrors.delete(key);
+      setErrorCount((e) => e + 1);
     }
-    setErrors(newErrors);
 
     if (checkWin(next)) {
       setGameOver(true);
       setTimerActive(false);
-      markPlayedToday("sudoku");
+      if (isToday) markPlayedToday("sudoku");
       setStats(recordWin("sudoku"));
+      saveGameResult("sudoku", true, timer, {
+        time: timer,
+        errors: errorCount,
+      }, playDate);
     }
   }
 
@@ -190,7 +193,6 @@ export default function SudokuGame({ puzzle: puzzleProp }: SudokuProps) {
           row.map((val, ci) => {
             const isGiven = given[ri]?.[ci];
             const isSelected = selected?.[0] === ri && selected?.[1] === ci;
-            const isError = errors.has(`${ri},${ci}`);
             const sameNum = selected && val !== 0 && board[selected[0]][selected[1]] === val;
             return (
               <button
@@ -199,10 +201,10 @@ export default function SudokuGame({ puzzle: puzzleProp }: SudokuProps) {
                 style={{
                   width: 38, height: 38,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: isGiven ? 17 : 17,
-                  fontWeight: isGiven ? 700 : 400,
-                  fontFamily: isGiven ? "'Bungee', system-ui" : "'Caveat', cursive",
-                  color: isError ? "var(--rose)" : isGiven ? "var(--ink)" : "var(--teal)",
+                  fontSize: 17,
+                  fontWeight: isGiven ? 700 : 600,
+                  fontFamily: "'Bungee', system-ui",
+                  color: isGiven ? "var(--ink)" : "var(--teal)",
                   background: isSelected ? "rgba(42, 95, 214, 0.15)" : sameNum ? "rgba(42, 95, 214, 0.06)" : "var(--paper-light)",
                   border: "1px solid var(--ink-faded)",
                   borderRight: ci % 3 === 2 && ci < 8 ? "3px solid var(--ink)" : undefined,

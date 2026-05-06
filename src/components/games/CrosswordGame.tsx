@@ -11,6 +11,7 @@ import {
   shareOrCopy,
   GameStats,
 } from "@/lib/games";
+import { saveGameResult } from "@/lib/archive";
 
 interface CrosswordPuzzle {
   size: number;
@@ -22,6 +23,7 @@ interface CrosswordPuzzle {
 
 interface CrosswordProps {
   puzzle?: CrosswordPuzzle;
+  playDate?: string;
 }
 
 const FALLBACK_PUZZLE: CrosswordPuzzle = {
@@ -56,7 +58,7 @@ const FALLBACK_PUZZLE: CrosswordPuzzle = {
   ],
 };
 
-export default function CrosswordGame({ puzzle }: CrosswordProps) {
+export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
   const pz = puzzle ?? FALLBACK_PUZZLE;
   const { size, grid: answer, numbers, acrossClues, downClues } = pz;
 
@@ -81,8 +83,10 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     Array.from({ length: size }, () => Array(size).fill(null))
   );
 
+  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+
   useEffect(() => {
-    if (hasPlayedToday("crossword")) {
+    if (isToday && hasPlayedToday("crossword")) {
       setGameOver(true);
       setTimerActive(false);
       const saved = localStorage.getItem("iwo_crossword_today");
@@ -177,12 +181,15 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     if (ch && checkWin(next)) {
       setGameOver(true);
       setTimerActive(false);
-      markPlayedToday("crossword");
+      if (isToday) {
+        markPlayedToday("crossword");
+        localStorage.setItem("iwo_crossword_today", JSON.stringify({ b: next }));
+      }
       setStats(recordWin("crossword"));
-      localStorage.setItem(
-        "iwo_crossword_today",
-        JSON.stringify({ b: next })
-      );
+      saveGameResult("crossword", true, timer, {
+        time: timer,
+        size,
+      }, playDate);
       return;
     }
 

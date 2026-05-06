@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
 import { PANGRAM_SEEDS, DICTIONARY } from "@/lib/words";
+import { saveGameResult } from "@/lib/archive";
 
 interface SpellingBeeProps {
   puzzle?: {
@@ -11,6 +12,7 @@ interface SpellingBeeProps {
     validWords: string[];
     maxScore: number;
   };
+  playDate?: string;
 }
 
 function getFallbackPuzzle() {
@@ -71,7 +73,7 @@ async function checkWord(word: string): Promise<boolean> {
   }
 }
 
-export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps) {
+export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: SpellingBeeProps) {
   const [puzzle, setPuzzle] = useState<ReturnType<typeof getFallbackPuzzle> | null>(null);
   const [found, setFound] = useState<string[]>([]);
   const [current, setCurrent] = useState("");
@@ -82,6 +84,8 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
   const [shareMsg, setShareMsg] = useState("");
   const [checking, setChecking] = useState(false);
   const submitRef = useRef(false);
+
+  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     let p: ReturnType<typeof getFallbackPuzzle>;
@@ -99,7 +103,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
     }
     setPuzzle(p);
 
-    if (hasPlayedToday("spelling")) {
+    if (isToday && hasPlayedToday("spelling")) {
       const saved = localStorage.getItem("iwo_spelling_today");
       if (saved) {
         const { f, s } = JSON.parse(saved);
@@ -126,11 +130,16 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
 
     flash(isPangram ? `PANGRAM! +${pts}` : `+${pts}`, "good");
 
-    localStorage.setItem("iwo_spelling_today", JSON.stringify({ f: newFound, s: newScore }));
+    if (isToday) localStorage.setItem("iwo_spelling_today", JSON.stringify({ f: newFound, s: newScore }));
 
-    if (getRank(newScore, pz.maxScore) === "Genius" && !hasPlayedToday("spelling")) {
-      markPlayedToday("spelling");
+    if (getRank(newScore, pz.maxScore) === "Genius" && (!isToday || !hasPlayedToday("spelling"))) {
+      if (isToday) markPlayedToday("spelling");
       setStats(recordWin("spelling"));
+      saveGameResult("spelling", true, newScore, {
+        words: newFound,
+        rank: "Genius",
+        maxScore: pz.maxScore,
+      }, playDate);
     }
   }
 

@@ -471,24 +471,74 @@ function generateSudoku(): SudokuPuzzle {
 
 // ── Main handler ──
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const dateParam = searchParams.get("date");
   const today = new Date().toISOString().split("T")[0];
+  const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
+  const isToday = targetDate === today;
 
   // Try Supabase cache
   try {
     const { data } = await getAdmin()
       .from("daily_puzzles")
       .select("puzzles")
-      .eq("date", today)
+      .eq("date", targetDate)
       .single();
     if (data?.puzzles) {
       return NextResponse.json(data.puzzles, {
-        headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
+        headers: { "Cache-Control": isToday ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=86400" },
       });
     }
   } catch {}
 
-  // Generate fresh
+  // For past dates with no cache, use deterministic fallbacks only (no AI calls)
+  if (!isToday) {
+    const dayNum = Math.floor((new Date(targetDate).getTime() - new Date("2025-01-01").getTime()) / 86400000);
+    function makeRng(offset: number) {
+      let s = (dayNum + offset) * 2654435761;
+      return function () {
+        s |= 0;
+        s = (s + 0x6d2b79f5) | 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const wordleRng = makeRng(42);
+    const wordle: WordlePuzzle = { answer: WORDLE_ANSWERS[Math.floor(wordleRng() * WORDLE_ANSWERS.length)].toUpperCase() };
+
+    const sudoku = generateSudokuForDay(dayNum);
+
+    const spellingRng = makeRng(77);
+    const seedIdx = Math.floor(spellingRng() * PANGRAM_SEEDS.length);
+    const seed = PANGRAM_SEEDS[seedIdx];
+    const outer = seed.letters.filter((l) => l !== seed.center);
+    const spelling = buildSpellingResult(seed.center, outer)!;
+
+    const rawGrid = parseCrosswordGrid(FALLBACK_CW.grid);
+    const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
+    const crossword: CrosswordPuzzle = {
+      size: rawGrid.length,
+      grid: rawGrid,
+      numbers,
+      acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: FALLBACK_CW.acrossClues[i] || w.word })),
+      downClues: downWords.map((w, i) => ({ num: w.num, clue: FALLBACK_CW.downClues[i] || w.word })),
+    };
+
+    const puzzles: DailyPuzzles = { date: targetDate, wordle, crossword, spelling, sudoku };
+
+    try {
+      await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles });
+    } catch {}
+
+    return NextResponse.json(puzzles, {
+      headers: { "Cache-Control": "public, s-maxage=86400" },
+    });
+  }
+
+  // Generate fresh for today (with AI)
   const [wordle, crossword, spelling] = await Promise.all([
     generateWordle(),
     generateCrossword(),
@@ -506,4 +556,51 @@ export async function GET() {
   return NextResponse.json(puzzles, {
     headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
   });
+}
+
+function generateSudokuForDay(dayNum: number): SudokuPuzzle {
+  let seed = (dayNum + 7) * 2654435761;
+  const rng = () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  const perm = seededShuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], rng);
+  let grid = BASE_GRID.map((row) => row.map((v) => perm[v - 1]));
+
+  for (let band = 0; band < 3; band++) {
+    const rows = [band * 3, band * 3 + 1, band * 3 + 2];
+    for (let i = 2; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [grid[rows[i]], grid[rows[j]]] = [grid[rows[j]], grid[rows[i]]];
+    }
+  }
+
+  const transposed = grid[0].map((_, c) => grid.map((r) => r[c]));
+  for (let stack = 0; stack < 3; stack++) {
+    const cols = [stack * 3, stack * 3 + 1, stack * 3 + 2];
+    for (let i = 2; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [transposed[cols[i]], transposed[cols[j]]] = [transposed[cols[j]], transposed[cols[i]]];
+    }
+  }
+  grid = transposed[0].map((_, c) => transposed.map((r) => r[c]));
+
+  const solution = grid.map((r) => [...r]);
+  const given: boolean[][] = grid.map(() => Array(9).fill(true));
+  const cells = Array.from({ length: 81 }, (_, i) => i);
+  const shuffled = seededShuffle(cells, rng);
+  const toRemove = 45 + Math.floor(rng() * 6);
+
+  for (let k = 0; k < toRemove && k < shuffled.length; k++) {
+    const r = Math.floor(shuffled[k] / 9);
+    const c = shuffled[k] % 9;
+    grid[r][c] = 0;
+    given[r][c] = false;
+  }
+
+  return { solution, puzzle: grid, given };
 }

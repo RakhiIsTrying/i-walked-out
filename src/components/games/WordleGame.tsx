@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
-import { WORDLE_ANSWERS, VALID_GUESSES } from "@/lib/words";
+import { WORDLE_ANSWERS } from "@/lib/words";
 import { RefreshCw } from "lucide-react";
+import { saveGameResult } from "@/lib/archive";
 
 type CellState = "correct" | "present" | "absent" | "empty";
 
@@ -12,10 +13,32 @@ const COLS = 5;
 
 interface WordleProps {
   answer?: string;
+  playDate?: string;
 }
+
+const DAILY_PLAY_LIMIT = 5;
 
 function getRandomWord(): string {
   return WORDLE_ANSWERS[Math.floor(Math.random() * WORDLE_ANSWERS.length)].toUpperCase();
+}
+
+function getRandomPlayCount(): number {
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const stored = localStorage.getItem("iwo_wordle_plays");
+    if (stored) {
+      const { date, count } = JSON.parse(stored);
+      if (date === today) return count;
+    }
+  } catch {}
+  return 0;
+}
+
+function incrementRandomPlayCount(): number {
+  const today = new Date().toISOString().split("T")[0];
+  const count = getRandomPlayCount() + 1;
+  localStorage.setItem("iwo_wordle_plays", JSON.stringify({ date: today, count }));
+  return count;
 }
 
 function getFallbackWord(): string {
@@ -50,7 +73,23 @@ const KEYBOARD_ROWS = [
   ["ENTER","Z","X","C","V","B","N","M","⌫"],
 ];
 
-export default function WordleGame({ answer: answerProp }: WordleProps) {
+const wordCache = new Map<string, boolean>();
+
+async function checkWordValid(word: string): Promise<boolean> {
+  const lower = word.toLowerCase();
+  if (WORDLE_ANSWERS.includes(lower)) return true;
+  if (wordCache.has(lower)) return wordCache.get(lower)!;
+  try {
+    const res = await fetch(`/api/games/spelling-check?word=${encodeURIComponent(lower)}`);
+    const data = await res.json();
+    wordCache.set(lower, data.valid);
+    return data.valid;
+  } catch {
+    return true;
+  }
+}
+
+export default function WordleGame({ answer: answerProp, playDate }: WordleProps) {
   const [answer, setAnswer] = useState(() => answerProp?.toUpperCase() || getFallbackWord());
   const [guesses, setGuesses] = useState<string[]>([]);
   const [states, setStates] = useState<CellState[][]>([]);
@@ -59,12 +98,15 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
   const [won, setWon] = useState(false);
   const [shake, setShake] = useState(false);
   const [message, setMessage] = useState("");
+  const [checking, setChecking] = useState(false);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
   const [roundNum, setRoundNum] = useState(1);
+  const [playCount, setPlayCount] = useState(0);
 
   useEffect(() => {
     setStats(getStats("wordle"));
+    setPlayCount(getRandomPlayCount());
   }, []);
 
   const keyColors = useCallback(() => {
@@ -82,9 +124,14 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
     return map;
   }, [guesses, states]);
 
-  function submit() {
-    if (current.length !== COLS) return;
-    if (!VALID_GUESSES.has(current.toLowerCase())) {
+  async function submit() {
+    if (current.length !== COLS || checking) return;
+
+    setChecking(true);
+    const valid = await checkWordValid(current);
+    setChecking(false);
+
+    if (!valid) {
       setShake(true);
       setMessage("Not in word list");
       setTimeout(() => { setShake(false); setMessage(""); }, 1200);
@@ -106,11 +153,20 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
       setWon(isWin);
       const newStats = isWin ? recordWin("wordle") : recordLoss("wordle");
       setStats(newStats);
-      if (!isWin) setMessage(answer);
+      saveGameResult("wordle", isWin, isWin ? newGuesses.length : 0, {
+        answer,
+        guesses: newGuesses,
+        attempts: newGuesses.length,
+      }, playDate);
     }
   }
 
+  const canPlayAgain = playCount < DAILY_PLAY_LIMIT;
+
   function playAgain() {
+    if (!canPlayAgain) return;
+    const newCount = incrementRandomPlayCount();
+    setPlayCount(newCount);
     setAnswer(getRandomWord());
     setGuesses([]);
     setStates([]);
@@ -118,6 +174,7 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
     setGameOver(false);
     setWon(false);
     setMessage("");
+    setChecking(false);
     setShareMsg("");
     setRoundNum((n) => n + 1);
   }
@@ -169,11 +226,12 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
       <button
         onClick={playAgain}
-        title="New word"
+        disabled={!canPlayAgain}
+        title={canPlayAgain ? "New word" : "Daily limit reached"}
         className="btn-ghost"
-        style={{ fontSize: 12, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6 }}
+        style={{ fontSize: 12, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, opacity: canPlayAgain ? 1 : 0.4 }}
       >
-        <RefreshCw size={14} /> new word
+        <RefreshCw size={14} /> {canPlayAgain ? `new word (${DAILY_PLAY_LIMIT - playCount} left)` : "limit reached"}
       </button>
 
       {message && (
@@ -265,9 +323,11 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
             <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13 }}>
               {shareMsg || "share result"}
             </button>
-            <button onClick={playAgain} className="btn-ghost" style={{ fontSize: 13 }}>
-              play again
-            </button>
+            {canPlayAgain && (
+              <button onClick={playAgain} className="btn-ghost" style={{ fontSize: 13 }}>
+                play again ({DAILY_PLAY_LIMIT - playCount} left)
+              </button>
+            )}
           </div>
         </div>
       )}

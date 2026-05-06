@@ -8,14 +8,36 @@ import { Ghost, Mail, Lock, Loader2, Phone } from "lucide-react";
 
 type AuthMode = "email" | "phone";
 
+const COUNTRY_CODES = [
+  { code: "+91", flag: "🇮🇳", label: "India" },
+  { code: "+1", flag: "🇺🇸", label: "US/CA" },
+  { code: "+44", flag: "🇬🇧", label: "UK" },
+  { code: "+61", flag: "🇦🇺", label: "AU" },
+  { code: "+86", flag: "🇨🇳", label: "CN" },
+  { code: "+81", flag: "🇯🇵", label: "JP" },
+  { code: "+49", flag: "🇩🇪", label: "DE" },
+  { code: "+33", flag: "🇫🇷", label: "FR" },
+  { code: "+55", flag: "🇧🇷", label: "BR" },
+  { code: "+234", flag: "🇳🇬", label: "NG" },
+  { code: "+971", flag: "🇦🇪", label: "UAE" },
+  { code: "+65", flag: "🇸🇬", label: "SG" },
+  { code: "+82", flag: "🇰🇷", label: "KR" },
+  { code: "+39", flag: "🇮🇹", label: "IT" },
+  { code: "+34", flag: "🇪🇸", label: "ES" },
+  { code: "+7", flag: "🇷🇺", label: "RU" },
+  { code: "+62", flag: "🇮🇩", label: "ID" },
+  { code: "+60", flag: "🇲🇾", label: "MY" },
+  { code: "+66", flag: "🇹🇭", label: "TH" },
+  { code: "+52", flag: "🇲🇽", label: "MX" },
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [countryCode, setCountryCode] = useState("+91");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,19 +45,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setError(error.message); setLoading(false); return; }
+    router.push("/dashboard");
+    router.refresh();
+  }
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
+  async function handlePhoneLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const formatted = `${countryCode}${phone.replace(/\D/g, "")}`;
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ phone: formatted, password });
+    if (error) { setError(error.message); setLoading(false); return; }
     router.push("/dashboard");
     router.refresh();
   }
@@ -44,52 +68,8 @@ export default function LoginPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-  }
-
-  async function sendOtp(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const formatted = phone.startsWith("+") ? phone : `+${phone}`;
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({ phone: formatted });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    setOtpSent(true);
-    setLoading(false);
-  }
-
-  async function verifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const formatted = phone.startsWith("+") ? phone : `+${phone}`;
-    const supabase = createClient();
-    const { error } = await supabase.auth.verifyOtp({
-      phone: formatted,
-      token: otp,
-      type: "sms",
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
@@ -98,9 +78,7 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <Ghost className="mx-auto mb-4 h-12 w-12 text-accent" />
           <h1 className="text-2xl font-bold">Welcome back, ghost</h1>
-          <p className="mt-2 text-sm text-muted">
-            Sign in to revisit your graveyard
-          </p>
+          <p className="mt-2 text-sm text-muted">Sign in to revisit your graveyard</p>
         </div>
 
         {/* Google SSO */}
@@ -118,21 +96,34 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
+        {/* Telegram */}
+        <a
+          href="https://t.me/I_Walked_Out_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border-2 py-3 font-medium transition-all hover:bg-[var(--paper-deep)]"
+          style={{ borderColor: "var(--ink-faded)", color: "var(--ink)", display: "flex", textDecoration: "none" }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#229ED9">
+            <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.53 8.15l-1.84 8.66c-.14.62-.5.77-1.01.48l-2.8-2.06-1.35 1.3c-.15.15-.28.28-.57.28l.2-2.85 5.18-4.68c.23-.2-.05-.31-.35-.12l-6.4 4.03-2.76-.86c-.6-.19-.61-.6.13-.89l10.78-4.16c.5-.18.93.12.79.87z"/>
+          </svg>
+          Continue with Telegram
+        </a>
+
         <div className="my-6 flex items-center gap-3">
           <div style={{ flex: 1, height: 1, background: "var(--ink-faded)" }} />
-          <span className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", color: "var(--ink-faded)", textTransform: "uppercase" }}>or</span>
+          <span className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", color: "var(--ink-faded)", textTransform: "uppercase" }}>or sign in with</span>
           <div style={{ flex: 1, height: 1, background: "var(--ink-faded)" }} />
         </div>
 
         {/* Mode toggle */}
         <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
           <button
-            onClick={() => { setMode("email"); setError(""); setOtpSent(false); }}
+            onClick={() => { setMode("email"); setError(""); }}
             className="typewriter"
             style={{
               flex: 1, padding: "8px 0", fontSize: 11, letterSpacing: "0.1em",
-              textTransform: "uppercase", cursor: "pointer",
-              borderRadius: 2, border: "none",
+              textTransform: "uppercase", cursor: "pointer", borderRadius: 2, border: "none",
               background: mode === "email" ? "var(--ink)" : "transparent",
               color: mode === "email" ? "var(--paper-light)" : "var(--ink-faded)",
               transition: "all 0.15s",
@@ -145,8 +136,7 @@ export default function LoginPage() {
             className="typewriter"
             style={{
               flex: 1, padding: "8px 0", fontSize: 11, letterSpacing: "0.1em",
-              textTransform: "uppercase", cursor: "pointer",
-              borderRadius: 2, border: "none",
+              textTransform: "uppercase", cursor: "pointer", borderRadius: 2, border: "none",
               background: mode === "phone" ? "var(--ink)" : "transparent",
               color: mode === "phone" ? "var(--paper-light)" : "var(--ink-faded)",
               transition: "all 0.15s",
@@ -160,120 +150,53 @@ export default function LoginPage() {
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted" />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10"
-                required
-              />
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-10" required />
             </div>
-
             <div className="relative">
               <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted" />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10"
-                required
-              />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10" required />
             </div>
-
-            {error && (
-              <p className="rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-medium text-background transition-all hover:bg-accent-dim disabled:opacity-50"
-            >
+            {error && <p className="rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>}
+            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-medium text-background transition-all hover:bg-accent-dim disabled:opacity-50">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
             </button>
           </form>
         ) : (
-          <>
-            {!otpSent ? (
-              <form onSubmit={sendOtp} className="space-y-4">
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted" />
-                  <input
-                    type="tel"
-                    placeholder="+1 234 567 8900"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-10"
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <p className="rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-medium text-background transition-all hover:bg-accent-dim disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send OTP"}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={verifyOtp} className="space-y-4">
-                <p style={{ fontSize: 13, color: "var(--ink-soft)", textAlign: "center" }}>
-                  Code sent to <strong>{phone}</strong>
-                </p>
-                <input
-                  type="text"
-                  placeholder="Enter 6-digit code"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="w-full text-center typewriter"
-                  style={{ fontSize: 20, letterSpacing: "0.3em" }}
-                  maxLength={6}
-                  required
-                />
-
-                {error && (
-                  <p className="rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-medium text-background transition-all hover:bg-accent-dim disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Sign In"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => { setOtpSent(false); setOtp(""); setError(""); }}
-                  className="btn-ghost w-full"
-                  style={{ fontSize: 12 }}
-                >
-                  change number
-                </button>
-              </form>
-            )}
-          </>
+          <form onSubmit={handlePhoneLogin} className="space-y-4">
+            <div style={{ display: "flex", gap: 8 }}>
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="typewriter"
+                style={{
+                  width: 110, padding: "10px 8px", fontSize: 13,
+                  background: "var(--paper-deep)", border: "2px solid var(--ink-faded)",
+                  borderRadius: 8, color: "var(--ink)", cursor: "pointer",
+                }}
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                ))}
+              </select>
+              <div className="relative" style={{ flex: 1 }}>
+                <Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted" />
+                <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full pl-10" required />
+              </div>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted" />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10" required />
+            </div>
+            {error && <p className="rounded-lg bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>}
+            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-medium text-background transition-all hover:bg-accent-dim disabled:opacity-50">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+            </button>
+          </form>
         )}
 
         <p className="mt-6 text-center text-sm text-muted">
           No account yet?{" "}
-          <Link href="/auth/signup" className="text-accent hover:underline">
-            Join the graveyard
-          </Link>
+          <Link href="/auth/signup" className="text-accent hover:underline">Join the graveyard</Link>
         </p>
       </div>
     </div>
