@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
 import { PANGRAM_SEEDS, DICTIONARY } from "@/lib/words";
 
@@ -57,6 +57,20 @@ function getRank(score: number, max: number): string {
   return "Beginner";
 }
 
+const dictCache = new Map<string, boolean>();
+
+async function checkWord(word: string): Promise<boolean> {
+  if (dictCache.has(word)) return dictCache.get(word)!;
+  try {
+    const res = await fetch(`/api/games/spelling-check?word=${encodeURIComponent(word)}`);
+    const data = await res.json();
+    dictCache.set(word, data.valid);
+    return data.valid;
+  } catch {
+    return false;
+  }
+}
+
 export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps) {
   const [puzzle, setPuzzle] = useState<ReturnType<typeof getFallbackPuzzle> | null>(null);
   const [found, setFound] = useState<string[]>([]);
@@ -66,6 +80,8 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
   const [msgType, setMsgType] = useState<"good" | "bad" | "">("");
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
+  const [checking, setChecking] = useState(false);
+  const submitRef = useRef(false);
 
   useEffect(() => {
     let p: ReturnType<typeof getFallbackPuzzle>;
@@ -100,21 +116,9 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
     setTimeout(() => { setMessage(""); setMsgType(""); }, 1500);
   }
 
-  function submit() {
-    if (!puzzle) return;
-    const word = current.toLowerCase();
-    setCurrent("");
-
-    if (word.length < 4) { flash("Too short", "bad"); return; }
-    if (!word.includes(puzzle.center)) { flash("Must use center letter", "bad"); return; }
-    for (const ch of word) {
-      if (!puzzle.letterSet.has(ch)) { flash("Invalid letter", "bad"); return; }
-    }
-    if (found.includes(word)) { flash("Already found", "bad"); return; }
-    if (!puzzle.validWords.has(word)) { flash("Not in word list", "bad"); return; }
-
-    const pts = scoreWord(word, puzzle.letterSet);
-    const isPangram = new Set(word).size === puzzle.letterSet.size && [...puzzle.letterSet].every((l) => word.includes(l));
+  function acceptWord(word: string, pz: NonNullable<typeof puzzle>) {
+    const pts = scoreWord(word, pz.letterSet);
+    const isPangram = new Set(word).size === pz.letterSet.size && [...pz.letterSet].every((l) => word.includes(l));
     const newFound = [...found, word];
     const newScore = score + pts;
     setFound(newFound);
@@ -124,9 +128,39 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
 
     localStorage.setItem("iwo_spelling_today", JSON.stringify({ f: newFound, s: newScore }));
 
-    if (getRank(newScore, puzzle.maxScore) === "Genius" && !hasPlayedToday("spelling")) {
+    if (getRank(newScore, pz.maxScore) === "Genius" && !hasPlayedToday("spelling")) {
       markPlayedToday("spelling");
       setStats(recordWin("spelling"));
+    }
+  }
+
+  async function submit() {
+    if (!puzzle || checking || submitRef.current) return;
+    const word = current.toLowerCase();
+    setCurrent("");
+
+    if (word.length < 4) { flash("Too short", "bad"); return; }
+    if (!word.includes(puzzle.center)) { flash("Must use center letter", "bad"); return; }
+    for (const ch of word) {
+      if (!puzzle.letterSet.has(ch)) { flash("Invalid letter", "bad"); return; }
+    }
+    if (found.includes(word)) { flash("Already found", "bad"); return; }
+
+    if (puzzle.validWords.has(word)) {
+      acceptWord(word, puzzle);
+      return;
+    }
+
+    submitRef.current = true;
+    setChecking(true);
+    const valid = await checkWord(word);
+    setChecking(false);
+    submitRef.current = false;
+
+    if (valid) {
+      acceptWord(word, puzzle);
+    } else {
+      flash("Not a valid word", "bad");
     }
   }
 
@@ -200,7 +234,11 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
         color: "var(--ink)", minWidth: 160, borderBottom: "2px dashed var(--ink-faded)",
         padding: "4px 8px",
       }}>
-        {current || <span style={{ color: "var(--ink-faded)", fontSize: 16 }}>&nbsp;</span>}
+        {checking ? (
+          <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>checking...</span>
+        ) : (
+          current || <span style={{ color: "var(--ink-faded)", fontSize: 16 }}>&nbsp;</span>
+        )}
       </div>
 
       {/* Hexagon layout */}
@@ -224,8 +262,8 @@ export default function SpellingBeeGame({ puzzle: puzzleProp }: SpellingBeeProps
         <button onClick={shuffle} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>
           ↻
         </button>
-        <button onClick={submit} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
-          enter
+        <button onClick={submit} disabled={checking} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
+          {checking ? "..." : "enter"}
         </button>
       </div>
 
