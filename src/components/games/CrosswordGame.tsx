@@ -12,58 +12,65 @@ import {
   GameStats,
 } from "@/lib/games";
 
-const SIZE = 5;
+interface CrosswordPuzzle {
+  size: number;
+  grid: (string | null)[][];
+  numbers: (number | null)[][];
+  acrossClues: { num: number; clue: string }[];
+  downClues: { num: number; clue: string }[];
+}
 
 interface CrosswordProps {
-  puzzle?: {
-    size: number;
-    grid: string[][];
-    acrossClues: string[];
-    downClues: string[];
-  };
+  puzzle?: CrosswordPuzzle;
 }
 
-const FALLBACK_GRID = [
-  ["H", "E", "A", "R", "T"],
-  ["E", "M", "B", "E", "R"],
-  ["A", "B", "U", "S", "E"],
-  ["R", "E", "S", "I", "N"],
-  ["T", "R", "E", "N", "D"],
-];
-const FALLBACK_ACROSS_CLUES = [
-  "Organ that pumps blood",
-  "Glowing remains of a fire",
-  "To misuse or maltreat",
-  "Sticky substance from trees",
-  "General direction of change",
-];
-const FALLBACK_DOWN_CLUES = [
-  "Core of one's feelings",
-  "Still-hot coal after flames die",
-  "Cruel or violent treatment",
-  "Used to make varnish",
-  "What's currently popular",
-];
-
-const ACROSS_NUMS = [1, 6, 7, 8, 9];
-const DOWN_NUMS = [1, 2, 3, 4, 5];
-
-function getCellNum(r: number, c: number): number | null {
-  if (r === 0 && c === 0) return 1;
-  if (r === 0) return c + 1;
-  if (c === 0) return r + 5;
-  return null;
-}
+const FALLBACK_PUZZLE: CrosswordPuzzle = {
+  size: 5,
+  grid: [
+    ["H", "E", "A", "R", "T"],
+    ["E", "M", "B", "E", "R"],
+    ["A", "B", "U", "S", "E"],
+    ["R", "E", "S", "I", "N"],
+    ["T", "R", "E", "N", "D"],
+  ],
+  numbers: [
+    [1, 2, 3, 4, 5],
+    [6, null, null, null, null],
+    [7, null, null, null, null],
+    [8, null, null, null, null],
+    [9, null, null, null, null],
+  ],
+  acrossClues: [
+    { num: 1, clue: "Organ that pumps blood" },
+    { num: 6, clue: "Glowing remains of a fire" },
+    { num: 7, clue: "To misuse or maltreat" },
+    { num: 8, clue: "Sticky substance from trees" },
+    { num: 9, clue: "General direction of change" },
+  ],
+  downClues: [
+    { num: 1, clue: "Core of one's feelings" },
+    { num: 2, clue: "Still-hot coal after flames die" },
+    { num: 3, clue: "Cruel or violent treatment" },
+    { num: 4, clue: "Used to make varnish" },
+    { num: 5, clue: "What's currently popular" },
+  ],
+};
 
 export default function CrosswordGame({ puzzle }: CrosswordProps) {
-  const answer = puzzle?.grid ?? FALLBACK_GRID;
-  const acrossClues = puzzle?.acrossClues ?? FALLBACK_ACROSS_CLUES;
-  const downClues = puzzle?.downClues ?? FALLBACK_DOWN_CLUES;
+  const pz = puzzle ?? FALLBACK_PUZZLE;
+  const { size, grid: answer, numbers, acrossClues, downClues } = pz;
 
-  const [board, setBoard] = useState<string[][]>(
-    Array.from({ length: SIZE }, () => Array(SIZE).fill(""))
+  const isBlack = (r: number, c: number) => answer[r]?.[c] === null;
+
+  const [board, setBoard] = useState<(string | null)[][]>(() =>
+    answer.map((row) => row.map((cell) => (cell === null ? null : "")))
   );
-  const [selected, setSelected] = useState<[number, number]>([0, 0]);
+  const [selected, setSelected] = useState<[number, number]>(() => {
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        if (!isBlack(r, c)) return [r, c];
+    return [0, 0];
+  });
   const [direction, setDirection] = useState<"across" | "down">("across");
   const [gameOver, setGameOver] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -71,7 +78,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
-    Array.from({ length: SIZE }, () => Array(SIZE).fill(null))
+    Array.from({ length: size }, () => Array(size).fill(null))
   );
 
   useEffect(() => {
@@ -80,8 +87,10 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
       setTimerActive(false);
       const saved = localStorage.getItem("iwo_crossword_today");
       if (saved) {
-        const { b } = JSON.parse(saved);
-        setBoard(b);
+        try {
+          const { b } = JSON.parse(saved);
+          setBoard(b);
+        } catch {}
       }
     }
     setStats(getStats("crossword"));
@@ -93,17 +102,69 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     return () => clearInterval(id);
   }, [timerActive, gameOver]);
 
-  function checkWin(b: string[][]) {
-    for (let r = 0; r < SIZE; r++) {
-      for (let c = 0; c < SIZE; c++) {
-        if (b[r][c].toUpperCase() !== answer[r][c]) return false;
+  function checkWin(b: (string | null)[][]) {
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++) {
+        if (answer[r][c] === null) continue;
+        if (b[r][c]?.toUpperCase() !== answer[r][c]) return false;
       }
-    }
     return true;
   }
 
+  function nextCell(
+    r: number,
+    c: number,
+    dir: "across" | "down",
+    step: 1 | -1
+  ): [number, number] | null {
+    if (dir === "across") {
+      let nc = c + step;
+      while (nc >= 0 && nc < size) {
+        if (!isBlack(r, nc)) return [r, nc];
+        nc += step;
+      }
+    } else {
+      let nr = r + step;
+      while (nr >= 0 && nr < size) {
+        if (!isBlack(nr, c)) return [nr, c];
+        nr += step;
+      }
+    }
+    return null;
+  }
+
+  function getWordCells(
+    r: number,
+    c: number,
+    dir: "across" | "down"
+  ): [number, number][] {
+    if (isBlack(r, c)) return [];
+    const cells: [number, number][] = [];
+    if (dir === "across") {
+      let start = c;
+      while (start > 0 && !isBlack(r, start - 1)) start--;
+      let end = c;
+      while (end < size - 1 && !isBlack(r, end + 1)) end++;
+      for (let cc = start; cc <= end; cc++) cells.push([r, cc]);
+    } else {
+      let start = r;
+      while (start > 0 && !isBlack(start - 1, c)) start--;
+      let end = r;
+      while (end < size - 1 && !isBlack(end + 1, c)) end++;
+      for (let rr = start; rr <= end; rr++) cells.push([rr, c]);
+    }
+    return cells;
+  }
+
+  function findClueCell(num: number): [number, number] | null {
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        if (numbers[r][c] === num) return [r, c];
+    return null;
+  }
+
   function handleInput(r: number, c: number, val: string) {
-    if (gameOver) return;
+    if (gameOver || isBlack(r, c)) return;
     const ch = val.slice(-1).toUpperCase();
     if (ch && !/^[A-Z]$/.test(ch)) return;
 
@@ -124,48 +185,57 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     }
 
     if (ch) {
-      if (direction === "across" && c < SIZE - 1) {
-        setSelected([r, c + 1]);
-        inputRefs.current[r]?.[c + 1]?.focus();
-      } else if (direction === "down" && r < SIZE - 1) {
-        setSelected([r + 1, c]);
-        inputRefs.current[r + 1]?.[c]?.focus();
+      const nc = nextCell(r, c, direction, 1);
+      if (nc) {
+        setSelected(nc);
+        inputRefs.current[nc[0]]?.[nc[1]]?.focus();
       }
     }
   }
 
   function handleKeyDown(e: React.KeyboardEvent, r: number, c: number) {
     if (e.key === "Backspace" && !board[r][c]) {
-      if (direction === "across" && c > 0) {
-        setSelected([r, c - 1]);
-        inputRefs.current[r]?.[c - 1]?.focus();
+      const prev = nextCell(r, c, direction, -1);
+      if (prev) {
+        setSelected(prev);
+        inputRefs.current[prev[0]]?.[prev[1]]?.focus();
         const next = board.map((row) => [...row]);
-        next[r][c - 1] = "";
-        setBoard(next);
-      } else if (direction === "down" && r > 0) {
-        setSelected([r - 1, c]);
-        inputRefs.current[r - 1]?.[c]?.focus();
-        const next = board.map((row) => [...row]);
-        next[r - 1][c] = "";
+        next[prev[0]][prev[1]] = "";
         setBoard(next);
       }
       e.preventDefault();
     }
     if (e.key === "ArrowRight") {
       setDirection("across");
-      if (c < SIZE - 1) { setSelected([r, c + 1]); inputRefs.current[r]?.[c + 1]?.focus(); }
+      const nc = nextCell(r, c, "across", 1);
+      if (nc) {
+        setSelected(nc);
+        inputRefs.current[nc[0]]?.[nc[1]]?.focus();
+      }
     }
     if (e.key === "ArrowLeft") {
       setDirection("across");
-      if (c > 0) { setSelected([r, c - 1]); inputRefs.current[r]?.[c - 1]?.focus(); }
+      const nc = nextCell(r, c, "across", -1);
+      if (nc) {
+        setSelected(nc);
+        inputRefs.current[nc[0]]?.[nc[1]]?.focus();
+      }
     }
     if (e.key === "ArrowDown") {
       setDirection("down");
-      if (r < SIZE - 1) { setSelected([r + 1, c]); inputRefs.current[r + 1]?.[c]?.focus(); }
+      const nc = nextCell(r, c, "down", 1);
+      if (nc) {
+        setSelected(nc);
+        inputRefs.current[nc[0]]?.[nc[1]]?.focus();
+      }
     }
     if (e.key === "ArrowUp") {
       setDirection("down");
-      if (r > 0) { setSelected([r - 1, c]); inputRefs.current[r - 1]?.[c]?.focus(); }
+      const nc = nextCell(r, c, "down", -1);
+      if (nc) {
+        setSelected(nc);
+        inputRefs.current[nc[0]]?.[nc[1]]?.focus();
+      }
     }
     if (e.key === "Tab") {
       e.preventDefault();
@@ -174,6 +244,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
   }
 
   function handleCellClick(r: number, c: number) {
+    if (isBlack(r, c)) return;
     if (selected[0] === r && selected[1] === c) {
       setDirection((d) => (d === "across" ? "down" : "across"));
     } else {
@@ -182,12 +253,21 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
     inputRefs.current[r]?.[c]?.focus();
   }
 
+  function handleClueClick(num: number, dir: "across" | "down") {
+    const cell = findClueCell(num);
+    if (cell) {
+      setDirection(dir);
+      setSelected(cell);
+      inputRefs.current[cell[0]]?.[cell[1]]?.focus();
+    }
+  }
+
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   async function handleShare() {
     const text = buildShareText(
-      `Mini Crossword #${getDayNumber()}`,
+      `Crossword #${getDayNumber()}`,
       `Solved in ${formatTime(timer)}`,
       stats?.currentStreak || 0
     );
@@ -199,14 +279,18 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
   }
 
   const highlightedCells = new Set<string>();
-  if (!gameOver) {
-    const [sr, sc] = selected;
-    if (direction === "across") {
-      for (let c = 0; c < SIZE; c++) highlightedCells.add(`${sr},${c}`);
-    } else {
-      for (let r = 0; r < SIZE; r++) highlightedCells.add(`${r},${sc}`);
-    }
+  const wordCells = getWordCells(selected[0], selected[1], direction);
+  wordCells.forEach(([wr, wc]) => highlightedCells.add(`${wr},${wc}`));
+
+  let activeClueNum: number | null = null;
+  if (wordCells.length > 0) {
+    const [wr, wc] = wordCells[0];
+    activeClueNum = numbers[wr]?.[wc] ?? null;
   }
+
+  const cellSize = size <= 5 ? 52 : size <= 7 ? 42 : 36;
+  const letterSize = size <= 5 ? 22 : size <= 7 ? 18 : 15;
+  const numSize = size <= 5 ? 8 : 7;
 
   return (
     <div
@@ -231,7 +315,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
       <div
         style={{
           display: "flex",
-          gap: 32,
+          gap: 24,
           flexWrap: "wrap",
           justifyContent: "center",
           alignItems: "flex-start",
@@ -241,33 +325,46 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(${SIZE}, 52px)`,
-            gridTemplateRows: `repeat(${SIZE}, 52px)`,
+            gridTemplateColumns: `repeat(${size}, ${cellSize}px)`,
+            gridTemplateRows: `repeat(${size}, ${cellSize}px)`,
             gap: 0,
             border: "3px solid var(--ink)",
           }}
         >
-          {Array.from({ length: SIZE }).map((_, r) =>
-            Array.from({ length: SIZE }).map((_, c) => {
-              const isSelected =
-                selected[0] === r && selected[1] === c;
-              const isHighlighted = highlightedCells.has(`${r},${c}`);
+          {Array.from({ length: size }).map((_, r) =>
+            Array.from({ length: size }).map((_, c) => {
+              if (isBlack(r, c)) {
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    style={{
+                      width: cellSize,
+                      height: cellSize,
+                      background: "var(--ink)",
+                      border: "1px solid var(--ink)",
+                    }}
+                  />
+                );
+              }
+
+              const isSel = selected[0] === r && selected[1] === c;
+              const isHL = highlightedCells.has(`${r},${c}`);
               const isCorrect =
                 gameOver &&
-                board[r][c].toUpperCase() === answer[r][c];
-              const cellNum = getCellNum(r, c);
+                board[r][c]?.toUpperCase() === answer[r][c];
+              const cellNum = numbers[r][c];
 
               return (
                 <div
                   key={`${r}-${c}`}
                   onClick={() => handleCellClick(r, c)}
                   style={{
-                    width: 52,
-                    height: 52,
+                    width: cellSize,
+                    height: cellSize,
                     position: "relative",
-                    background: isSelected
+                    background: isSel
                       ? "rgba(42, 95, 214, 0.2)"
-                      : isHighlighted
+                      : isHL
                         ? "rgba(42, 95, 214, 0.08)"
                         : isCorrect
                           ? "rgba(42, 95, 214, 0.06)"
@@ -280,12 +377,13 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                     <span
                       style={{
                         position: "absolute",
-                        top: 2,
-                        left: 3,
-                        fontSize: 8,
+                        top: 1,
+                        left: 2,
+                        fontSize: numSize,
                         fontWeight: 700,
                         color: "var(--ink-faded)",
                         fontFamily: "'Inter', system-ui",
+                        lineHeight: 1,
                       }}
                     >
                       {cellNum}
@@ -295,7 +393,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                     ref={(el) => {
                       inputRefs.current[r][c] = el;
                     }}
-                    value={board[r][c]}
+                    value={board[r][c] || ""}
                     onChange={(e) =>
                       handleInput(r, c, e.target.value)
                     }
@@ -306,7 +404,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                       width: "100%",
                       height: "100%",
                       textAlign: "center",
-                      fontSize: 22,
+                      fontSize: letterSize,
                       fontWeight: 700,
                       fontFamily: "'Bungee', system-ui",
                       color: "var(--ink)",
@@ -315,6 +413,7 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                       outline: "none",
                       textTransform: "uppercase",
                       cursor: "pointer",
+                      padding: 0,
                     }}
                   />
                 </div>
@@ -328,9 +427,11 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 16,
+            gap: 14,
             minWidth: 200,
-            maxWidth: 260,
+            maxWidth: 280,
+            maxHeight: size * cellSize + 6,
+            overflowY: "auto",
           }}
         >
           <div>
@@ -340,42 +441,39 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                 fontSize: 10,
                 letterSpacing: "0.2em",
                 color: "var(--ink-faded)",
-                marginBottom: 8,
+                marginBottom: 6,
                 textTransform: "uppercase",
               }}
             >
               Across
             </div>
-            {acrossClues.map((clue, i) => (
+            {acrossClues.map(({ num, clue }) => (
               <div
-                key={`a${i}`}
-                onClick={() => {
-                  setDirection("across");
-                  setSelected([i, 0]);
-                  inputRefs.current[i]?.[0]?.focus();
-                }}
+                key={`a${num}`}
+                onClick={() => handleClueClick(num, "across")}
                 style={{
-                  fontSize: 13,
-                  padding: "3px 0",
+                  fontSize: 12,
+                  padding: "2px 0",
                   cursor: "pointer",
                   color:
-                    direction === "across" && selected[0] === i
+                    direction === "across" && activeClueNum === num
                       ? "var(--teal)"
                       : "var(--ink-soft)",
                   fontWeight:
-                    direction === "across" && selected[0] === i
+                    direction === "across" && activeClueNum === num
                       ? 600
                       : 400,
+                  lineHeight: 1.4,
                 }}
               >
                 <span
                   style={{
                     fontWeight: 700,
-                    marginRight: 6,
-                    fontSize: 11,
+                    marginRight: 4,
+                    fontSize: 10,
                   }}
                 >
-                  {ACROSS_NUMS[i]}.
+                  {num}.
                 </span>
                 {clue}
               </div>
@@ -388,42 +486,39 @@ export default function CrosswordGame({ puzzle }: CrosswordProps) {
                 fontSize: 10,
                 letterSpacing: "0.2em",
                 color: "var(--ink-faded)",
-                marginBottom: 8,
+                marginBottom: 6,
                 textTransform: "uppercase",
               }}
             >
               Down
             </div>
-            {downClues.map((clue, i) => (
+            {downClues.map(({ num, clue }) => (
               <div
-                key={`d${i}`}
-                onClick={() => {
-                  setDirection("down");
-                  setSelected([0, i]);
-                  inputRefs.current[0]?.[i]?.focus();
-                }}
+                key={`d${num}`}
+                onClick={() => handleClueClick(num, "down")}
                 style={{
-                  fontSize: 13,
-                  padding: "3px 0",
+                  fontSize: 12,
+                  padding: "2px 0",
                   cursor: "pointer",
                   color:
-                    direction === "down" && selected[1] === i
+                    direction === "down" && activeClueNum === num
                       ? "var(--teal)"
                       : "var(--ink-soft)",
                   fontWeight:
-                    direction === "down" && selected[1] === i
+                    direction === "down" && activeClueNum === num
                       ? 600
                       : 400,
+                  lineHeight: 1.4,
                 }}
               >
                 <span
                   style={{
                     fontWeight: 700,
-                    marginRight: 6,
-                    fontSize: 11,
+                    marginRight: 4,
+                    fontSize: 10,
                   }}
                 >
-                  {DOWN_NUMS[i]}.
+                  {num}.
                 </span>
                 {clue}
               </div>

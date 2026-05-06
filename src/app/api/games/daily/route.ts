@@ -25,9 +25,10 @@ interface WordlePuzzle {
 
 interface CrosswordPuzzle {
   size: number;
-  grid: string[][];
-  acrossClues: string[];
-  downClues: string[];
+  grid: (string | null)[][];
+  numbers: (number | null)[][];
+  acrossClues: { num: number; clue: string }[];
+  downClues: { num: number; clue: string }[];
 }
 
 interface SpellingPuzzle {
@@ -81,29 +82,111 @@ async function generateWordle(): Promise<WordlePuzzle> {
   return { answer: seededPick(WORDLE_ANSWERS, rng).toUpperCase() };
 }
 
-// ── Crossword (5×5 word square) ──
+// ── Crossword (9×9 with black squares) ──
 
-const FALLBACK_SQUARES: { grid: string[]; acrossClues: string[]; downClues: string[] }[] = [
-  {
-    grid: ["HEART", "EMBER", "ABUSE", "RESIN", "TREND"],
-    acrossClues: [
-      "Organ that pumps blood",
-      "Glowing remains of a fire",
-      "To misuse or maltreat",
-      "Sticky substance from trees",
-      "General direction of change",
-    ],
-    downClues: [
-      "Core of one's feelings",
-      "Still-hot coal after flames die",
-      "Cruel or violent treatment",
-      "Used to make varnish",
-      "What's currently popular",
-    ],
-  },
+const CW_TEMPLATE = [
+  "....#....",
+  ".........",
+  ".........",
+  "#....#...",
+  ".........",
+  "...#....#",
+  ".........",
+  ".........",
+  "....#....",
 ];
 
+function numberGrid(rawGrid: (string | null)[][]): {
+  numbers: (number | null)[][];
+  acrossWords: { num: number; row: number; col: number; len: number; word: string }[];
+  downWords: { num: number; row: number; col: number; len: number; word: string }[];
+} {
+  const size = rawGrid.length;
+  const numbers: (number | null)[][] = rawGrid.map((r) => r.map(() => null));
+  const acrossWords: { num: number; row: number; col: number; len: number; word: string }[] = [];
+  const downWords: { num: number; row: number; col: number; len: number; word: string }[] = [];
+  let num = 1;
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (rawGrid[r][c] === null) continue;
+      const startsAcross =
+        (c === 0 || rawGrid[r][c - 1] === null) &&
+        c + 1 < size && rawGrid[r][c + 1] !== null;
+      const startsDown =
+        (r === 0 || rawGrid[r - 1][c] === null) &&
+        r + 1 < size && rawGrid[r + 1][c] !== null;
+
+      if (startsAcross || startsDown) {
+        numbers[r][c] = num;
+        if (startsAcross) {
+          let len = 0;
+          let word = "";
+          for (let cc = c; cc < size && rawGrid[r][cc] !== null; cc++) {
+            word += rawGrid[r][cc];
+            len++;
+          }
+          acrossWords.push({ num, row: r, col: c, len, word });
+        }
+        if (startsDown) {
+          let len = 0;
+          let word = "";
+          for (let rr = r; rr < size && rawGrid[rr][c] !== null; rr++) {
+            word += rawGrid[rr][c];
+            len++;
+          }
+          downWords.push({ num, row: r, col: c, len, word });
+        }
+        num++;
+      }
+    }
+  }
+  return { numbers, acrossWords, downWords };
+}
+
+function parseCrosswordGrid(rows: string[]): (string | null)[][] {
+  return rows.map((row) =>
+    row.split("").map((ch) => (ch === "#" ? null : ch.toUpperCase()))
+  );
+}
+
+const FALLBACK_CW = {
+  grid: [
+    "CLAP#SHED",
+    "LANGUAGES",
+    "AIMLESSLY",
+    "#PLEA#ROT",
+    "SIDELINED",
+    "SON#AGED#",
+    "TOLERATED",
+    "OTHERWISE",
+    "DENY#DYES",
+  ],
+  acrossClues: [
+    "Round of applause", "Small outdoor building",
+    "Many tongues",
+    "Without purpose or direction",
+    "Earnest request", "To decompose",
+    "Benched from the game",
+    "Male child", "How many years old",
+    "Put up with",
+    "If not this way, then ...",
+    "Refuse to admit", "Colors fabric",
+  ],
+  downClues: [
+    "Possessed (past tense)", "Long journey",
+    "Changed direction", "Outer layer",
+    "Awaiting judgment", "Guardian figure",
+    "Floor cleaning tool", "Protective gear",
+    "Spiral forms", "Herb for cooking",
+    "Grew older", "Rooftop addition",
+    "Proper conduct",
+  ],
+};
+
 async function generateCrossword(): Promise<CrosswordPuzzle> {
+  const template = CW_TEMPLATE.join("\n");
+
   try {
     const ai = getGamesAI();
     const res = await ai.chat.completions.create({
@@ -112,19 +195,22 @@ async function generateCrossword(): Promise<CrosswordPuzzle> {
         {
           role: "system",
           content:
-            "You generate crossword puzzles. Reply with ONLY valid JSON. No markdown fences, no explanation.",
+            "You are a crossword puzzle constructor. Reply with ONLY valid JSON. No markdown fences, no explanation.",
         },
         {
           role: "user",
-          content: `Create a 5×5 crossword word square. Fill a 5-row, 5-column grid so that EVERY row (left→right) AND EVERY column (top→bottom) is a common English word. That's 10 words total, all 5 letters.
+          content: `Fill this 9×9 crossword grid template. Replace each "." with a letter. Keep all "#" as black squares. Every horizontal and vertical run of letters (between black squares or edges) of length 3+ must be a common English word.
+
+Template:
+${template}
 
 Return ONLY this JSON:
-{"grid":["XXXXX","XXXXX","XXXXX","XXXXX","XXXXX"],"acrossClues":["c1","c2","c3","c4","c5"],"downClues":["c1","c2","c3","c4","c5"]}
+{"grid":["XXXX#XXXX","XXXXXXXXX","XXXXXXXXX","#XXXX#XXX","XXXXXXXXX","XXX#XXXX#","XXXXXXXXX","XXXXXXXXX","XXXX#XXXX"],"acrossClues":["clue for each across word in reading order"],"downClues":["clue for each down word in left-to-right, top-to-bottom order"]}
 
-CRITICAL: Column N is formed by taking the Nth letter of each row. For example column 0 = row0[0]+row1[0]+row2[0]+row3[0]+row4[0]. ALL columns must be real words. Double-check each column before answering.`,
+The grid has 13 across words and 13 down words. Provide exactly 13 across clues and 13 down clues.`,
         },
       ],
-      max_tokens: 500,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 
@@ -132,37 +218,41 @@ CRITICAL: Column N is formed by taking the Nth letter of each row. For example c
     text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
     const parsed = JSON.parse(text);
 
-    if (!Array.isArray(parsed.grid) || parsed.grid.length !== 5) throw new Error("bad grid");
+    if (!Array.isArray(parsed.grid) || parsed.grid.length !== 9) throw new Error("bad grid");
 
     const rows: string[] = parsed.grid.map((r: string) => r.toUpperCase());
-    for (const r of rows) {
-      if (!/^[A-Z]{5}$/.test(r)) throw new Error("bad row");
+    for (let i = 0; i < 9; i++) {
+      if (rows[i].length !== 9) throw new Error("bad row length");
+      for (let j = 0; j < 9; j++) {
+        const expected = CW_TEMPLATE[i][j];
+        if (expected === "#" && rows[i][j] !== "#") throw new Error("black square mismatch");
+        if (expected === "." && !/[A-Z]/.test(rows[i][j])) throw new Error("empty cell");
+      }
     }
 
-    const grid = rows.map((r) => r.split(""));
-    const down: string[] = [];
-    for (let c = 0; c < 5; c++) {
-      down.push(grid.map((row) => row[c]).join(""));
-    }
-    for (const w of down) {
-      if (!/^[A-Z]{5}$/.test(w)) throw new Error("bad col word");
-    }
+    const rawGrid = parseCrosswordGrid(rows);
+    const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
+
+    const ac = parsed.acrossClues ?? parsed.across_clues ?? [];
+    const dc = parsed.downClues ?? parsed.down_clues ?? [];
 
     return {
-      size: 5,
-      grid,
-      acrossClues: (parsed.acrossClues ?? parsed.across_clues ?? []).slice(0, 5),
-      downClues: (parsed.downClues ?? parsed.down_clues ?? []).slice(0, 5),
+      size: 9,
+      grid: rawGrid,
+      numbers,
+      acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: ac[i] || w.word })),
+      downClues: downWords.map((w, i) => ({ num: w.num, clue: dc[i] || w.word })),
     };
   } catch {}
 
-  const rng = getDailyRng(99);
-  const fb = FALLBACK_SQUARES[Math.floor(rng() * FALLBACK_SQUARES.length)];
+  const rawGrid = parseCrosswordGrid(FALLBACK_CW.grid);
+  const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
   return {
-    size: 5,
-    grid: fb.grid.map((r) => r.split("")),
-    acrossClues: fb.acrossClues,
-    downClues: fb.downClues,
+    size: 9,
+    grid: rawGrid,
+    numbers,
+    acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: FALLBACK_CW.acrossClues[i] || w.word })),
+    downClues: downWords.map((w, i) => ({ num: w.num, clue: FALLBACK_CW.downClues[i] || w.word })),
   };
 }
 
@@ -210,7 +300,8 @@ function buildSpellingResult(
 async function generateSpellingBee(): Promise<SpellingPuzzle> {
   try {
     const ai = getGamesAI();
-    const res = await ai.chat.completions.create({
+
+    const lettersRes = await ai.chat.completions.create({
       model: GAMES_MODEL,
       messages: [
         {
@@ -229,7 +320,7 @@ Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
       temperature: 1.2,
     });
 
-    let text = res.choices[0]?.message?.content?.trim() ?? "";
+    let text = lettersRes.choices[0]?.message?.content?.trim() ?? "";
     text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
     const parsed = JSON.parse(text);
 
@@ -237,8 +328,61 @@ Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
     const outer: string[] = parsed.outer?.map((l: string) => l.toLowerCase());
     if (!center || !outer || outer.length !== 6) throw new Error("bad data");
 
-    const result = buildSpellingResult(center, outer);
-    if (result) return result;
+    const allLetters = new Set([center, ...outer]);
+    if (allLetters.size !== 7) throw new Error("duplicate letters");
+
+    const wordsRes = await ai.chat.completions.create({
+      model: GAMES_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a word list generator. Return ONLY a JSON array of words. No markdown fences, no explanation.",
+        },
+        {
+          role: "user",
+          content: `List ALL common English words (4+ letters) that can be made using ONLY these letters: ${[...allLetters].join(", ")}. Each letter can be used multiple times. Every word MUST contain the letter "${center}". Only include real, common English dictionary words — no proper nouns, abbreviations, or slang. Return as JSON array: ["word1","word2",...]`,
+        },
+      ],
+      max_tokens: 2000,
+      temperature: 0.3,
+    });
+
+    let wordsText = wordsRes.choices[0]?.message?.content?.trim() ?? "";
+    wordsText = wordsText.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    const aiWords: string[] = JSON.parse(wordsText);
+
+    const dictWords = DICTIONARY.filter((word) => {
+      if (word.length < 4) return false;
+      if (!word.includes(center)) return false;
+      for (const ch of word) {
+        if (!allLetters.has(ch)) return false;
+      }
+      return true;
+    });
+
+    const validSet = new Set<string>();
+    for (const w of aiWords) {
+      const word = w.toLowerCase();
+      if (word.length < 4) continue;
+      if (!word.includes(center)) continue;
+      let ok = true;
+      for (const ch of word) {
+        if (!allLetters.has(ch)) { ok = false; break; }
+      }
+      if (ok) validSet.add(word);
+    }
+    for (const w of dictWords) validSet.add(w);
+
+    const validWords = [...validSet].sort();
+    if (validWords.length < 12) throw new Error("too few words");
+
+    const maxScore = validWords.reduce(
+      (sum, w) => sum + scoreSpellingWord(w, allLetters),
+      0,
+    );
+
+    return { center, outer, validWords, maxScore };
   } catch {}
 
   const rng = getDailyRng(77);
