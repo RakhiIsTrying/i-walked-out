@@ -38,10 +38,10 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(241, 231, 210, 0.85)",
+        background: "rgba(251, 247, 236, 0.88)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        borderBottom: "1px dashed rgba(122, 107, 88, 0.3)",
+        borderBottom: "1px dashed rgba(106, 112, 140, 0.3)",
       }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 lg:px-12 py-5">
@@ -103,8 +103,8 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
         <div
           className="px-6 py-4 md:hidden"
           style={{
-            borderTop: "1px dashed rgba(122, 107, 88, 0.3)",
-            background: "rgba(241, 231, 210, 0.95)",
+            borderTop: "1px dashed rgba(106, 112, 140, 0.3)",
+            background: "rgba(251, 247, 236, 0.95)",
           }}
         >
           {links.map(({ href, label }) => (
@@ -112,7 +112,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className={`serif block py-2.5 text-base ${pathname === href ? "text-rose" : ""}`}
+              className={`serif block py-2.5 text-base`}
               style={{ color: pathname === href ? "var(--rose)" : "var(--ink)", textDecoration: "none" }}
             >
               {label}
