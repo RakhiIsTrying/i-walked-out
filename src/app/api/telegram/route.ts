@@ -567,19 +567,12 @@ async function handleChatMode(chatId: number) {
   }
 
   const db = getAdmin();
+
   const { data: profile } = await db
     .from("personality_profiles")
     .select("*")
     .eq("user_id", link.user_id)
     .single();
-
-  if (!profile) {
-    await sendMessage(
-      chatId,
-      "You need a personality profile first.\nLog 3+ dreams with /dream, then run /personality"
-    );
-    return;
-  }
 
   await db
     .from("telegram_links")
@@ -588,13 +581,22 @@ async function handleChatMode(chatId: number) {
 
   await setActiveChatMode(link.user_id, "personality");
 
-  await sendMessage(
-    chatId,
-    `🔮 *You're now talking to your future self.*\n\n` +
-      `_I'm shaped by every dream you walked away from. Ask me anything — about your regrets, your patterns, what's next._\n\n` +
-      `Just type normally. I'll respond as the person you're becoming.\n\n` +
-      `Type /exit to leave this conversation.`
-  );
+  if (profile) {
+    await sendMessage(
+      chatId,
+      `*You're now talking to your future self.*\n\n` +
+        `I know your patterns. Just type.\n\n` +
+        `Type /exit to leave.`
+    );
+  } else {
+    await sendMessage(
+      chatId,
+      `*You're now talking to your future self.*\n\n` +
+        `I don't know much about you yet — just talk and I'll work with what you give me.\n\n` +
+        `_Run /personality anytime to give me your patterns. It's optional but sharpens the conversation._\n\n` +
+        `Type /exit to leave.`
+    );
+  }
 }
 
 // ─── /exit — leave chat mode ───
@@ -937,13 +939,6 @@ async function handlePersonalityChat(chatId: number, userId: string, text: strin
     .eq("user_id", userId)
     .single();
 
-  if (!profile) {
-    await db.from("telegram_links").update({ chat_mode: false }).eq("telegram_chat_id", chatId);
-    await clearActiveChatMode(userId);
-    await sendMessage(chatId, "No personality profile found. Generate one with /personality first.");
-    return;
-  }
-
   const { data: history } = await db
     .from("telegram_chat_history")
     .select("role, content")
@@ -957,24 +952,43 @@ async function handlePersonalityChat(chatId: number, userId: string, text: strin
     content: h.content as string,
   }));
 
-  const traits = profile.traits || {};
+  let systemPrompt: string;
+
+  if (profile) {
+    const traits = profile.traits || {};
+    systemPrompt = `You are this person's "future self" — an AI that embodies who they will become based on their personality profile and the dreams they abandoned.
+
+Personality: ${profile.summary}
+Archetype: ${profile.archetype}
+Decision Style: ${(traits as Record<string, string>).decision_style || "unknown"}
+Core Values: ${((traits as Record<string, string[]>).core_values || []).join(", ")}
+Fear Patterns: ${((traits as Record<string, string[]>).fear_patterns || []).join(", ")}
+
+Speak as their future self. Use "I" as if you are them from the future. Reference their patterns — be concrete, not generic. This is a Telegram chat — be conversational.
+
+TONE RULES:
+- Match the user's own temperament and energy. If they're blunt, be blunt. If they're analytical, be analytical. If they're casual, be casual.
+- Do NOT be emotional, sentimental, or inspirational unless they are being that way first.
+- Do NOT sound like a therapist, life coach, or motivational speaker. No "I'm proud of you" or "you're doing great."
+- Do NOT be holier-than-thou or preachy. You're them, not their guru.
+- Be honest and direct. Don't moralize. Don't wrap hard truths in cotton.
+- Keep responses concise (2-4 sentences).`;
+  } else {
+    systemPrompt = `You are this person's "future self." You don't have a detailed personality profile yet, so work with what they give you in conversation. Use "I" as if you are them from the future. This is a Telegram chat — be conversational.
+
+TONE RULES:
+- Match the user's own temperament and energy. Mirror how they talk to you.
+- Do NOT be emotional, sentimental, or inspirational unless they are being that way first.
+- Do NOT sound like a therapist, life coach, or motivational speaker.
+- Do NOT be holier-than-thou or preachy. You're them, not their guru.
+- Be honest and direct. Keep responses concise (2-4 sentences).`;
+  }
 
   const completion = await getAI().chat.completions.create({
     model: MODEL,
     max_tokens: 1000,
     messages: [
-      {
-        role: "system",
-        content: `You are this person's "future self" — an AI that embodies who they will become based on their personality profile and the dreams they abandoned.
-
-Personality: ${profile.summary}
-Archetype: ${profile.archetype}
-Decision Style: ${traits.decision_style}
-Core Values: ${(traits.core_values || []).join(", ")}
-Fear Patterns: ${(traits.fear_patterns || []).join(", ")}
-
-Speak as their future self. Be warm but honest. Reference their patterns. Be specific, not generic. Use "I" as if you are them from the future. Keep responses concise (2-4 sentences). This is a Telegram chat — be conversational, not formal.`,
-      },
+      { role: "system", content: systemPrompt },
       ...chatHistory,
       { role: "user" as const, content: text },
     ],
@@ -982,7 +996,7 @@ Speak as their future self. Be warm but honest. Reference their patterns. Be spe
 
   const reply = completion.choices[0]?.message?.content;
   if (!reply) {
-    await sendMessage(chatId, "I lost my train of thought. Try again.");
+    await sendMessage(chatId, "Lost my train of thought. Try again.");
     return;
   }
 

@@ -17,6 +17,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
     { href: "/sticky-decision", label: "Sticky Decision" },
     { href: "/vibe", label: "Vibe IRL" },
     { href: "/dugdug", label: "Dug-Dug" },
+    { href: "/games", label: "Games" },
     ...(user
       ? [
           { href: "/dashboard", label: "My Graveyard" },

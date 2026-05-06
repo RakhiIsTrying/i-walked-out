@@ -114,33 +114,15 @@ export default function PersonalityPage() {
     );
   }
 
-  /* ── Not enough dreams ── */
-  if (dreamCount < 3) {
-    return (
-      <div className="page-in" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh", padding: "0 20px", textAlign: "center" }}>
-        <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
-          not enough ghosts
-        </p>
-        <h1 className="serif" style={{ fontSize: 28, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", marginBottom: 12 }}>
-          We need more to work with.
-        </h1>
-        <p className="hand" style={{ fontSize: 22, color: "var(--ink-faded)", lineHeight: 1.4 }}>
-          Log at least 3 dead dreams before we can analyze your personality.
-          <br />
-          You have {dreamCount} so far.
-        </p>
-      </div>
-    );
-  }
+  /* dreamCount < 3 no longer blocks the page — chat works without personality */
 
   return (
     <div className="page-in" style={{ maxWidth: 860, margin: "0 auto", padding: "48px 20px 80px" }}>
 
-      {profile ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
-
-          {/* ── Archetype Reveal ── */}
-          <header style={{ textAlign: "center", marginBottom: 8 }}>
+      {/* ── Header ── */}
+      <header style={{ textAlign: "center", marginBottom: 40 }}>
+        {profile ? (
+          <>
             <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
               your archetype
             </p>
@@ -165,7 +147,31 @@ export default function PersonalityPage() {
             >
               {generating ? "regenerating..." : "regenerate"}
             </button>
-          </header>
+          </>
+        ) : (
+          <>
+            <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
+              my mind
+            </p>
+            <h1
+              className="serif"
+              style={{
+                fontSize: 42,
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: "var(--ink)",
+                lineHeight: 1.1,
+                margin: "0 0 20px",
+              }}
+            >
+              Talk to your future self.
+            </h1>
+          </>
+        )}
+      </header>
+
+      {profile ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
           {/* ── Summary Card ── */}
           <div
@@ -429,26 +435,160 @@ export default function PersonalityPage() {
           </section>
         </div>
       ) : (
-        /* ── Generate Personality CTA ── */
-        <div className="page-in" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: 80, paddingBottom: 80, textAlign: "center" }}>
-          <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
-            {dreamCount} dead dreams logged
-          </p>
-          <h2 className="serif" style={{ fontSize: 32, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", marginBottom: 12 }}>
-            Ready to see who you are?
-          </h2>
-          <p className="hand" style={{ fontSize: 22, color: "var(--ink-faded)", lineHeight: 1.4, maxWidth: 420, marginBottom: 40 }}>
-            We will analyze your patterns of abandonment to reveal who you truly are beneath the surface.
-          </p>
+        /* ── No profile yet — show chat + optional analysis ── */
+        <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
-          <button
-            onClick={generatePersonality}
-            disabled={generating}
-            className="btn-paper"
-            style={{ fontSize: 18, padding: "16px 36px" }}
+          {/* ── Future Self Chat (works without personality) ── */}
+          <section
+            className="paper"
+            style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
           >
-            {generating ? "analyzing..." : "analyze my soul ↳"}
-          </button>
+            <div className="tape tape-plum" style={{ top: -10, right: 36, transform: "rotate(5deg)" }} />
+
+            <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
+              <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
+                Chat with your Future Self
+              </p>
+              <p style={{ fontSize: 13, color: "var(--ink-faded)" }}>
+                Just talk. No analysis required.
+              </p>
+            </div>
+
+            <div
+              style={{ maxHeight: 450, minHeight: 180, overflowY: "auto", padding: 24 }}
+            >
+              {chatMessages.length === 0 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 140 }}>
+                  <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", opacity: 0.5, textAlign: "center" }}>
+                    Say something. Your future self is listening.
+                  </p>
+                </div>
+              )}
+
+              {chatMessages.map((msg, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      maxWidth: "75%",
+                      padding: "14px 18px",
+                      borderRadius: 3,
+                      position: "relative",
+                      ...(msg.role === "user"
+                        ? {
+                            background: "var(--paper-deep)",
+                            border: "1px dashed var(--ink-faded)",
+                            transform: "rotate(0.8deg)",
+                            fontFamily: "'Caveat', cursive",
+                            fontSize: 19,
+                            lineHeight: 1.4,
+                            color: "var(--ink-soft)",
+                          }
+                        : {
+                            background: "var(--paper-light)",
+                            border: "1px solid var(--ink-faded)",
+                            borderLeft: "3px solid var(--teal)",
+                            transform: "rotate(-0.4deg)",
+                            fontSize: 14,
+                            lineHeight: 1.6,
+                            color: "var(--ink-soft)",
+                          }),
+                    }}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+
+              {chatLoading && (
+                <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
+                  <div
+                    style={{
+                      padding: "14px 18px",
+                      background: "var(--paper-light)",
+                      border: "1px solid var(--ink-faded)",
+                      borderLeft: "3px solid var(--teal)",
+                      borderRadius: 3,
+                      transform: "rotate(-0.4deg)",
+                    }}
+                  >
+                    <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
+                      thinking...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={chatEndRef} />
+            </div>
+
+            <div style={{ borderTop: "1.5px dashed var(--ink-faded)", padding: 16 }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendChat();
+                }}
+                style={{ display: "flex", gap: 12 }}
+              >
+                <input
+                  type="text"
+                  placeholder="Ask your future self..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  className="hand"
+                  style={{ flex: 1, fontSize: 18 }}
+                />
+                <button
+                  type="submit"
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="btn-paper"
+                  style={{ padding: "10px 20px", fontSize: 14 }}
+                >
+                  send &rarr;
+                </button>
+              </form>
+            </div>
+          </section>
+
+          {/* ── Optional personality analysis ── */}
+          {dreamCount >= 3 ? (
+            <div
+              className="paper"
+              style={{ borderRadius: 3, padding: "28px 24px", position: "relative", textAlign: "center" }}
+            >
+              <div className="tape tape-rose" style={{ top: -10, left: "50%", marginLeft: -40, transform: "rotate(-3deg)" }} />
+              <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
+                optional · {dreamCount} dreams logged
+              </p>
+              <h3 className="serif" style={{ fontSize: 24, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", margin: "0 0 10px" }}>
+                Want a sharper conversation?
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--ink-faded)", lineHeight: 1.5, maxWidth: 420, margin: "0 auto 20px" }}>
+                Run a personality analysis on your dead dreams. Your future self will know your patterns, fears, and values — and talk like someone who actually knows you.
+              </p>
+              <button
+                onClick={generatePersonality}
+                disabled={generating}
+                className="btn-paper"
+                style={{ fontSize: 15, padding: "12px 28px" }}
+              >
+                {generating ? "analyzing..." : "analyze my patterns"}
+              </button>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "12px 0" }}>
+              <p style={{ fontSize: 13, color: "var(--ink-faded)" }}>
+                Log {3 - dreamCount} more dream{3 - dreamCount === 1 ? "" : "s"} to unlock personality analysis.
+                Chat works fine without it.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
