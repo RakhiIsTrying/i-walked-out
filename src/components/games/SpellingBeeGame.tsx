@@ -15,22 +15,26 @@ interface SpellingBeeProps {
 
 function getFallbackPuzzle() {
   const day = getDayNumber();
-  const seed = PANGRAM_SEEDS[day % PANGRAM_SEEDS.length];
-  const letterSet = new Set(seed.letters);
+  for (let i = 0; i < PANGRAM_SEEDS.length; i++) {
+    const seed = PANGRAM_SEEDS[(day + i) % PANGRAM_SEEDS.length];
+    const letterSet = new Set(seed.letters);
 
-  const validWords = DICTIONARY.filter((word) => {
-    if (word.length < 4) return false;
-    if (!word.includes(seed.center)) return false;
-    for (const ch of word) {
-      if (!letterSet.has(ch)) return false;
-    }
-    return true;
-  });
+    const validWords = DICTIONARY.filter((word) => {
+      if (word.length < 4) return false;
+      if (!word.includes(seed.center)) return false;
+      for (const ch of word) {
+        if (!letterSet.has(ch)) return false;
+      }
+      return true;
+    });
 
-  const outer = seed.letters.filter((l) => l !== seed.center);
-  const maxScore = validWords.reduce((sum, w) => sum + scoreWord(w, letterSet), 0);
+    if (validWords.length < 12 && i < PANGRAM_SEEDS.length - 1) continue;
 
-  return { center: seed.center, outer, validWords: new Set(validWords), maxScore, letterSet };
+    const outer = seed.letters.filter((l) => l !== seed.center);
+    const maxScore = validWords.reduce((sum, w) => sum + scoreWord(w, letterSet), 0);
+    return { center: seed.center, outer, validWords: new Set(validWords), maxScore, letterSet };
+  }
+  throw new Error("unreachable");
 }
 
 function scoreWord(word: string, allLetters: Set<string>): number {

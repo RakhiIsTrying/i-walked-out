@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Dream, DreamCategory } from "@/lib/types";
 import DreamCard from "@/components/DreamCard";
+import FileUpload from "@/components/FileUpload";
 import Link from "next/link";
 
 const categories: {
@@ -290,6 +291,9 @@ export default function DashboardPage() {
           </form>
         </section>
       )}
+
+      {/* ── File Upload Section ── */}
+      <FileUpload />
 
       {/* ── Telegram Section ── */}
       <section

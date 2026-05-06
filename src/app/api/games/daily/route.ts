@@ -197,7 +197,7 @@ function buildSpellingResult(
     return true;
   });
 
-  if (validWords.length < 5) return null;
+  if (validWords.length < 12) return null;
 
   const maxScore = validWords.reduce(
     (sum, w) => sum + scoreSpellingWord(w, allLetters),
