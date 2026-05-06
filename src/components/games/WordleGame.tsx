@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getDayNumber, getStats, recordWin, recordLoss, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
+import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
 import { WORDLE_ANSWERS, VALID_GUESSES } from "@/lib/words";
 
 type CellState = "correct" | "present" | "absent" | "empty";
@@ -13,6 +13,10 @@ interface WordleProps {
   answer?: string;
 }
 
+function getRandomWord(): string {
+  return WORDLE_ANSWERS[Math.floor(Math.random() * WORDLE_ANSWERS.length)].toUpperCase();
+}
+
 function getFallbackWord(): string {
   const day = getDayNumber();
   return WORDLE_ANSWERS[day % WORDLE_ANSWERS.length].toUpperCase();
@@ -21,12 +25,10 @@ function getFallbackWord(): string {
 function evalGuess(guess: string, answer: string): CellState[] {
   const result: CellState[] = Array(COLS).fill("absent");
   const ansLetters = answer.split("");
-  const used = Array(COLS).fill(false);
 
   for (let i = 0; i < COLS; i++) {
     if (guess[i] === answer[i]) {
       result[i] = "correct";
-      used[i] = true;
       ansLetters[i] = "";
     }
   }
@@ -48,7 +50,7 @@ const KEYBOARD_ROWS = [
 ];
 
 export default function WordleGame({ answer: answerProp }: WordleProps) {
-  const answer = answerProp?.toUpperCase() || getFallbackWord();
+  const [answer, setAnswer] = useState(() => answerProp?.toUpperCase() || getFallbackWord());
   const [guesses, setGuesses] = useState<string[]>([]);
   const [states, setStates] = useState<CellState[][]>([]);
   const [current, setCurrent] = useState("");
@@ -58,18 +60,9 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
   const [message, setMessage] = useState("");
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
+  const [roundNum, setRoundNum] = useState(1);
 
   useEffect(() => {
-    if (hasPlayedToday("wordle")) {
-      const saved = localStorage.getItem("iwo_wordle_today");
-      if (saved) {
-        const { g, s, w } = JSON.parse(saved);
-        setGuesses(g);
-        setStates(s);
-        setGameOver(true);
-        setWon(w);
-      }
-    }
     setStats(getStats("wordle"));
   }, []);
 
@@ -110,12 +103,22 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
     if (isWin || isLoss) {
       setGameOver(true);
       setWon(isWin);
-      markPlayedToday("wordle");
       const newStats = isWin ? recordWin("wordle") : recordLoss("wordle");
       setStats(newStats);
-      localStorage.setItem("iwo_wordle_today", JSON.stringify({ g: newGuesses, s: newStates, w: isWin }));
       if (!isWin) setMessage(answer);
     }
+  }
+
+  function playAgain() {
+    setAnswer(getRandomWord());
+    setGuesses([]);
+    setStates([]);
+    setCurrent("");
+    setGameOver(false);
+    setWon(false);
+    setMessage("");
+    setShareMsg("");
+    setRoundNum((n) => n + 1);
   }
 
   function onKey(key: string) {
@@ -170,7 +173,7 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
       )}
 
       {/* Grid */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div key={roundNum} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {Array.from({ length: ROWS }).map((_, ri) => {
           const g = guesses[ri];
           const s = states[ri];
@@ -248,9 +251,14 @@ export default function WordleGame({ answer: answerProp }: WordleProps) {
           <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: won ? "var(--teal)" : "var(--rose)" }}>
             {won ? `Got it in ${guesses.length}!` : `The word was ${answer}`}
           </p>
-          <button onClick={handleShare} className="btn-paper" style={{ marginTop: 8, fontSize: 13 }}>
-            {shareMsg || "share result"}
-          </button>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+            <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13 }}>
+              {shareMsg || "share result"}
+            </button>
+            <button onClick={playAgain} className="btn-ghost" style={{ fontSize: 13 }}>
+              play again
+            </button>
+          </div>
         </div>
       )}
     </div>
