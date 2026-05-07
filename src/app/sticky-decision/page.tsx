@@ -209,7 +209,7 @@ export default function StickyDecisionPage() {
             <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", marginTop: 8 }}>Be the first to let strangers run your life.</p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 60, alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 44, alignItems: "center" }}>
             {decisions.map((decision, index) => (
               <BallotCard
                 key={decision.id}

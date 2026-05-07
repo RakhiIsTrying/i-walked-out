@@ -213,20 +213,20 @@ p { line-height: 1.6; }
   gap: 10px;
   padding: 14px 26px;
   font-family: 'Bungee', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   background: var(--rose);
   color: var(--paper-light);
-  border: 2.5px solid var(--ink);
-  border-radius: 8px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
   cursor: pointer;
-  box-shadow: 5px 5px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-.btn-chunky:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
-.btn-chunky:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
+.btn-chunky:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn-chunky:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .btn-chunky.alt { background: var(--teal); }
 .btn-chunky.butter { background: var(--butter); color: var(--ink); }
 

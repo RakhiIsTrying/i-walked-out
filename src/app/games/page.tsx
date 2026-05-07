@@ -151,7 +151,7 @@ export default function GamesPage() {
               fontSize: 13, letterSpacing: "0.1em", padding: "6px 16px",
               background: isToday ? "var(--ink)" : "var(--paper-deep)",
               color: isToday ? "var(--paper-light)" : "var(--ink)",
-              border: "2px solid var(--ink)", borderRadius: 2, cursor: "pointer",
+              border: "1.5px solid var(--ink)", borderRadius: 2, cursor: "pointer",
               minWidth: 160, textAlign: "center",
             }}
           >
@@ -205,8 +205,8 @@ export default function GamesPage() {
               const s = allStats[g.id];
               return (
                 <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 16 }}>{g.emoji}</span>
-                  <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--ink-faded)" }}>
+                  <span style={{ fontSize: 17 }}>{g.emoji}</span>
+                  <span className="typewriter" style={{ fontSize: 12, letterSpacing: "0.08em", color: "var(--ink-soft)" }}>
                     {s?.currentStreak || 0}
                   </span>
                   {(s?.currentStreak || 0) > 0 && <span style={{ fontSize: 12 }}>🔥</span>}
@@ -239,7 +239,7 @@ export default function GamesPage() {
                 padding: "10px 20px",
                 background: active === g.id ? "var(--ink)" : "transparent",
                 color: active === g.id ? "var(--paper-light)" : "var(--ink)",
-                border: `2px solid ${active === g.id ? "var(--ink)" : "var(--ink-faded)"}`,
+                border: `1.5px solid ${active === g.id ? "var(--ink)" : "var(--ink-faded)"}`,
                 fontSize: 12,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
@@ -264,7 +264,7 @@ export default function GamesPage() {
               padding: "10px 20px",
               background: active === "archive" ? "var(--ink)" : "transparent",
               color: active === "archive" ? "var(--paper-light)" : "var(--ink)",
-              border: `2px solid ${active === "archive" ? "var(--ink)" : "var(--ink-faded)"}`,
+              border: `1.5px solid ${active === "archive" ? "var(--ink)" : "var(--ink-faded)"}`,
               fontSize: 12,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
@@ -282,7 +282,7 @@ export default function GamesPage() {
               padding: "10px 20px",
               background: active === "leaderboard" ? "var(--ink)" : "transparent",
               color: active === "leaderboard" ? "var(--paper-light)" : "var(--ink)",
-              border: `2px solid ${active === "leaderboard" ? "var(--ink)" : "var(--ink-faded)"}`,
+              border: `1.5px solid ${active === "leaderboard" ? "var(--ink)" : "var(--ink-faded)"}`,
               fontSize: 12,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
