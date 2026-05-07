@@ -1,23 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PersonalityProfile } from "@/lib/types";
-
-const traitKeys: { key: string; label: string }[] = [
-  { key: "openness", label: "Openness" },
-  { key: "conscientiousness", label: "Conscientiousness" },
-  { key: "extraversion", label: "Extraversion" },
-  { key: "agreeableness", label: "Agreeableness" },
-  { key: "neuroticism", label: "Neuroticism" },
-  { key: "risk_tolerance", label: "Risk Tolerance" },
-];
-
-function traitColor(value: number): string {
-  if (value >= 70) return "var(--teal)";
-  if (value >= 40) return "var(--rose)";
-  return "var(--butter)";
-}
+import PersonalityChat from "@/components/personality/PersonalityChat";
+import TraitBars from "@/components/personality/TraitBars";
+import TagsGrid from "@/components/personality/TagsGrid";
 
 export default function PersonalityPage() {
   const [profile, setProfile] = useState<PersonalityProfile | null>(null);
@@ -25,20 +13,9 @@ export default function PersonalityPage() {
   const [generating, setGenerating] = useState(false);
   const [dreamCount, setDreamCount] = useState(0);
 
-  const [chatMessages, setChatMessages] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     loadPersonality();
   }, []);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages, chatLoading]);
 
   async function loadPersonality() {
     const supabase = createClient();
@@ -75,35 +52,6 @@ export default function PersonalityPage() {
     setGenerating(false);
   }
 
-  async function sendChat() {
-    if (!chatInput.trim() || !profile) return;
-
-    const userMsg = chatInput;
-    setChatInput("");
-    setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
-    setChatLoading(true);
-
-    const res = await fetch("/api/personality", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: userMsg,
-        personality: profile,
-        history: chatMessages,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.response },
-      ]);
-    }
-    setChatLoading(false);
-  }
-
-  /* ── Loading state ── */
   if (loading) {
     return (
       <div className="page-in" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
@@ -114,12 +62,10 @@ export default function PersonalityPage() {
     );
   }
 
-  /* dreamCount < 3 no longer blocks the page — chat works without personality */
-
   return (
     <div className="page-in" style={{ maxWidth: 860, margin: "0 auto", padding: "48px 20px 80px" }}>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <header style={{ textAlign: "center", marginBottom: 40 }}>
         {profile ? (
           <>
@@ -128,23 +74,11 @@ export default function PersonalityPage() {
             </p>
             <h1
               className="serif"
-              style={{
-                fontSize: 52,
-                fontStyle: "italic",
-                fontWeight: 400,
-                color: "var(--rose)",
-                lineHeight: 1.1,
-                margin: "0 0 20px",
-              }}
+              style={{ fontSize: 52, fontStyle: "italic", fontWeight: 400, color: "var(--rose)", lineHeight: 1.1, margin: "0 0 20px" }}
             >
               {profile.archetype}
             </h1>
-            <button
-              onClick={generatePersonality}
-              disabled={generating}
-              className="btn-ghost"
-              style={{ fontSize: 13, padding: "8px 18px" }}
-            >
+            <button onClick={generatePersonality} disabled={generating} className="btn-ghost" style={{ fontSize: 13, padding: "8px 18px" }}>
               {generating ? "regenerating..." : "regenerate"}
             </button>
           </>
@@ -155,14 +89,7 @@ export default function PersonalityPage() {
             </p>
             <h1
               className="serif"
-              style={{
-                fontSize: 42,
-                fontStyle: "italic",
-                fontWeight: 400,
-                color: "var(--ink)",
-                lineHeight: 1.1,
-                margin: "0 0 20px",
-              }}
+              style={{ fontSize: 42, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", lineHeight: 1.1, margin: "0 0 20px" }}
             >
               Talk to your future self.
             </h1>
@@ -173,11 +100,8 @@ export default function PersonalityPage() {
       {profile ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
-          {/* ── Summary Card ── */}
-          <div
-            className="paper"
-            style={{ borderRadius: 3, padding: "36px 28px 28px", position: "relative" }}
-          >
+          {/* Summary */}
+          <div className="paper" style={{ borderRadius: 3, padding: "36px 28px 28px", position: "relative" }}>
             <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
               Personality Summary
             </p>
@@ -186,64 +110,16 @@ export default function PersonalityPage() {
             </p>
           </div>
 
-          {/* ── Trait Bars ── */}
-          <section>
-            <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20, textAlign: "center" }}>
-              Personality Traits
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {traitKeys.map(({ key, label }) => {
-                const value = profile.traits[key as keyof typeof profile.traits] as number;
-                const barColor = traitColor(value);
-                return (
-                  <div
-                    key={key}
-                    style={{
-                      background: "var(--paper-light)",
-                      padding: "16px 20px",
-                      borderRadius: 3,
-                      border: "1px dashed var(--ink-faded)",
-                      position: "relative",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-                      <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-soft)" }}>
-                        {label}
-                      </span>
-                      <span className="hand" style={{ fontSize: 22, color: barColor, fontWeight: 600 }}>
-                        {value}%
-                      </span>
-                    </div>
-                    <div style={{ height: 8, background: "var(--paper-deep)", borderRadius: 4, overflow: "hidden" }}>
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${value}%`,
-                          background: barColor,
-                          borderRadius: 4,
-                          transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <TraitBars profile={profile} />
 
-          {/* ── Decision Style ── */}
+          {/* Decision Style */}
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               className="typewriter"
               style={{
-                fontSize: 12,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                padding: "14px 28px",
-                border: "2px solid var(--ink)",
-                borderRadius: 2,
-                color: "var(--ink)",
-                textAlign: "center",
+                fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase",
+                padding: "14px 28px", border: "2px solid var(--ink)", borderRadius: 2,
+                color: "var(--ink)", textAlign: "center",
               }}
             >
               <span style={{ display: "block", fontSize: 9, color: "var(--ink-faded)", marginBottom: 4, letterSpacing: "0.2em" }}>
@@ -253,307 +129,25 @@ export default function PersonalityPage() {
             </div>
           </div>
 
-          {/* ── Tags Section ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
-            {/* Core Values */}
-            <div
-              className="paper"
-              style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
-            >
-              <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
-                Core Values
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {profile.traits.core_values.map((v) => (
-                  <span key={v} className="stamp" style={{ color: "var(--teal)" }}>
-                    {v}
-                  </span>
-                ))}
-              </div>
-            </div>
+          <TagsGrid profile={profile} />
 
-            {/* Fear Patterns */}
-            <div
-              className="paper"
-              style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
-            >
-              <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
-                Fear Patterns
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {profile.traits.fear_patterns.map((f) => (
-                  <span key={f} className="stamp" style={{ color: "var(--rose)" }}>
-                    {f}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Aspiration Themes */}
-            <div
-              className="paper"
-              style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
-            >
-              <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
-                Aspiration Themes
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {profile.traits.aspiration_themes.map((a) => (
-                  <span key={a} className="stamp" style={{ color: "var(--butter)" }}>
-                    {a}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ── Future Self Chat ── */}
-          <section
-            className="paper"
-            style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
-          >
-            {/* Chat header */}
-            <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
-              <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
-                Chat with your Future Self
-              </p>
-              <p style={{ fontSize: 13, color: "var(--ink-faded)" }}>
-                Ask about decisions, regrets, or anything on your mind
-              </p>
-            </div>
-
-            {/* Chat messages */}
-            <div
-              style={{ maxHeight: 450, minHeight: 180, overflowY: "auto", padding: 24 }}
-            >
-              {chatMessages.length === 0 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 140 }}>
-                  <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", opacity: 0.5, textAlign: "center" }}>
-                    Your future self is waiting...
-                    <br />
-                    Ask anything about your decisions.
-                  </p>
-                </div>
-              )}
-
-              {chatMessages.map((msg, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                    marginBottom: 16,
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: "75%",
-                      padding: "14px 18px",
-                      borderRadius: 3,
-                      position: "relative",
-                      ...(msg.role === "user"
-                        ? {
-                            background: "var(--paper-deep)",
-                            border: "1px dashed var(--ink-faded)",
-                            transform: "none",
-                            fontFamily: "'Caveat', cursive",
-                            fontSize: 19,
-                            lineHeight: 1.4,
-                            color: "var(--ink-soft)",
-                          }
-                        : {
-                            background: "var(--paper-light)",
-                            border: "1px solid var(--ink-faded)",
-                            borderLeft: "3px solid var(--teal)",
-                            transform: "none",
-                            fontSize: 14,
-                            lineHeight: 1.6,
-                            color: "var(--ink-soft)",
-                          }),
-                    }}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-
-              {chatLoading && (
-                <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
-                  <div
-                    style={{
-                      padding: "14px 18px",
-                      background: "var(--paper-light)",
-                      border: "1px solid var(--ink-faded)",
-                      borderLeft: "3px solid var(--teal)",
-                      borderRadius: 3,
-                      transform: "none",
-                    }}
-                  >
-                    <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
-                      analyzing...
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Chat input */}
-            <div style={{ borderTop: "1.5px dashed var(--ink-faded)", padding: 16 }}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendChat();
-                }}
-                style={{ display: "flex", gap: 12 }}
-              >
-                <input
-                  type="text"
-                  placeholder="Ask your future self..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  className="hand"
-                  style={{ flex: 1, fontSize: 18 }}
-                />
-                <button
-                  type="submit"
-                  disabled={chatLoading || !chatInput.trim()}
-                  className="btn-paper"
-                  style={{ padding: "10px 20px", fontSize: 14 }}
-                >
-                  send &rarr;
-                </button>
-              </form>
-            </div>
-          </section>
+          <PersonalityChat
+            profile={profile}
+            emptyText={"Your future self is waiting...\nAsk anything about your decisions."}
+            subtitle="Ask about decisions, regrets, or anything on your mind"
+          />
         </div>
       ) : (
-        /* ── No profile yet — show chat + optional analysis ── */
         <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
-          {/* ── Future Self Chat (works without personality) ── */}
-          <section
-            className="paper"
-            style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
-          >
-            <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
-              <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
-                Chat with your Future Self
-              </p>
-              <p style={{ fontSize: 13, color: "var(--ink-faded)" }}>
-                Just talk. No analysis required.
-              </p>
-            </div>
+          <PersonalityChat
+            profile={null}
+            emptyText="Say something. Your future self is listening."
+            subtitle="Just talk. No analysis required."
+          />
 
-            <div
-              style={{ maxHeight: 450, minHeight: 180, overflowY: "auto", padding: 24 }}
-            >
-              {chatMessages.length === 0 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 140 }}>
-                  <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", opacity: 0.5, textAlign: "center" }}>
-                    Say something. Your future self is listening.
-                  </p>
-                </div>
-              )}
-
-              {chatMessages.map((msg, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                    marginBottom: 16,
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: "75%",
-                      padding: "14px 18px",
-                      borderRadius: 3,
-                      position: "relative",
-                      ...(msg.role === "user"
-                        ? {
-                            background: "var(--paper-deep)",
-                            border: "1px dashed var(--ink-faded)",
-                            transform: "none",
-                            fontFamily: "'Caveat', cursive",
-                            fontSize: 19,
-                            lineHeight: 1.4,
-                            color: "var(--ink-soft)",
-                          }
-                        : {
-                            background: "var(--paper-light)",
-                            border: "1px solid var(--ink-faded)",
-                            borderLeft: "3px solid var(--teal)",
-                            transform: "none",
-                            fontSize: 14,
-                            lineHeight: 1.6,
-                            color: "var(--ink-soft)",
-                          }),
-                    }}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-
-              {chatLoading && (
-                <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
-                  <div
-                    style={{
-                      padding: "14px 18px",
-                      background: "var(--paper-light)",
-                      border: "1px solid var(--ink-faded)",
-                      borderLeft: "3px solid var(--teal)",
-                      borderRadius: 3,
-                      transform: "none",
-                    }}
-                  >
-                    <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
-                      thinking...
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <div ref={chatEndRef} />
-            </div>
-
-            <div style={{ borderTop: "1.5px dashed var(--ink-faded)", padding: 16 }}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendChat();
-                }}
-                style={{ display: "flex", gap: 12 }}
-              >
-                <input
-                  type="text"
-                  placeholder="Ask your future self..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  className="hand"
-                  style={{ flex: 1, fontSize: 18 }}
-                />
-                <button
-                  type="submit"
-                  disabled={chatLoading || !chatInput.trim()}
-                  className="btn-paper"
-                  style={{ padding: "10px 20px", fontSize: 14 }}
-                >
-                  send &rarr;
-                </button>
-              </form>
-            </div>
-          </section>
-
-          {/* ── Optional personality analysis ── */}
           {dreamCount >= 3 ? (
-            <div
-              className="paper"
-              style={{ borderRadius: 3, padding: "28px 24px", position: "relative", textAlign: "center" }}
-            >
+            <div className="paper" style={{ borderRadius: 3, padding: "28px 24px", position: "relative", textAlign: "center" }}>
               <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
                 optional · {dreamCount} dreams logged
               </p>
@@ -563,12 +157,7 @@ export default function PersonalityPage() {
               <p style={{ fontSize: 14, color: "var(--ink-faded)", lineHeight: 1.5, maxWidth: 420, margin: "0 auto 20px" }}>
                 Run a personality analysis on your dead dreams. Your future self will know your patterns, fears, and values — and talk like someone who actually knows you.
               </p>
-              <button
-                onClick={generatePersonality}
-                disabled={generating}
-                className="btn-paper"
-                style={{ fontSize: 15, padding: "12px 28px" }}
-              >
+              <button onClick={generatePersonality} disabled={generating} className="btn-paper" style={{ fontSize: 15, padding: "12px 28px" }}>
                 {generating ? "analyzing..." : "analyze my patterns"}
               </button>
             </div>
