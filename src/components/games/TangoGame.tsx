@@ -202,7 +202,7 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
   const violations = checkViolations(grid);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: "100%", overflow: "hidden" }}>
       {/* Rules */}
       <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-faded)", textAlign: "center", maxWidth: 340, lineHeight: 1.6 }}>
         Fill each cell with ☀️ or 🌙. No 3 in a row. Each row/col needs exactly 3 of each.
@@ -214,7 +214,7 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
       </div>
 
       {/* Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${SIZE}, 1fr)`, gap: 4, width: "fit-content" }}>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${SIZE}, 1fr)`, gap: 4, width: "min(100%, 340px)" }}>
         {grid.map((row, ri) =>
           row.map((cell, ci) => {
             const isGiven = given[ri]?.[ci];
@@ -225,7 +225,7 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
                 onClick={() => toggleCell(ri, ci)}
                 disabled={isGiven || gameOver}
                 style={{
-                  width: 52, height: 52,
+                  width: "100%", aspectRatio: "1",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 24,
                   background: hasViolation ? "rgba(210, 70, 70, 0.1)" :

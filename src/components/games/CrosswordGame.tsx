@@ -297,9 +297,12 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
     activeClueNum = numbers[wr]?.[wc] ?? null;
   }
 
-  const cellSize = size <= 5 ? 52 : size <= 7 ? 42 : size <= 9 ? 36 : size <= 12 ? 30 : 28;
-  const letterSize = size <= 5 ? 22 : size <= 7 ? 18 : size <= 9 ? 15 : 12;
-  const numSize = size <= 5 ? 8 : size <= 9 ? 7 : 6;
+  const isMobileView = typeof window !== "undefined" && window.innerWidth < 600;
+  const maxGrid = isMobileView ? window.innerWidth - 64 : 999;
+  const desktopCell = size <= 5 ? 52 : size <= 7 ? 42 : size <= 9 ? 36 : size <= 12 ? 30 : 28;
+  const cellSize = Math.min(desktopCell, Math.floor(maxGrid / size));
+  const letterSize = cellSize >= 42 ? 22 : cellSize >= 32 ? 18 : cellSize >= 26 ? 15 : 12;
+  const numSize = cellSize >= 42 ? 8 : cellSize >= 30 ? 7 : 6;
 
   return (
     <div
@@ -437,8 +440,9 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
             display: "flex",
             flexDirection: "column",
             gap: 14,
-            minWidth: 200,
-            maxWidth: 280,
+            minWidth: 0,
+            maxWidth: isMobileView ? "100%" : 280,
+            width: isMobileView ? "100%" : undefined,
             maxHeight: size * cellSize + 6,
             overflowY: "auto",
           }}

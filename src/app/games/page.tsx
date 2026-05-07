@@ -118,8 +118,8 @@ export default function GamesPage() {
   const isGameActive = (id: string) => active === id;
 
   return (
-    <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+    <div className="page-in" style={{ padding: "20px clamp(12px, 4vw, 48px) 40px", overflow: "hidden" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", overflow: "hidden" }}>
 
         {/* Header row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
@@ -291,10 +291,13 @@ export default function GamesPage() {
             className="paper page-in"
             key={`${playDate}-${active}`}
             style={{
-              padding: "28px 24px 36px",
+              padding: "28px clamp(12px, 3vw, 24px) 36px",
               position: "relative",
               minHeight: 460,
               background: "var(--paper-light)",
+              overflow: "hidden",
+              maxWidth: "100%",
+              boxSizing: "border-box",
             }}
           >
             <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20 }}>

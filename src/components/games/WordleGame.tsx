@@ -225,6 +225,14 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
 
   const kc = keyColors();
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 600);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   function focusMobileInput() {
     mobileInputRef.current?.focus();
@@ -244,10 +252,11 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: "100%", overflow: "hidden" }}>
       <input
         ref={mobileInputRef}
         type="text"
+        inputMode={isMobile ? "text" : "none"}
         autoComplete="off"
         autoCapitalize="none"
         autoCorrect="off"
@@ -281,15 +290,16 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       )}
 
       {/* Grid */}
-      <div key={roundNum} onClick={focusMobileInput} style={{ display: "flex", flexDirection: "column", gap: 6, cursor: "pointer" }}>
+      <div key={roundNum} onClick={focusMobileInput} style={{ display: "flex", flexDirection: "column", gap: isMobile ? 4 : 6, cursor: "pointer", maxWidth: "100%" }}>
         {Array.from({ length: ROWS }).map((_, ri) => {
           const g = guesses[ri];
           const s = states[ri];
           const isCurrent = ri === guesses.length && !gameOver;
+          const cellPx = isMobile ? 44 : 52;
           return (
             <div
               key={ri}
-              style={{ display: "flex", gap: 6, animation: isCurrent && shake ? "wiggle 0.3s" : undefined }}
+              style={{ display: "flex", gap: isMobile ? 4 : 6, justifyContent: "center", animation: isCurrent && shake ? "wiggle 0.3s" : undefined }}
             >
               {Array.from({ length: COLS }).map((_, ci) => {
                 const letter = g ? g[ci] : isCurrent ? current[ci] || "" : "";
@@ -299,11 +309,11 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
                     key={ci}
                     className="pop-in"
                     style={{
-                      width: 52, height: 52,
+                      width: cellPx, height: cellPx,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       background: cellBg(state),
                       border: state === "empty" ? "2px solid var(--ink-faded)" : "2px solid transparent",
-                      fontSize: 24, fontWeight: 700,
+                      fontSize: isMobile ? 20 : 24, fontWeight: 700,
                       fontFamily: "'Bungee', system-ui",
                       color: cellColor(state),
                       transition: "all 0.3s",
@@ -319,39 +329,54 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
         })}
       </div>
 
-      {/* Keyboard */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
-        {KEYBOARD_ROWS.map((row, ri) => (
-          <div key={ri} style={{ display: "flex", gap: 4, justifyContent: "center" }}>
-            {row.map((key) => {
-              const state = kc[key];
-              const isWide = key === "ENTER" || key === "⌫";
-              return (
-                <button
-                  key={key}
-                  onClick={() => onKey(key)}
-                  className="typewriter"
-                  style={{
-                    minWidth: isWide ? 56 : 34, height: 44,
-                    padding: "0 6px",
-                    fontSize: isWide ? 11 : 14,
-                    fontWeight: 700,
-                    background: state === "correct" ? "var(--teal)" : state === "present" ? "var(--butter)" : state === "absent" ? "var(--ink-faded)" : "var(--paper-deep)",
-                    color: state && state !== "empty" ? "#fff" : "var(--ink)",
-                    border: "2px solid var(--ink)",
-                    cursor: "pointer",
-                    borderRadius: 2,
-                    transition: "all 0.2s",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {key}
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      {/* Keyboard — hidden on mobile */}
+      {!isMobile && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+          {KEYBOARD_ROWS.map((row, ri) => (
+            <div key={ri} style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+              {row.map((key) => {
+                const state = kc[key];
+                const isWide = key === "ENTER" || key === "⌫";
+                return (
+                  <button
+                    key={key}
+                    onClick={() => onKey(key)}
+                    className="typewriter"
+                    style={{
+                      minWidth: isWide ? 56 : 34, height: 44,
+                      padding: "0 6px",
+                      fontSize: isWide ? 11 : 14,
+                      fontWeight: 700,
+                      background: state === "correct" ? "var(--teal)" : state === "present" ? "var(--butter)" : state === "absent" ? "var(--ink-faded)" : "var(--paper-deep)",
+                      color: state && state !== "empty" ? "#fff" : "var(--ink)",
+                      border: "2px solid var(--ink)",
+                      cursor: "pointer",
+                      borderRadius: 2,
+                      transition: "all 0.2s",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    {key}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+      {isMobile && !gameOver && (
+        <button
+          onClick={focusMobileInput}
+          className="typewriter"
+          style={{
+            fontSize: 12, letterSpacing: "0.12em", color: "var(--teal)",
+            background: "rgba(42, 95, 214, 0.08)", border: "1.5px dashed var(--teal)",
+            borderRadius: 2, padding: "10px 20px", cursor: "pointer", marginTop: 4,
+          }}
+        >
+          tap to type
+        </button>
+      )}
 
       {/* End state */}
       {gameOver && (

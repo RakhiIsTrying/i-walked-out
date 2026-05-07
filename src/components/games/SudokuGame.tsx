@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { getDayNumber, getDailyRng, seededShuffle, getStats, recordWin, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
 import { saveGameResult } from "@/lib/archive";
 
@@ -173,8 +173,13 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
     );
   }
 
+  const cellPx = useMemo(() => {
+    if (typeof window === "undefined") return 38;
+    return window.innerWidth < 600 ? Math.floor((window.innerWidth - 64) / 9) : 38;
+  }, []);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: "100%", overflow: "hidden" }}>
       <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.1em", color: "var(--ink-faded)" }}>
         {formatTime(timer)}
       </div>
@@ -183,8 +188,8 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(9, 38px)",
-          gridTemplateRows: "repeat(9, 38px)",
+          gridTemplateColumns: `repeat(9, ${cellPx}px)`,
+          gridTemplateRows: `repeat(9, ${cellPx}px)`,
           gap: 0,
           border: "3px solid var(--ink)",
         }}
@@ -199,7 +204,7 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
                 key={`${ri}-${ci}`}
                 onClick={() => setSelected([ri, ci])}
                 style={{
-                  width: 38, height: 38,
+                  width: cellPx, height: cellPx,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 17,
                   fontWeight: isGiven ? 700 : 600,
@@ -222,15 +227,15 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
       </div>
 
       {/* Number pad */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: cellPx < 34 ? 4 : 6, flexWrap: "wrap", justifyContent: "center" }}>
         {[1,2,3,4,5,6,7,8,9].map((n) => (
           <button
             key={n}
             onClick={() => placeNumber(n)}
             disabled={gameOver}
             style={{
-              width: 38, height: 38,
-              fontSize: 18, fontWeight: 700,
+              width: cellPx, height: cellPx,
+              fontSize: cellPx < 34 ? 14 : 18, fontWeight: 700,
               fontFamily: "'Bungee', system-ui",
               background: "var(--paper-deep)",
               border: "2px solid var(--ink)",
@@ -247,7 +252,7 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
           disabled={gameOver}
           className="typewriter"
           style={{
-            width: 38, height: 38,
+            width: cellPx, height: cellPx,
             fontSize: 11, fontWeight: 700,
             background: "var(--paper-deep)",
             border: "2px solid var(--ink-faded)",
