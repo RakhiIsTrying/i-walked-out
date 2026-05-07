@@ -170,7 +170,7 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         style={{
           display: "flex",
           flexWrap: "wrap",
-          gap: 6,
+          gap: 5,
           marginBottom: 12,
         }}
       >
@@ -186,29 +186,33 @@ export default function DreamCard({ dream }: { dream: Dream }) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 3,
-                padding: "3px 8px",
-                fontSize: 12,
+                gap: 4,
+                padding: "4px 10px",
+                fontSize: 13,
                 background: isActive
-                  ? "rgba(0,0,0,0.08)"
+                  ? "rgba(0,0,0,0.09)"
                   : "rgba(0,0,0,0.03)",
                 border: isActive
                   ? "1.5px solid var(--ink-faded)"
-                  : "1px solid transparent",
+                  : "1.5px solid rgba(0,0,0,0.06)",
                 borderRadius: 20,
                 cursor: "pointer",
-                opacity: isActive ? 1 : 0.7,
+                opacity: isActive ? 1 : 0.85,
                 transition: "all 0.2s ease",
-                transform: isAnimating ? "scale(1.3)" : "scale(1)",
+                transform: isAnimating ? "scale(1.2)" : "scale(1)",
               }}
             >
-              <span style={{ fontSize: 14 }}>{r.emoji}</span>
-              {count > 0 && (
+              <span style={{ fontSize: 16, lineHeight: 1 }}>{r.emoji}</span>
+              {(count > 0 || isActive) && (
                 <span
                   className="typewriter"
-                  style={{ fontSize: 9, color: "var(--ink-faded)" }}
+                  style={{
+                    fontSize: 10,
+                    color: isActive ? "var(--ink-soft)" : "var(--ink-faded)",
+                    fontWeight: isActive ? 600 : 400,
+                  }}
                 >
-                  {count}
+                  {count || ""}
                 </span>
               )}
             </button>
@@ -236,7 +240,7 @@ export default function DreamCard({ dream }: { dream: Dream }) {
           {totalReactions > 0 && (
             <span
               className="typewriter"
-              style={{ fontSize: 9, color: "var(--ink-faded)", opacity: 0.6 }}
+              style={{ fontSize: 10, color: "var(--ink-faded)" }}
             >
               {totalReactions} react{totalReactions !== 1 ? "s" : ""}
             </span>

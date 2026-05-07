@@ -99,7 +99,7 @@ export default function FeedPage() {
   return (
     <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div className="feed-header-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 40, alignItems: "start", marginBottom: 30 }}>
+        <div className="feed-header-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 32, alignItems: "start", marginBottom: 24 }}>
           {/* Header */}
           <div>
             <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>

@@ -58,7 +58,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
           i walked out
         </Link>
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-5 lg:gap-6 md:flex">
           {links.map(({ href, label }) => (
             <Link
               key={href}
@@ -73,7 +73,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
-              <span className="typewriter text-xs" style={{ color: "var(--ink-faded)", letterSpacing: "0.05em" }}>
+              <span className="typewriter text-xs" style={{ color: "var(--ink-faded)", letterSpacing: "0.05em", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user.email}
               </span>
               <button

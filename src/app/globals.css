@@ -269,7 +269,7 @@ p { line-height: 1.6; }
 /* Nav link */
 .nav-link {
   font-family: 'Fraunces', serif;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--ink);
   text-decoration: none;
   padding: 6px 0;
@@ -278,6 +278,7 @@ p { line-height: 1.6; }
   cursor: pointer;
   background: none;
   border-top: none; border-left: none; border-right: none;
+  white-space: nowrap;
 }
 .nav-link:hover { border-bottom-color: var(--ink); }
 .nav-link.active { border-bottom-color: var(--rose); color: var(--ink); }
@@ -293,31 +294,33 @@ p { line-height: 1.6; }
   z-index: 10;
 }
 
-/* Form inputs */
-input,
-textarea,
-select {
-  background: var(--paper-light);
-  border: 1px dashed var(--ink-faded);
-  color: var(--ink-soft);
-  border-radius: 2px;
-  padding: 0.75rem 1rem;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  font-size: 1rem;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--teal);
-  border-style: solid;
-  box-shadow: 0 0 0 3px rgba(42, 95, 214, 0.12);
-}
-input::placeholder,
-textarea::placeholder {
-  color: var(--ink-faded);
-  opacity: 0.7;
+/* Form inputs — in base layer so Tailwind utilities can override */
+@layer base {
+  input,
+  textarea,
+  select {
+    background: var(--paper-light);
+    border: 1px dashed var(--ink-faded);
+    color: var(--ink-soft);
+    border-radius: 2px;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-size: 1rem;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--teal);
+    border-style: solid;
+    box-shadow: 0 0 0 3px rgba(42, 95, 214, 0.12);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-faded);
+    opacity: 0.7;
+  }
 }
 
 /* Scrollbar */
