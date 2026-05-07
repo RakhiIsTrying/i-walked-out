@@ -116,8 +116,7 @@ export default function FeedPage() {
           {/* Compose card */}
           <form
             onSubmit={handleCompose}
-            className="paper"
-            style={{ padding: 26, background: "#faf3df", position: "relative" }}
+            style={{ padding: 26, background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)", borderRadius: 4, position: "relative" }}
           >
             <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
               pin a new one
@@ -175,15 +174,15 @@ export default function FeedPage() {
               onClick={() => setFilter(t.value)}
               className="typewriter"
               style={{
-                padding: "6px 14px",
+                padding: "6px 16px",
                 background: filter === t.value ? "var(--ink)" : "transparent",
-                color: filter === t.value ? "var(--paper-light)" : "var(--ink)",
-                border: `1.5px solid ${filter === t.value ? "var(--ink)" : "var(--ink-faded)"}`,
-                fontSize: 12,
+                color: filter === t.value ? "var(--paper-light)" : "var(--ink-soft)",
+                border: filter === t.value ? "1.5px solid var(--ink)" : "1px solid rgba(106,112,140,0.2)",
+                fontSize: 11,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 cursor: "pointer",
-                borderRadius: 2,
+                borderRadius: 20,
                 transition: "all 0.2s ease",
               }}
             >

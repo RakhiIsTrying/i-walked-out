@@ -147,22 +147,52 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="page-in" style={{ maxWidth: 860, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <div className="page-in" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px 80px" }}>
 
-      {/* ── Welcome Section ── */}
-      <header style={{ marginBottom: 48 }}>
-        <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 6 }}>
-          your graveyard
-        </p>
-        <h1 className="serif" style={{ fontSize: 42, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", margin: "0 0 8px" }}>
-          Welcome back.
-        </h1>
-        <p className="hand" style={{ fontSize: 22, color: "var(--ink-faded)" }}>
-          {dreamCount} dream{dreamCount !== 1 ? "s" : ""} laid to rest
-        </p>
+      {/* ── Welcome + Stats ── */}
+      <header style={{ marginBottom: 40 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: 24, marginBottom: 28 }}>
+          <div>
+            <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 8 }}>
+              your graveyard
+            </p>
+            <h1 className="serif" style={{ fontSize: "clamp(32px, 5vw, 48px)", fontStyle: "italic", fontWeight: 400, color: "var(--ink)", margin: 0, lineHeight: 1.1 }}>
+              Welcome back.
+            </h1>
+          </div>
+
+          {/* Stats capsules */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={{
+              background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)",
+              borderRadius: 4, padding: "12px 20px", textAlign: "center", minWidth: 90,
+            }}>
+              <div className="serif" style={{ fontSize: 28, fontWeight: 500, color: "var(--ink)", lineHeight: 1 }}>{dreamCount}</div>
+              <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 4, textTransform: "uppercase" }}>dreams</div>
+            </div>
+            <div style={{
+              background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)",
+              borderRadius: 4, padding: "12px 20px", textAlign: "center", minWidth: 90,
+            }}>
+              <div className="serif" style={{ fontSize: 28, fontWeight: 500, color: personalityReady ? "var(--teal)" : "var(--ink-faded)", lineHeight: 1 }}>
+                {personalityReady ? "Yes" : "No"}
+              </div>
+              <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 4, textTransform: "uppercase" }}>profile</div>
+            </div>
+            <div style={{
+              background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)",
+              borderRadius: 4, padding: "12px 20px", textAlign: "center", minWidth: 90,
+            }}>
+              <div className="serif" style={{ fontSize: 28, fontWeight: 500, color: telegramLinked ? "var(--teal)" : "var(--ink-faded)", lineHeight: 1 }}>
+                {telegramLinked ? "On" : "Off"}
+              </div>
+              <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 4, textTransform: "uppercase" }}>telegram</div>
+            </div>
+          </div>
+        </div>
 
         {/* Action row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 24, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <button
             onClick={() => setShowForm(!showForm)}
             className="btn-paper"
@@ -291,86 +321,91 @@ export default function DashboardPage() {
 
       {/* ── Telegram Section ── */}
       <section
-        className="paper"
-        style={{ borderRadius: 3, padding: "28px 24px", marginBottom: 48, position: "relative" }}
+        style={{
+          borderRadius: 4, padding: "20px 24px", marginBottom: 48,
+          background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)",
+        }}
       >
-        <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 6 }}>
-          Telegram Bot
-        </p>
-
         {telegramLinked ? (
-          <div>
-            <p className="hand" style={{ fontSize: 20, color: "var(--teal)", marginBottom: 4 }}>
-              Connected{telegramUsername ? ` as @${telegramUsername}` : ""}
-            </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%", background: "rgba(42,95,214,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0,
+              }}>
+                T
+              </div>
+              <div>
+                <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", margin: 0 }}>
+                  Telegram Bot
+                </p>
+                <p className="serif" style={{ fontSize: 16, color: "var(--teal)", margin: 0 }}>
+                  Connected{telegramUsername ? ` as @${telegramUsername}` : ""}
+                </p>
+              </div>
+            </div>
             <button
               onClick={unlinkTelegram}
-              className="btn-ghost"
-              style={{ fontSize: 13, padding: "8px 16px", marginTop: 12, color: "var(--rose)", borderColor: "var(--rose)" }}
+              className="typewriter"
+              style={{ fontSize: 11, padding: "6px 14px", color: "var(--rose)", background: "none", border: "1px solid var(--rose)", borderRadius: 2, cursor: "pointer", letterSpacing: "0.08em" }}
             >
               disconnect
             </button>
           </div>
         ) : (
           <div>
-            <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 16 }}>
-              Your Telegram code connects this account to the bot. One email, one code, one connection.
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%", background: "rgba(106,112,140,0.08)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0,
+              }}>
+                T
+              </div>
+              <div>
+                <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", margin: 0 }}>
+                  Telegram Bot
+                </p>
+                <p style={{ fontSize: 14, color: "var(--ink-soft)", margin: 0 }}>
+                  Connect to log dreams from Telegram
+                </p>
+              </div>
+            </div>
 
             {linkCode ? (
-              <div className="page-in">
-                <p style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 8 }}>
-                  1. Open <strong>@IWalkedOutBot</strong> on Telegram
+              <div className="page-in" style={{ padding: "16px 20px", background: "var(--paper-deep)", borderRadius: 3, marginTop: 8 }}>
+                <p style={{ fontSize: 13, color: "var(--ink-soft)", margin: "0 0 10px" }}>
+                  Open <strong>@IWalkedOutBot</strong> on Telegram and send:
                 </p>
-                <p style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 12 }}>
-                  2. Send this command:
-                </p>
-
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <code
                     className="typewriter"
                     style={{
-                      fontSize: 20,
-                      letterSpacing: "0.08em",
-                      color: "var(--teal)",
-                      background: "var(--paper-deep)",
-                      padding: "12px 18px",
-                      borderRadius: 2,
-                      border: "1px dashed var(--ink-faded)",
-                      flex: 1,
+                      fontSize: 18, letterSpacing: "0.08em", color: "var(--teal)",
+                      background: "var(--paper-light)", padding: "10px 16px",
+                      borderRadius: 2, border: "1px solid rgba(106,112,140,0.15)", flex: 1,
                     }}
                   >
                     /link {linkCode}
                   </code>
-                  <button
-                    onClick={copyCode}
-                    className="btn-ghost"
-                    style={{ padding: "10px 16px", fontSize: 13 }}
-                  >
+                  <button onClick={copyCode} className="btn-ghost" style={{ padding: "8px 14px", fontSize: 12 }}>
                     {codeCopied ? "copied!" : "copy"}
                   </button>
                 </div>
-
-                <p className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", marginTop: 10, letterSpacing: "0.1em" }}>
-                  This is your unique code. If expired, generate a new one below.
-                </p>
-
-                <button
-                  onClick={generateLinkCode}
-                  disabled={telegramLoading}
-                  className="btn-ghost"
-                  style={{ fontSize: 12, padding: "6px 14px", marginTop: 12 }}
-                >
-                  {telegramLoading ? "..." : "regenerate code"}
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 10 }}>
+                  <p className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", margin: 0, letterSpacing: "0.1em" }}>
+                    code expired?
+                  </p>
+                  <button
+                    onClick={generateLinkCode} disabled={telegramLoading}
+                    className="typewriter"
+                    style={{ fontSize: 10, padding: "4px 10px", color: "var(--teal)", background: "none", border: "1px dashed var(--teal)", borderRadius: 2, cursor: "pointer" }}
+                  >
+                    {telegramLoading ? "..." : "regenerate"}
+                  </button>
+                </div>
               </div>
             ) : (
-              <button
-                onClick={generateLinkCode}
-                disabled={telegramLoading}
-                className="btn-paper"
-                style={{ fontSize: 14 }}
-              >
+              <button onClick={generateLinkCode} disabled={telegramLoading} className="btn-paper" style={{ fontSize: 13 }}>
                 {telegramLoading ? "generating..." : "generate link code"}
               </button>
             )}
@@ -379,28 +414,30 @@ export default function DashboardPage() {
       </section>
 
       {/* ── Dream List ── */}
+      {!loading && dreams.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+          <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", margin: 0, whiteSpace: "nowrap" }}>
+            your dreams ({dreams.length})
+          </p>
+          <div style={{ flex: 1, height: 1, background: "rgba(106,112,140,0.15)" }} />
+        </div>
+      )}
       {loading ? (
-        /* Loading skeleton */
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {[0, 1, 2].map((i) => (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
+          {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="paper"
               style={{
-                borderRadius: 3,
-                padding: "32px 22px",
-                opacity: 0.4,
-                transform: "none",
+                borderRadius: 4, padding: "28px 20px",
+                background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.1)",
+                opacity: 0.5,
               }}
             >
-              <div style={{ height: 12, width: "40%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 12 }} />
-              <div style={{ height: 18, width: "90%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 8 }} />
-              <div style={{ height: 18, width: "70%", background: "var(--paper-deep)", borderRadius: 2 }} />
+              <div style={{ height: 10, width: "40%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 12 }} />
+              <div style={{ height: 16, width: "90%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 8 }} />
+              <div style={{ height: 16, width: "65%", background: "var(--paper-deep)", borderRadius: 2 }} />
             </div>
           ))}
-          <p className="typewriter" style={{ textAlign: "center", fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.12em", marginTop: 8 }}>
-            summoning your ghosts...
-          </p>
         </div>
       ) : dreams.length === 0 ? (
         /* Empty state */

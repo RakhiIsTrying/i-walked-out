@@ -128,8 +128,7 @@ export default function StickyDecisionPage() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="paper"
-                style={{ padding: "32px 32px 28px", position: "relative", background: "#f8efd9" }}
+                style={{ padding: "32px 32px 28px", position: "relative", background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)", borderRadius: 6 }}
               >
                 <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
                   post your own
@@ -237,20 +236,22 @@ function BallotCard({
   const voteCounts = decision.options.map((_, i) => decision.votes?.filter((v) => v.chosen_option === i).length || 0);
   const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
   const maxVotes = Math.max(...voteCounts);
-  const bgColors = ["#faf3df", "#f4e2d4", "#f1e4d2", "#f8efd9"];
-
   return (
     <div
-      className="paper page-in"
+      className="page-in"
       style={{
-        padding: "32px 32px 28px",
-        background: bgColors[index % bgColors.length],
-        position: "relative",
-        maxWidth: 540,
+        padding: "0",
+        background: "var(--paper-light)",
+        border: "1px solid rgba(106,112,140,0.12)",
+        borderRadius: 6,
+        overflow: "hidden",
+        maxWidth: 560,
         width: "100%",
         animationDelay: `${index * 0.08}s`,
       }}
     >
+      <div style={{ height: 4, background: index % 2 === 0 ? "var(--rose)" : "var(--teal)" }} />
+      <div style={{ padding: "24px 28px 24px" }}>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)" }}>
@@ -292,10 +293,10 @@ function BallotCard({
                 width: "100%",
                 padding: "14px 18px",
                 textAlign: "left",
-                background: "var(--paper-light)",
-                border: `1.5px ${hasVoted && isWinning ? "solid var(--rose)" : "dashed var(--ink-faded)"}`,
+                background: hasVoted && isWinning ? "rgba(255, 90, 78, 0.04)" : "var(--paper-deep)",
+                border: hasVoted && isWinning ? "1.5px solid var(--rose)" : "1px solid rgba(106,112,140,0.12)",
                 cursor: hasVoted || !isLoggedIn ? "default" : "pointer",
-                borderRadius: 2,
+                borderRadius: 4,
                 overflow: "hidden",
                 fontFamily: "'Fraunces', serif",
                 fontSize: 17,
@@ -347,6 +348,7 @@ function BallotCard({
           thank you for voting kindly. {totalVotes} kind strangers have weighed in.
         </div>
       )}
+      </div>
     </div>
   );
 }

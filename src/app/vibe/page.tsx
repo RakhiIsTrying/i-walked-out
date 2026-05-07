@@ -24,15 +24,15 @@ const vibeStarters = [
   "the calm before quitting your job",
 ];
 
-const cardKinds: Record<string, { label: string; tapeClass: string; rotate: number; emoji: string }> = {
-  place: { label: "go to →", tapeClass: "tape-rose", rotate: -3, emoji: "📍" },
-  movie: { label: "watch →", tapeClass: "tape-teal", rotate: 2, emoji: "🎬" },
-  tv_show: { label: "binge →", tapeClass: "tape-plum", rotate: -2, emoji: "📺" },
-  food: { label: "eat →", tapeClass: "tape-butter", rotate: 3, emoji: "🍜" },
-  game: { label: "play →", tapeClass: "tape-rose", rotate: -1, emoji: "🎮" },
-  song: { label: "listen →", tapeClass: "tape-teal", rotate: 2, emoji: "🎵" },
-  music_album: { label: "album →", tapeClass: "tape-plum", rotate: -3, emoji: "💿" },
-  youtube: { label: "youtube →", tapeClass: "tape-butter", rotate: 1, emoji: "▶️" },
+const cardKinds: Record<string, { label: string; emoji: string; accent: string }> = {
+  place: { label: "go to", emoji: "📍", accent: "var(--rose)" },
+  movie: { label: "watch", emoji: "🎬", accent: "var(--teal)" },
+  tv_show: { label: "binge", emoji: "📺", accent: "var(--plum)" },
+  food: { label: "eat", emoji: "🍜", accent: "var(--butter)" },
+  game: { label: "play", emoji: "🎮", accent: "var(--rose)" },
+  song: { label: "listen", emoji: "🎵", accent: "var(--teal)" },
+  music_album: { label: "album", emoji: "💿", accent: "var(--plum)" },
+  youtube: { label: "youtube", emoji: "▶️", accent: "var(--butter)" },
 };
 
 const resultKeys = ["place", "movie", "tv_show", "food", "game", "song", "music_album", "youtube"] as const;
@@ -207,7 +207,6 @@ export default function VibePage() {
               position: "relative",
             }}
           >
-            <div className="tape tape-rose" style={{ top: -12, left: "50%", marginLeft: -40 }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
               <h2 className="serif" style={{ fontSize: 30, fontWeight: 400, fontStyle: "italic", margin: 0 }}>
                 Bucket List
@@ -370,9 +369,8 @@ export default function VibePage() {
             className="page-in"
             style={{
               background: "var(--paper-deep)",
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.13 0 0 0 0 0.11 0 0 0 0 0.09 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-              backgroundSize: "auto, 200px 200px",
-              border: "1.5px dashed var(--ink-faded)",
+              border: "1px solid rgba(106, 112, 140, 0.15)",
+              borderRadius: 4,
               padding: "36px 28px 40px",
               marginBottom: 48,
             }}
@@ -410,15 +408,18 @@ export default function VibePage() {
                     key={key}
                     className="paper lift pop-in"
                     style={{
-                      padding: "22px 24px 26px",
+                      padding: "0",
                       position: "relative",
                       transform: "none",
                       animationDelay: `${i * 0.08}s`,
+                      overflow: "hidden",
                     }}
                   >
+                    <div style={{ height: 4, background: config.accent }} />
+                    <div style={{ padding: "18px 22px 24px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--ink-faded)" }}>
-                        {config.label}
+                      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--ink-faded)", display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{config.emoji}</span> {config.label}
                       </div>
                       {isLoggedIn && (
                         <button
@@ -449,6 +450,7 @@ export default function VibePage() {
                     <h4 className="serif" style={{ fontSize: 24, fontWeight: 500, margin: 0, lineHeight: 1.2 }}>
                       {value}
                     </h4>
+                    </div>
                   </div>
                 );
               })}
@@ -559,7 +561,7 @@ function BucketRow({
         </span>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 2 }}>
           <span className="typewriter" style={{ fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-faded)", textTransform: "uppercase" }}>
-            {config?.emoji} {config?.label.replace(" →", "")}
+            {config?.emoji} {config?.label}
           </span>
           <span style={{ fontSize: 10, color: "var(--ink-faded)" }}>·</span>
           <span className="hand" style={{ fontSize: 14, color: "var(--ink-faded)" }}>

@@ -7,6 +7,14 @@ interface Message {
   content: string;
 }
 
+const starters = [
+  "what should i do with my life?",
+  "is it too late to start over?",
+  "give me a pep talk",
+  "roast my decisions",
+  "tell me something weird",
+];
+
 export default function DugDugPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -51,10 +59,10 @@ export default function DugDugPage() {
   }
 
   return (
-    <div className="page-in" style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px 30px" }}>
+    <div className="page-in" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px 30px" }}>
 
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 40 }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
         <p
           className="typewriter"
           style={{
@@ -96,38 +104,53 @@ export default function DugDugPage() {
 
       {/* Chat area */}
       <div
-        className="paper"
         style={{
-          borderRadius: 3,
+          borderRadius: 4,
           padding: 0,
           overflow: "hidden",
           position: "relative",
+          background: "var(--paper-light)",
+          border: "1px solid rgba(106,112,140,0.15)",
         }}
       >
-        {/* Tape decoration */}
-        <div className="tape tape-teal" style={{ top: -10, left: "50%", marginLeft: -40, zIndex: 10 }} />
-
         {/* Messages */}
         <div
           style={{
-            minHeight: 360,
+            minHeight: 380,
             maxHeight: "60vh",
             overflowY: "auto",
-            padding: "40px 24px 24px",
+            padding: "28px 24px 24px",
           }}
           className="no-scrollbar"
         >
           {messages.length === 0 && (
-            <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <p
                 className="hand"
-                style={{ fontSize: 26, color: "var(--ink-faded)", margin: 0, marginBottom: 12 }}
+                style={{ fontSize: 26, color: "var(--ink-faded)", margin: 0, marginBottom: 8 }}
               >
                 say literally anything. i dare you.
               </p>
-              <p className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", opacity: 0.7 }}>
+              <p className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", opacity: 0.7, marginBottom: 24 }}>
                 i&apos;m made of dead dreams and bad advice. it&apos;s a whole vibe.
               </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+                {starters.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => { setInput(s); }}
+                    className="hand"
+                    style={{
+                      padding: "8px 16px", fontSize: 17, color: "var(--ink-soft)",
+                      background: "var(--paper-deep)", border: "1px solid rgba(106,112,140,0.15)",
+                      borderRadius: 20, cursor: "pointer", transition: "all 0.15s ease",
+                      fontFamily: "'Caveat', cursive",
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -144,10 +167,9 @@ export default function DugDugPage() {
                 style={{
                   maxWidth: "80%",
                   padding: "14px 18px",
-                  background: msg.role === "user" ? "var(--paper-deep)" : "var(--paper-light)",
-                  border: msg.role === "user" ? "none" : "1px dashed var(--ink-faded)",
-                  borderRadius: 3,
-                  transform: "none",
+                  background: msg.role === "user" ? "var(--ink)" : "var(--paper-deep)",
+                  color: msg.role === "user" ? "var(--paper-light)" : "var(--ink)",
+                  borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                   position: "relative",
                 }}
               >
@@ -170,7 +192,7 @@ export default function DugDugPage() {
                   className={msg.role === "user" ? "" : "hand"}
                   style={{
                     fontSize: msg.role === "user" ? 15 : 20,
-                    color: "var(--ink-soft)",
+                    color: msg.role === "user" ? "var(--paper-light)" : "var(--ink-soft)",
                     margin: 0,
                     lineHeight: 1.45,
                   }}
@@ -186,9 +208,8 @@ export default function DugDugPage() {
               <div
                 style={{
                   padding: "14px 18px",
-                  background: "var(--paper-light)",
-                  border: "1px dashed var(--ink-faded)",
-                  borderRadius: 3,
+                  background: "var(--paper-deep)",
+                  borderRadius: "16px 16px 16px 4px",
                 }}
               >
                 <span
@@ -221,8 +242,8 @@ export default function DugDugPage() {
             display: "flex",
             gap: 10,
             padding: "16px 24px 20px",
-            borderTop: "1.5px dashed var(--ink-faded)",
-            background: "rgba(233, 220, 192, 0.3)",
+            borderTop: "1px solid rgba(106,112,140,0.12)",
+            background: "rgba(233, 220, 192, 0.15)",
           }}
         >
           <input
