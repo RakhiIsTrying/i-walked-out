@@ -73,6 +73,11 @@ async function checkWord(word: string): Promise<boolean> {
   }
 }
 
+function getSaveKey(playDate?: string): string {
+  const date = playDate || new Date().toISOString().split("T")[0];
+  return `iwo_spelling_${date}`;
+}
+
 export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: SpellingBeeProps) {
   const [puzzle, setPuzzle] = useState<ReturnType<typeof getFallbackPuzzle> | null>(null);
   const [found, setFound] = useState<string[]>([]);
@@ -84,6 +89,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
   const [shareMsg, setShareMsg] = useState("");
   const [checking, setChecking] = useState(false);
   const submitRef = useRef(false);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
 
@@ -103,13 +109,15 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     }
     setPuzzle(p);
 
-    if (isToday && hasPlayedToday("spelling")) {
-      const saved = localStorage.getItem("iwo_spelling_today");
-      if (saved) {
+    const saved = localStorage.getItem(getSaveKey(playDate));
+    if (saved) {
+      try {
         const { f, s } = JSON.parse(saved);
-        setFound(f);
-        setScore(s);
-      }
+        if (Array.isArray(f)) {
+          setFound(f);
+          setScore(s || 0);
+        }
+      } catch {}
     }
     setStats(getStats("spelling"));
   }, []);
@@ -130,7 +138,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
 
     flash(isPangram ? `PANGRAM! +${pts}` : `+${pts}`, "good");
 
-    if (isToday) localStorage.setItem("iwo_spelling_today", JSON.stringify({ f: newFound, s: newScore }));
+    localStorage.setItem(getSaveKey(playDate), JSON.stringify({ f: newFound, s: newScore }));
 
     if (getRank(newScore, pz.maxScore) === "Genius" && (!isToday || !hasPlayedToday("spelling"))) {
       if (isToday) markPlayedToday("spelling");
@@ -183,16 +191,19 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     setPuzzle({ ...puzzle, outer: shuffled });
   }
 
+  const submitRefFn = useRef(submit);
+  submitRefFn.current = submit;
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
-      if (e.key === "Enter") { submit(); return; }
+      if (e.key === "Enter") { submitRefFn.current(); return; }
       if (e.key === "Backspace") { setCurrent((p) => p.slice(0, -1)); return; }
       const k = e.key.toLowerCase();
       if (/^[a-z]$/.test(k)) setCurrent((p) => p + k.toUpperCase());
     }
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  });
+  }, []);
 
   async function handleShare() {
     if (!puzzle) return;
@@ -206,12 +217,39 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
 
+  function focusMobileInput() {
+    mobileInputRef.current?.focus();
+  }
+
   if (!puzzle) return null;
 
   const rank = getRank(score, puzzle.maxScore);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+      <input
+        ref={mobileInputRef}
+        type="text"
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        aria-label="Type letters"
+        style={{ position: "absolute", opacity: 0, height: 1, width: 1, pointerEvents: "none" }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") { e.preventDefault(); submitRefFn.current(); }
+          if (e.key === "Backspace") { e.preventDefault(); setCurrent((p) => p.slice(0, -1)); }
+        }}
+        onInput={(e) => {
+          const input = e.currentTarget;
+          const val = input.value.toLowerCase();
+          for (const ch of val) {
+            if (/^[a-z]$/.test(ch)) setCurrent((p) => p + ch.toUpperCase());
+          }
+          input.value = "";
+        }}
+      />
+
       {/* Score / Rank */}
       <div style={{ textAlign: "center" }}>
         <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", textTransform: "uppercase" }}>
@@ -237,21 +275,24 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
       )}
 
       {/* Current word */}
-      <div style={{
-        minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 28, fontFamily: "'Bungee', system-ui", letterSpacing: "0.1em",
-        color: "var(--ink)", minWidth: 160, borderBottom: "2px dashed var(--ink-faded)",
-        padding: "4px 8px",
-      }}>
+      <div
+        onClick={focusMobileInput}
+        style={{
+          minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 28, fontFamily: "'Bungee', system-ui", letterSpacing: "0.1em",
+          color: "var(--ink)", minWidth: 160, borderBottom: "2px dashed var(--ink-faded)",
+          padding: "4px 8px", cursor: "pointer",
+        }}
+      >
         {checking ? (
           <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>checking...</span>
         ) : (
-          current || <span style={{ color: "var(--ink-faded)", fontSize: 16 }}>&nbsp;</span>
+          current || <span style={{ color: "var(--ink-faded)", fontSize: 16 }}>tap to type</span>
         )}
       </div>
 
       {/* Hexagon layout */}
-      <div style={{ position: "relative", width: 200, height: 200, margin: "8px 0" }}>
+      <div onClick={focusMobileInput} style={{ position: "relative", width: 200, height: 200, margin: "8px 0" }}>
         {/* Center */}
         <HexButton letter={puzzle.center} isCenter onClick={() => addLetter(puzzle.center)} x={75} y={75} />
         {/* Outer ring */}
@@ -271,7 +312,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         <button onClick={shuffle} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>
           ↻
         </button>
-        <button onClick={submit} disabled={checking} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
+        <button onClick={() => submitRefFn.current()} disabled={checking} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
           {checking ? "..." : "enter"}
         </button>
       </div>

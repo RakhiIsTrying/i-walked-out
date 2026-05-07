@@ -158,7 +158,7 @@ export default function VibePage() {
   const doneItems = bucket.filter((b) => b.completed);
 
   return (
-    <div className="page-in" style={{ padding: "20px 48px 40px" }}>
+    <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
       <div style={{ maxWidth: 1080, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>

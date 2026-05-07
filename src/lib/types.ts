@@ -7,6 +7,7 @@ export interface Dream {
   emotion: string;
   created_at: string;
   anonymous_alias: string;
+  reactions?: Record<string, number>;
 }
 
 export type DreamCategory =

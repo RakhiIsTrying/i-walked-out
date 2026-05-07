@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Dream, DreamCategory } from "@/lib/types";
 import DreamCard from "@/components/DreamCard";
-import FileUpload from "@/components/FileUpload";
+
 import Link from "next/link";
 
 const categories: {
@@ -292,9 +292,6 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* ── File Upload Section ── */}
-      <FileUpload />
-
       {/* ── Telegram Section ── */}
       <section
         className="paper"
@@ -421,7 +418,7 @@ export default function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 24 }}>
           {dreams.map((dream, index) => (
             <div
               key={dream.id}

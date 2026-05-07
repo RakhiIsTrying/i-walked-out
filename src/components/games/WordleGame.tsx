@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
-import { WORDLE_ANSWERS } from "@/lib/words";
-import { RefreshCw } from "lucide-react";
+import { WORDLE_ANSWERS, VALID_GUESSES } from "@/lib/words";
 import { saveGameResult } from "@/lib/archive";
 
 type CellState = "correct" | "present" | "absent" | "empty";
@@ -77,7 +76,7 @@ const wordCache = new Map<string, boolean>();
 
 async function checkWordValid(word: string): Promise<boolean> {
   const lower = word.toLowerCase();
-  if (WORDLE_ANSWERS.includes(lower)) return true;
+  if (VALID_GUESSES.has(lower)) return true;
   if (wordCache.has(lower)) return wordCache.get(lower)!;
   try {
     const res = await fetch(`/api/games/spelling-check?word=${encodeURIComponent(lower)}`);
@@ -153,6 +152,8 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       setWon(isWin);
       const newStats = isWin ? recordWin("wordle") : recordLoss("wordle");
       setStats(newStats);
+      const newCount = incrementRandomPlayCount();
+      setPlayCount(newCount);
       saveGameResult("wordle", isWin, isWin ? newGuesses.length : 0, {
         answer,
         guesses: newGuesses,
@@ -162,11 +163,10 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   }
 
   const canPlayAgain = playCount < DAILY_PLAY_LIMIT;
+  const limitReached = playCount >= DAILY_PLAY_LIMIT && gameOver;
 
   function playAgain() {
     if (!canPlayAgain) return;
-    const newCount = incrementRandomPlayCount();
-    setPlayCount(newCount);
     setAnswer(getRandomWord());
     setGuesses([]);
     setStates([]);
@@ -186,16 +186,19 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
     if (/^[A-Z]$/.test(key) && current.length < COLS) setCurrent((p) => p + key);
   }
 
+  const onKeyRef = useRef(onKey);
+  onKeyRef.current = onKey;
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const k = e.key.toUpperCase();
       if (k === "ENTER" || k === "BACKSPACE" || (/^[A-Z]$/.test(k) && k.length === 1)) {
-        onKey(k);
+        onKeyRef.current(k);
       }
     }
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  });
+  }, []);
 
   function buildEmoji(): string {
     return states.map((row) =>
@@ -221,18 +224,55 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   const cellColor = (s: CellState) => (s === "empty" ? "var(--ink)" : "#fff");
 
   const kc = keyColors();
+  const mobileInputRef = useRef<HTMLInputElement>(null);
+
+  function focusMobileInput() {
+    mobileInputRef.current?.focus();
+  }
+
+  if (playCount >= DAILY_PLAY_LIMIT && guesses.length === 0) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "60px 20px", textAlign: "center" }}>
+        <p className="serif" style={{ fontSize: 28, fontStyle: "italic", color: "var(--ink)", margin: 0 }}>
+          You've played all {DAILY_PLAY_LIMIT} rounds today.
+        </p>
+        <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
+          Come back tomorrow for new words.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-      <button
-        onClick={playAgain}
-        disabled={!canPlayAgain}
-        title={canPlayAgain ? "New word" : "Daily limit reached"}
-        className="btn-ghost"
-        style={{ fontSize: 12, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, opacity: canPlayAgain ? 1 : 0.4 }}
-      >
-        <RefreshCw size={14} /> {canPlayAgain ? `new word (${DAILY_PLAY_LIMIT - playCount} left)` : "limit reached"}
-      </button>
+      <input
+        ref={mobileInputRef}
+        type="text"
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        aria-label="Type your guess"
+        style={{ position: "absolute", opacity: 0, height: 1, width: 1, pointerEvents: "none" }}
+        onKeyDown={(e) => {
+          e.preventDefault();
+          const k = e.key.toUpperCase();
+          if (k === "ENTER" || k === "BACKSPACE" || (/^[A-Z]$/.test(k) && k.length === 1)) {
+            onKeyRef.current(k);
+          }
+        }}
+        onInput={(e) => {
+          const input = e.currentTarget;
+          const val = input.value.toUpperCase();
+          for (const ch of val) {
+            if (/^[A-Z]$/.test(ch)) onKeyRef.current(ch);
+          }
+          input.value = "";
+        }}
+      />
+      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-faded)" }}>
+        {DAILY_PLAY_LIMIT - playCount} of {DAILY_PLAY_LIMIT} rounds left today
+      </div>
 
       {message && (
         <div className="typewriter" style={{ fontSize: 13, letterSpacing: "0.1em", color: "var(--rose)", textTransform: "uppercase" }}>
@@ -241,7 +281,7 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       )}
 
       {/* Grid */}
-      <div key={roundNum} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div key={roundNum} onClick={focusMobileInput} style={{ display: "flex", flexDirection: "column", gap: 6, cursor: "pointer" }}>
         {Array.from({ length: ROWS }).map((_, ri) => {
           const g = guesses[ri];
           const s = states[ri];
@@ -319,14 +359,18 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
           <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: won ? "var(--teal)" : "var(--rose)" }}>
             {won ? `Got it in ${guesses.length}!` : `The word was ${answer}`}
           </p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8 }}>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, flexWrap: "wrap" }}>
             <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13 }}>
               {shareMsg || "share result"}
             </button>
-            {canPlayAgain && (
+            {canPlayAgain ? (
               <button onClick={playAgain} className="btn-ghost" style={{ fontSize: 13 }}>
                 play again ({DAILY_PLAY_LIMIT - playCount} left)
               </button>
+            ) : (
+              <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", padding: "8px 0" }}>
+                all {DAILY_PLAY_LIMIT} rounds used today
+              </span>
             )}
           </div>
         </div>

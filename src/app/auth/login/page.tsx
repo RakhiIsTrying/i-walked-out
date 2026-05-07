@@ -169,7 +169,7 @@ export default function LoginPage() {
                 onChange={(e) => setCountryCode(e.target.value)}
                 className="typewriter"
                 style={{
-                  width: 110, padding: "10px 8px", fontSize: 13,
+                  width: "min(110px, 30%)", padding: "10px 8px", fontSize: 13,
                   background: "var(--paper-deep)", border: "2px solid var(--ink-faded)",
                   borderRadius: 8, color: "var(--ink)", cursor: "pointer",
                 }}

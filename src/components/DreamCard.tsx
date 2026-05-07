@@ -1,10 +1,11 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { Dream } from "@/lib/types";
 
 const categoryPinClass: Record<string, string> = {
   career: "pin-teal",
-  relationship: "",         // default red pin
+  relationship: "",
   creative: "pin-butter",
   business: "pin-teal",
   education: "pin-plum",
@@ -24,11 +25,77 @@ const categoryBg: Record<string, string> = {
   other: "#eee6d4",
 };
 
+const REACTIONS: { key: string; emoji: string; label: string }[] = [
+  { key: "skull", emoji: "💀", label: "been there" },
+  { key: "oof", emoji: "🫠", label: "oof" },
+  { key: "rip", emoji: "🪦", label: "rip dream" },
+  { key: "haunting", emoji: "👻", label: "haunts me" },
+  { key: "dramatic", emoji: "🎪", label: "so dramatic" },
+  { key: "pour_one_out", emoji: "🍷", label: "pour one out" },
+];
+
+function getReactedKey(dreamId: string): string {
+  return `reacted_${dreamId}`;
+}
+
+function getReacted(dreamId: string): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(localStorage.getItem(getReactedKey(dreamId)) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function setReacted(dreamId: string, reaction: string) {
+  if (typeof window === "undefined") return;
+  const current = getReacted(dreamId);
+  current[reaction] = true;
+  localStorage.setItem(getReactedKey(dreamId), JSON.stringify(current));
+}
+
 export default function DreamCard({ dream }: { dream: Dream }) {
   const timeAgo = getTimeAgo(dream.created_at);
   const rotation = (dream.id.charCodeAt(0) % 7) - 3;
   const pinClass = categoryPinClass[dream.category] ?? "pin-plum";
   const bg = categoryBg[dream.category] ?? categoryBg.other;
+
+  const [reactions, setReactions] = useState<Record<string, number>>(
+    dream.reactions || {}
+  );
+  const [reacted, setReactedState] = useState<Record<string, boolean>>(() =>
+    getReacted(dream.id)
+  );
+  const [animating, setAnimating] = useState<string | null>(null);
+
+  const handleReact = useCallback(
+    async (key: string) => {
+      if (reacted[key]) return;
+
+      setReacted(dream.id, key);
+      setReactedState((prev) => ({ ...prev, [key]: true }));
+      setReactions((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+      setAnimating(key);
+      setTimeout(() => setAnimating(null), 600);
+
+      try {
+        const res = await fetch("/api/dreams/reactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dream_id: dream.id, reaction: key }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setReactions(data.reactions);
+        }
+      } catch {
+        /* optimistic update stays */
+      }
+    },
+    [dream.id, reacted]
+  );
+
+  const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
 
   return (
     <div
@@ -43,17 +110,11 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         position: "relative",
       } as React.CSSProperties}
     >
-      {/* Pin at top center */}
       <div
         className={`pin ${pinClass}`}
-        style={{
-          top: -6,
-          left: "50%",
-          marginLeft: -8,
-        }}
+        style={{ top: -6, left: "50%", marginLeft: -8 }}
       />
 
-      {/* Category tag top-right */}
       <span
         className="typewriter"
         style={{
@@ -69,7 +130,6 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         {dream.category}
       </span>
 
-      {/* Title as typewriter label */}
       <p
         className="typewriter"
         style={{
@@ -84,7 +144,6 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         {dream.title}
       </p>
 
-      {/* Main description */}
       <p
         className="hand"
         style={{
@@ -101,6 +160,57 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         {dream.description}
       </p>
 
+      {/* Reactions */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 6,
+          marginBottom: 12,
+        }}
+      >
+        {REACTIONS.map((r) => {
+          const count = reactions[r.key] || 0;
+          const didReact = reacted[r.key];
+          const isAnimating = animating === r.key;
+          return (
+            <button
+              key={r.key}
+              onClick={() => handleReact(r.key)}
+              title={r.label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                padding: "3px 8px",
+                fontSize: 12,
+                background: didReact
+                  ? "rgba(0,0,0,0.08)"
+                  : "rgba(0,0,0,0.03)",
+                border: didReact
+                  ? "1.5px solid var(--ink-faded)"
+                  : "1px solid transparent",
+                borderRadius: 20,
+                cursor: didReact ? "default" : "pointer",
+                opacity: didReact ? 1 : 0.7,
+                transition: "all 0.2s ease",
+                transform: isAnimating ? "scale(1.3)" : "scale(1)",
+              }}
+            >
+              <span style={{ fontSize: 14 }}>{r.emoji}</span>
+              {count > 0 && (
+                <span
+                  className="typewriter"
+                  style={{ fontSize: 9, color: "var(--ink-faded)" }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Bottom separator and meta */}
       <div
         style={{
@@ -113,22 +223,26 @@ export default function DreamCard({ dream }: { dream: Dream }) {
       >
         <span
           className="typewriter"
-          style={{
-            fontSize: 10,
-            color: "var(--ink-faded)",
-          }}
+          style={{ fontSize: 10, color: "var(--ink-faded)" }}
         >
           {dream.anonymous_alias}
         </span>
-        <span
-          className="typewriter"
-          style={{
-            fontSize: 10,
-            color: "var(--ink-faded)",
-          }}
-        >
-          {timeAgo}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {totalReactions > 0 && (
+            <span
+              className="typewriter"
+              style={{ fontSize: 9, color: "var(--ink-faded)", opacity: 0.6 }}
+            >
+              {totalReactions} react{totalReactions !== 1 ? "s" : ""}
+            </span>
+          )}
+          <span
+            className="typewriter"
+            style={{ fontSize: 10, color: "var(--ink-faded)" }}
+          >
+            {timeAgo}
+          </span>
+        </div>
       </div>
     </div>
   );

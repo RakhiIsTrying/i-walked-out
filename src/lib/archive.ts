@@ -1,6 +1,6 @@
 export interface ArchiveEntry {
   id: string;
-  game_type: "wordle" | "crossword" | "sudoku" | "spelling";
+  game_type: "wordle" | "crossword" | "sudoku" | "spelling" | "tango";
   played_at: string;
   won: boolean;
   score: number;

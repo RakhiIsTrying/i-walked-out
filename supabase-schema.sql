@@ -20,6 +20,7 @@ CREATE TABLE dreams (
   category TEXT NOT NULL DEFAULT 'other',
   emotion TEXT NOT NULL DEFAULT 'reflective',
   anonymous_alias TEXT NOT NULL,
+  reactions JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -143,3 +144,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_vote_created
   AFTER INSERT ON sticky_votes
   FOR EACH ROW EXECUTE FUNCTION public.increment_vote_count();
+
+-- Dream reactions (anonymous, stored as JSONB on dreams table)
+-- Run this migration if upgrading from an earlier version:
+-- ALTER TABLE dreams ADD COLUMN reactions JSONB DEFAULT '{}';
