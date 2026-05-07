@@ -230,6 +230,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
       <input
         ref={mobileInputRef}
         type="text"
+        inputMode="none"
         autoComplete="off"
         autoCapitalize="none"
         autoCorrect="off"
@@ -293,9 +294,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
 
       {/* Hexagon layout */}
       <div onClick={focusMobileInput} style={{ position: "relative", width: 200, height: 200, margin: "8px 0" }}>
-        {/* Center */}
         <HexButton letter={puzzle.center} isCenter onClick={() => addLetter(puzzle.center)} x={75} y={75} />
-        {/* Outer ring */}
         {puzzle.outer.map((l, i) => {
           const angle = (i * 60 - 90) * (Math.PI / 180);
           const x = 75 + Math.cos(angle) * 65;
