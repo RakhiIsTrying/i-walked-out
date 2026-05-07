@@ -189,7 +189,6 @@ export default function GamesPage() {
             background: "#faf3df",
             margin: "0 auto 28px",
             maxWidth: 700,
-            transform: "rotate(-0.3deg)",
             position: "relative",
             display: "flex",
             alignItems: "center",
@@ -198,7 +197,6 @@ export default function GamesPage() {
             gap: 12,
           }}
         >
-          <div className="tape tape-rose" style={{ top: -12, left: 40, transform: "rotate(-3deg)" }} />
 
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
             {GAMES.map((g) => {
@@ -309,8 +307,6 @@ export default function GamesPage() {
             background: "var(--paper-light)",
           }}
         >
-          <div className="tape tape-teal" style={{ top: -12, left: "50%", marginLeft: -40, transform: "rotate(-2deg)" }} />
-
           <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20, textAlign: "center" }}>
             {active === "archive" ? "your game archive" : active === "leaderboard" ? "leaderboard" : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
           </div>
@@ -347,7 +343,7 @@ export default function GamesPage() {
                 style={{
                   padding: "20px 18px",
                   textAlign: "center",
-                  transform: `rotate(${(g.id.charCodeAt(0) % 5) - 2}deg)`,
+                  transform: "none",
                 }}
               >
                 <div style={{ fontSize: 24, marginBottom: 8 }}>{g.emoji}</div>

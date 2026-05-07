@@ -178,7 +178,6 @@ export default function PersonalityPage() {
             className="paper"
             style={{ borderRadius: 3, padding: "36px 28px 28px", position: "relative" }}
           >
-            <div className="tape tape-rose" style={{ top: -10, left: 40, transform: "rotate(-5deg)" }} />
             <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
               Personality Summary
             </p>
@@ -261,13 +260,12 @@ export default function PersonalityPage() {
               className="paper"
               style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
             >
-              <div className="pin pin-teal" style={{ top: -6, left: "50%", marginLeft: -8 }} />
               <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
                 Core Values
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {profile.traits.core_values.map((v) => (
-                  <span key={v} className="stamp" style={{ color: "var(--teal)", transform: `rotate(${(v.charCodeAt(0) % 7) - 3}deg)` }}>
+                  <span key={v} className="stamp" style={{ color: "var(--teal)" }}>
                     {v}
                   </span>
                 ))}
@@ -279,13 +277,12 @@ export default function PersonalityPage() {
               className="paper"
               style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
             >
-              <div className="pin" style={{ top: -6, left: "50%", marginLeft: -8 }} />
               <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
                 Fear Patterns
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {profile.traits.fear_patterns.map((f) => (
-                  <span key={f} className="stamp" style={{ color: "var(--rose)", transform: `rotate(${(f.charCodeAt(0) % 5) - 2}deg)` }}>
+                  <span key={f} className="stamp" style={{ color: "var(--rose)" }}>
                     {f}
                   </span>
                 ))}
@@ -297,13 +294,12 @@ export default function PersonalityPage() {
               className="paper"
               style={{ borderRadius: 3, padding: "24px 20px", position: "relative" }}
             >
-              <div className="pin pin-butter" style={{ top: -6, left: "50%", marginLeft: -8 }} />
               <p className="typewriter" style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
                 Aspiration Themes
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {profile.traits.aspiration_themes.map((a) => (
-                  <span key={a} className="stamp" style={{ color: "var(--butter)", transform: `rotate(${(a.charCodeAt(0) % 7) - 3}deg)` }}>
+                  <span key={a} className="stamp" style={{ color: "var(--butter)" }}>
                     {a}
                   </span>
                 ))}
@@ -316,8 +312,6 @@ export default function PersonalityPage() {
             className="paper"
             style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
           >
-            <div className="tape tape-plum" style={{ top: -10, right: 36, transform: "rotate(5deg)" }} />
-
             {/* Chat header */}
             <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
               <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
@@ -361,7 +355,7 @@ export default function PersonalityPage() {
                         ? {
                             background: "var(--paper-deep)",
                             border: "1px dashed var(--ink-faded)",
-                            transform: "rotate(0.8deg)",
+                            transform: "none",
                             fontFamily: "'Caveat', cursive",
                             fontSize: 19,
                             lineHeight: 1.4,
@@ -371,7 +365,7 @@ export default function PersonalityPage() {
                             background: "var(--paper-light)",
                             border: "1px solid var(--ink-faded)",
                             borderLeft: "3px solid var(--teal)",
-                            transform: "rotate(-0.4deg)",
+                            transform: "none",
                             fontSize: 14,
                             lineHeight: 1.6,
                             color: "var(--ink-soft)",
@@ -392,7 +386,7 @@ export default function PersonalityPage() {
                       border: "1px solid var(--ink-faded)",
                       borderLeft: "3px solid var(--teal)",
                       borderRadius: 3,
-                      transform: "rotate(-0.4deg)",
+                      transform: "none",
                     }}
                   >
                     <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
@@ -443,8 +437,6 @@ export default function PersonalityPage() {
             className="paper"
             style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
           >
-            <div className="tape tape-plum" style={{ top: -10, right: 36, transform: "rotate(5deg)" }} />
-
             <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
               <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
                 Chat with your Future Self
@@ -484,7 +476,7 @@ export default function PersonalityPage() {
                         ? {
                             background: "var(--paper-deep)",
                             border: "1px dashed var(--ink-faded)",
-                            transform: "rotate(0.8deg)",
+                            transform: "none",
                             fontFamily: "'Caveat', cursive",
                             fontSize: 19,
                             lineHeight: 1.4,
@@ -494,7 +486,7 @@ export default function PersonalityPage() {
                             background: "var(--paper-light)",
                             border: "1px solid var(--ink-faded)",
                             borderLeft: "3px solid var(--teal)",
-                            transform: "rotate(-0.4deg)",
+                            transform: "none",
                             fontSize: 14,
                             lineHeight: 1.6,
                             color: "var(--ink-soft)",
@@ -515,7 +507,7 @@ export default function PersonalityPage() {
                       border: "1px solid var(--ink-faded)",
                       borderLeft: "3px solid var(--teal)",
                       borderRadius: 3,
-                      transform: "rotate(-0.4deg)",
+                      transform: "none",
                     }}
                   >
                     <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
@@ -562,7 +554,6 @@ export default function PersonalityPage() {
               className="paper"
               style={{ borderRadius: 3, padding: "28px 24px", position: "relative", textAlign: "center" }}
             >
-              <div className="tape tape-rose" style={{ top: -10, left: "50%", marginLeft: -40, transform: "rotate(-3deg)" }} />
               <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
                 optional · {dreamCount} dreams logged
               </p>

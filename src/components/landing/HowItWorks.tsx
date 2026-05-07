@@ -28,7 +28,7 @@ export default function HowItWorks() {
                 background: "rgba(255,255,255,0.06)",
                 boxShadow: "none",
                 border: "1px solid rgba(255,255,255,0.1)",
-                transform: `rotate(${i % 2 === 0 ? -0.8 : 0.8}deg)`,
+                transform: "none",
                 display: "flex",
                 flexDirection: "column",
                 minHeight: 220,

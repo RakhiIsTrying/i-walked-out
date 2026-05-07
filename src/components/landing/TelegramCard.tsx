@@ -17,9 +17,8 @@ export default function TelegramCard() {
           <Link href="/feed" className="btn-paper" style={{ textDecoration: "none" }}>connect telegram</Link>
         </div>
         <div className="telegram-visual" style={{ position: "relative", height: 380 }}>
-          <div className="paper floaty" style={{ position: "absolute", top: 0, right: 30, width: "min(280px, 80%)", padding: "30px 24px", transform: "rotate(3deg)", background: "#faf3df", ["--rot" as string]: "3deg" }}>
-            <div className="tape tape-teal" style={{ top: -12, left: "50%", marginLeft: -40 }} />
-            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-faded)", borderBottom: "1px dashed var(--ink-faded)", paddingBottom: 8, marginBottom: 14 }}>
+          <div className="paper" style={{ position: "absolute", top: 0, right: 30, width: "min(280px, 80%)", padding: "30px 24px", background: "#faf3df" }}>
+            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-faded)", borderBottom: "1px solid rgba(106,112,140,0.2)", paddingBottom: 8, marginBottom: 14 }}>
               i.w.o. receipt · today
             </div>
             <div className="hand" style={{ fontSize: 20, color: "var(--ink-soft)", lineHeight: 1.35, marginBottom: 14 }}>
@@ -33,16 +32,11 @@ export default function TelegramCard() {
               <span className="stamp" style={{ color: "var(--teal)" }}>received</span>
             </div>
           </div>
-          <div className="floaty" style={{ position: "absolute", bottom: 30, left: 20, transform: "rotate(-8deg)", ["--rot" as string]: "-8deg", animationDelay: "1s" }}>
-            <div style={{ display: "inline-block", padding: 6, background: "var(--paper-light)", border: "1.5px dashed var(--teal)", position: "relative" }}>
-              <div style={{ border: "2px solid var(--teal)", padding: "10px 14px", fontFamily: "'Special Elite', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--teal)", textAlign: "center", lineHeight: 1.4 }}>
-                <div style={{ fontSize: 16, fontFamily: "'Fraunces', serif", fontStyle: "italic", letterSpacing: 0, textTransform: "none" }}>i.w.o.</div>
-                <div>released</div>
-              </div>
+          <div className="paper" style={{ position: "absolute", bottom: 30, left: 20, padding: "14px 18px" }}>
+            <div style={{ fontFamily: "'Special Elite', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--teal)", textAlign: "center", lineHeight: 1.4 }}>
+              <div style={{ fontSize: 16, fontFamily: "'Fraunces', serif", fontStyle: "italic", letterSpacing: 0, textTransform: "none" }}>i.w.o.</div>
+              <div>released</div>
             </div>
-          </div>
-          <div className="floaty wiggle" style={{ position: "absolute", top: 90, left: 0, animationDelay: "0.5s", ["--rot" as string]: "-15deg" }}>
-            <span className="sticker" style={{ background: "var(--rose)", color: "var(--paper-light)", fontSize: 13, transform: "rotate(-15deg)" }}>POCKET MAIL</span>
           </div>
         </div>
       </div>

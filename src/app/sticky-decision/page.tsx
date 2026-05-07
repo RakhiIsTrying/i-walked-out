@@ -129,10 +129,8 @@ export default function StickyDecisionPage() {
               <form
                 onSubmit={handleSubmit}
                 className="paper"
-                style={{ padding: "32px 32px 28px", position: "relative", background: "#f8efd9", transform: "rotate(0.5deg)" }}
+                style={{ padding: "32px 32px 28px", position: "relative", background: "#f8efd9" }}
               >
-                <div className="tape tape-rose" style={{ top: -12, left: 50, transform: "rotate(-3deg)" }} />
-                <div className="tape tape-teal" style={{ top: -12, right: 50, transform: "rotate(3deg)" }} />
                 <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
                   post your own
                 </div>
@@ -239,7 +237,6 @@ function BallotCard({
   const voteCounts = decision.options.map((_, i) => decision.votes?.filter((v) => v.chosen_option === i).length || 0);
   const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
   const maxVotes = Math.max(...voteCounts);
-  const rotations = [-1.5, 2, -2.5, 1, -1, 2.5];
   const bgColors = ["#faf3df", "#f4e2d4", "#f1e4d2", "#f8efd9"];
 
   return (
@@ -248,14 +245,12 @@ function BallotCard({
       style={{
         padding: "32px 32px 28px",
         background: bgColors[index % bgColors.length],
-        transform: `rotate(${rotations[index % rotations.length]}deg)`,
         position: "relative",
         maxWidth: 540,
         width: "100%",
         animationDelay: `${index * 0.08}s`,
       }}
     >
-      <div className="tape tape-butter" style={{ top: -12, left: "50%", marginLeft: -40, transform: "rotate(-2deg)" }} />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)" }}>

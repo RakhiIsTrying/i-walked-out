@@ -188,9 +188,6 @@ export default function DashboardPage() {
           className="paper page-in"
           style={{ borderRadius: 3, padding: "36px 28px 28px", marginBottom: 48, position: "relative" }}
         >
-          {/* Tape decoration */}
-          <div className="tape tape-rose" style={{ top: -10, left: 32, transform: "rotate(-6deg)" }} />
-
           <h2 className="serif" style={{ fontSize: 24, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", marginBottom: 24 }}>
             what are you letting go of?
           </h2>
@@ -297,8 +294,6 @@ export default function DashboardPage() {
         className="paper"
         style={{ borderRadius: 3, padding: "28px 24px", marginBottom: 48, position: "relative" }}
       >
-        <div className="tape tape-teal" style={{ top: -10, right: 28, transform: "rotate(4deg)" }} />
-
         <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 6 }}>
           Telegram Bot
         </p>
@@ -395,7 +390,7 @@ export default function DashboardPage() {
                 borderRadius: 3,
                 padding: "32px 22px",
                 opacity: 0.4,
-                transform: `rotate(${i % 2 === 0 ? -1 : 1}deg)`,
+                transform: "none",
               }}
             >
               <div style={{ height: 12, width: "40%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 12 }} />

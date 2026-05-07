@@ -8,7 +8,7 @@ function StatBlock({ num, label, sub, color, rotate = 0 }: { num: string; label:
       className="paper lift"
       style={{
         padding: "28px 20px",
-        transform: `rotate(${rotate}deg)`,
+        transform: "none",
         textAlign: "center",
         position: "relative",
         minWidth: 0,
@@ -190,7 +190,7 @@ export default function Infographics() {
                   style={{
                     padding: "20px 14px",
                     textAlign: "center",
-                    transform: `rotate(${i % 2 === 0 ? -0.8 : 0.8}deg)`,
+                    transform: "none",
                     height: "100%",
                     borderTop: `3px solid ${step.c}`,
                   }}

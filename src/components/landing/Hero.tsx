@@ -4,25 +4,16 @@ import Link from "next/link";
 import { useState, useRef, useCallback } from "react";
 
 const SAMPLE_DREAMS = [
-  { text: "i'm not going to learn french before turkey", back: "merci, duolingo. it's been 743 days. you can stop emailing me now.", author: "elena", date: "tue", color: "#faf3df", rotate: -2, pin: "rose" as const },
-  { text: "the cafe will stay an idea. it's a good idea. it's just not mine.", back: "imaginary location: corner of nostalgia & 4th. closing forever.", author: "j.", date: "mar 4", color: "#f1e4d2", rotate: 2, pin: "teal" as const },
-  { text: "i will never be the friend who plans the trip", back: "i AM the friend who shows up with snacks. that's a contribution.", author: "anon", date: "—", color: "#f5e8d0", rotate: -3, pin: "butter" as const },
-  { text: "we are not getting back together. that's the dream i'm releasing.", back: "good luck out there. (i mean it. mostly. seventy percent.)", author: "m.", date: "apr", color: "#f8efd9", rotate: 2.5, pin: "plum" as const },
-  { text: "novel. chapter 3. seven years. she can rest now.", back: "the protagonist was always going to be okay. that was the problem.", author: "r.s.", date: "—", color: "#f1e4d2", rotate: -1, pin: "rose" as const },
-  { text: "i am NOT a person who runs marathons", back: "i AM a person who walks to the bakery. that's a sport, in this economy.", author: "stranger", date: "sun", color: "#faf3df", rotate: 1.5, pin: "teal" as const },
-  { text: "the houseplants. all of them. i give up.", back: "fern, you tried. i tried. neither of us tried hard enough.", author: "p.", date: "fri", color: "#f4e2d4", rotate: -2, pin: "butter" as const },
-  { text: "becoming someone who 'just goes for a run in the morning'", back: "i am someone who lies very still in the morning. and that's beautiful.", author: "anon", date: "—", color: "#f8efd9", rotate: 3, pin: "rose" as const },
-  { text: "i'm not gonna read all those books on the shelf", back: "the books are decor. they have always been decor. i am at peace.", author: "k.", date: "wed", color: "#faf3df", rotate: -1.5, pin: "plum" as const },
+  { text: "i'm not going to learn french before turkey", back: "merci, duolingo. it's been 743 days. you can stop emailing me now.", author: "elena", date: "tue", color: "#faf3df" },
+  { text: "the cafe will stay an idea. it's a good idea. it's just not mine.", back: "imaginary location: corner of nostalgia & 4th. closing forever.", author: "j.", date: "mar 4", color: "#f1e4d2" },
+  { text: "i will never be the friend who plans the trip", back: "i AM the friend who shows up with snacks. that's a contribution.", author: "anon", date: "—", color: "#f5e8d0" },
+  { text: "we are not getting back together. that's the dream i'm releasing.", back: "good luck out there. (i mean it. mostly. seventy percent.)", author: "m.", date: "apr", color: "#f8efd9" },
+  { text: "novel. chapter 3. seven years. she can rest now.", back: "the protagonist was always going to be okay. that was the problem.", author: "r.s.", date: "—", color: "#f1e4d2" },
+  { text: "i am NOT a person who runs marathons", back: "i AM a person who walks to the bakery. that's a sport, in this economy.", author: "stranger", date: "sun", color: "#faf3df" },
+  { text: "the houseplants. all of them. i give up.", back: "fern, you tried. i tried. neither of us tried hard enough.", author: "p.", date: "fri", color: "#f4e2d4" },
+  { text: "becoming someone who 'just goes for a run in the morning'", back: "i am someone who lies very still in the morning. and that's beautiful.", author: "anon", date: "—", color: "#f8efd9" },
+  { text: "i'm not gonna read all those books on the shelf", back: "the books are decor. they have always been decor. i am at peace.", author: "k.", date: "wed", color: "#faf3df" },
 ];
-
-type PinColor = "rose" | "teal" | "butter" | "plum";
-
-const pinClasses: Record<PinColor, string> = {
-  rose: "pin",
-  teal: "pin pin-teal",
-  butter: "pin pin-butter",
-  plum: "pin pin-plum",
-};
 
 function fireConfetti(originX: number, originY: number) {
   const colors = ["var(--rose)", "var(--teal)", "var(--butter)"];
@@ -36,7 +27,6 @@ function fireConfetti(originX: number, originY: number) {
     el.style.background = colors[i % colors.length];
     el.style.borderRadius = "1px";
     el.style.setProperty("--dx", (Math.random() - 0.5) * 400 + "px");
-    el.style.setProperty("--dr", (Math.random() * 720 - 360) + "deg");
     el.style.setProperty("--dur", (1.8 + Math.random() * 1.2) + "s");
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3500);
@@ -76,17 +66,14 @@ function FloatingNote({ dream, initial }: {
 
   return (
     <div
-      className={dragging ? "" : "floaty"}
       style={{
         position: "absolute",
         left: pos.x,
         top: pos.y,
         zIndex: dragging || flipped ? 30 : 1,
         cursor: dragging ? "grabbing" : "grab",
-        ["--rot" as string]: `${dream.rotate}deg`,
-        transform: dragging ? `rotate(${dream.rotate}deg) scale(1.03)` : undefined,
+        transform: dragging ? "scale(1.03)" : undefined,
         transition: dragging ? "none" : "transform 0.3s ease",
-        animationDelay: `${initial.delay}s`,
       }}
       onPointerDown={onPointerDown}
     >
@@ -105,7 +92,6 @@ function FloatingNote({ dream, initial }: {
         }}
       >
         <div className="card-flip-inner" style={{ minHeight: 120, transform: flipped ? "rotateY(180deg)" : "rotateY(0)" }}>
-          <div className={pinClasses[dream.pin]} style={{ top: -16, left: "50%", transform: "translateX(-50%)" }} />
           <div className="card-face" style={{ position: "relative" }}>
             <p className="hand" style={{ fontSize: 22, lineHeight: 1.3, color: "var(--ink-soft)", margin: 0, marginBottom: 14 }}>
               {dream.text}
@@ -154,14 +140,12 @@ function HeroCollage() {
 function ReleaseBox() {
   const [text, setText] = useState("");
   const [author, setAuthor] = useState("");
-  const [stamping, setStamping] = useState(false);
   const [released, setReleased] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
   const release = async () => {
     if (!text.trim()) return;
     const rect = boxRef.current?.getBoundingClientRect();
-    setStamping(true);
 
     try {
       await fetch("/api/dreams", {
@@ -176,16 +160,13 @@ function ReleaseBox() {
       });
     } catch { /* silent */ }
 
+    if (rect) fireConfetti(rect.left + rect.width / 2, rect.top + 60);
+    setReleased(true);
     setTimeout(() => {
-      if (rect) fireConfetti(rect.left + rect.width / 2, rect.top + 60);
-      setReleased(true);
-      setTimeout(() => {
-        setReleased(false);
-        setStamping(false);
-        setText("");
-        setAuthor("");
-      }, 2200);
-    }, 350);
+      setReleased(false);
+      setText("");
+      setAuthor("");
+    }, 2200);
   };
 
   return (
@@ -200,7 +181,6 @@ function ReleaseBox() {
         margin: "0 auto",
       }}
     >
-      <div className="tape tape-rose" style={{ top: -10, left: 30, transform: "rotate(-3deg)" }} />
       <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
         try it now — no signup
       </p>
@@ -242,15 +222,10 @@ function ReleaseBox() {
           disabled={!text.trim() || released}
           style={{ opacity: !text.trim() ? 0.4 : 1 }}
         >
-          {released ? "released" : stamping ? "stamping..." : "let it go"}
+          {released ? "released" : "let it go"}
           <span style={{ fontSize: 16 }}>{released ? "" : "↳"}</span>
         </button>
       </div>
-      {stamping && (
-        <div className="slam" style={{ position: "absolute", top: 50, right: 50, ["--rot" as string]: "-8deg", pointerEvents: "none" }}>
-          <span className="stamp" style={{ color: "var(--rose)", transform: "rotate(-8deg)", fontSize: 14, padding: "6px 14px" }}>RELEASED</span>
-        </div>
-      )}
     </div>
   );
 }

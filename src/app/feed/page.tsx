@@ -117,10 +117,8 @@ export default function FeedPage() {
           <form
             onSubmit={handleCompose}
             className="paper"
-            style={{ padding: 26, background: "#faf3df", position: "relative", transform: "rotate(-1deg)" }}
+            style={{ padding: 26, background: "#faf3df", position: "relative" }}
           >
-            <div className="tape tape-rose" style={{ top: -12, left: 30, transform: "rotate(-3deg)" }} />
-            <div className="tape tape-teal" style={{ top: -12, right: 30, transform: "rotate(3deg)" }} />
             <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
               pin a new one
             </div>

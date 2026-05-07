@@ -285,11 +285,9 @@ export default function VibePage() {
             background: "#faf3df",
             margin: "0 auto 30px",
             maxWidth: 760,
-            transform: "rotate(-0.5deg)",
             position: "relative",
           }}
         >
-          <div className="tape tape-teal" style={{ top: -12, left: "50%", marginLeft: -40 }} />
           <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
             how are you, really?
           </div>
@@ -414,13 +412,10 @@ export default function VibePage() {
                     style={{
                       padding: "22px 24px 26px",
                       position: "relative",
-                      transform: `rotate(${config.rotate}deg)`,
-                      ["--hover-rot" as string]: `${config.rotate * 0.3}deg`,
-                      ["--rot" as string]: `${config.rotate}deg`,
+                      transform: "none",
                       animationDelay: `${i * 0.08}s`,
                     }}
                   >
-                    <div className={`tape ${config.tapeClass}`} style={{ top: -12, left: "50%", marginLeft: -40, transform: "rotate(-3deg)" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                       <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--ink-faded)" }}>
                         {config.label}

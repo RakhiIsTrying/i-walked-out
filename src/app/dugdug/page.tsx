@@ -147,7 +147,7 @@ export default function DugDugPage() {
                   background: msg.role === "user" ? "var(--paper-deep)" : "var(--paper-light)",
                   border: msg.role === "user" ? "none" : "1px dashed var(--ink-faded)",
                   borderRadius: 3,
-                  transform: msg.role === "user" ? "rotate(0.5deg)" : "rotate(-0.5deg)",
+                  transform: "none",
                   position: "relative",
                 }}
               >
@@ -189,7 +189,6 @@ export default function DugDugPage() {
                   background: "var(--paper-light)",
                   border: "1px dashed var(--ink-faded)",
                   borderRadius: 3,
-                  transform: "rotate(-0.5deg)",
                 }}
               >
                 <span
