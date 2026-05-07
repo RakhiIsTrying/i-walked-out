@@ -121,8 +121,8 @@ export default function GamesPage() {
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            ✦ games corner · daily ✦
+          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
+            games corner · daily
           </div>
           <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 56px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
             Play something. <em style={{ color: "var(--rose)" }}>Keep a streak.</em>
@@ -312,7 +312,7 @@ export default function GamesPage() {
           <div className="tape tape-teal" style={{ top: -12, left: "50%", marginLeft: -40, transform: "rotate(-2deg)" }} />
 
           <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20, textAlign: "center" }}>
-            {active === "archive" ? "✦ your game archive ✦" : active === "leaderboard" ? "✦ leaderboard ✦" : `✦ ${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label} ✦`}
+            {active === "archive" ? "your game archive" : active === "leaderboard" ? "leaderboard" : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
           </div>
 
           {active === "leaderboard" ? (

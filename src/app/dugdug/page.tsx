@@ -65,7 +65,7 @@ export default function DugDugPage() {
             marginBottom: 10,
           }}
         >
-          ✦ the communal soul ✦
+          the communal soul
         </p>
         <h1
           className="serif"

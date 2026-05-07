@@ -107,8 +107,8 @@ export default function StickyDecisionPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            ✦ sticky decision ✦
+          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
+            sticky decision
           </div>
           <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
             Help a stranger <em style={{ color: "var(--rose)" }}>get unstuck.</em>
@@ -133,8 +133,8 @@ export default function StickyDecisionPage() {
               >
                 <div className="tape tape-rose" style={{ top: -12, left: 50, transform: "rotate(-3deg)" }} />
                 <div className="tape tape-teal" style={{ top: -12, right: 50, transform: "rotate(3deg)" }} />
-                <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
-                  ✦ post your own ✦
+                <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
+                  post your own
                 </div>
                 <h3 className="serif" style={{ fontSize: 26, margin: 0, marginBottom: 14, fontStyle: "italic", fontWeight: 400 }}>
                   what are you stuck on?
@@ -349,7 +349,7 @@ function BallotCard({
 
       {hasVoted && (
         <div className="hand" style={{ fontSize: 19, color: "var(--rose)", marginTop: 18, textAlign: "center" }}>
-          thank you for voting kindly. ✦ {totalVotes} kind strangers have weighed in.
+          thank you for voting kindly. {totalVotes} kind strangers have weighed in.
         </div>
       )}
     </div>

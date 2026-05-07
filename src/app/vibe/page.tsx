@@ -163,7 +163,7 @@ export default function VibePage() {
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            ✦ vibe coding · irl ✦
+            vibe coding · irl
           </div>
           <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
             Type a feeling. <em style={{ color: "var(--rose)" }}>Get an evening.</em>
@@ -191,7 +191,7 @@ export default function VibePage() {
                 transition: "all 0.2s ease",
               }}
             >
-              {showBucket ? "✕ close bucket list" : `✦ my bucket list (${pendingItems.length} pending · ${doneItems.length} done)`}
+              {showBucket ? "close bucket list" : `my bucket list (${pendingItems.length} pending · ${doneItems.length} done)`}
             </button>
           </div>
         )}
@@ -237,7 +237,7 @@ export default function VibePage() {
             {pendingItems.length > 0 && (
               <div style={{ marginBottom: doneItems.length > 0 ? 24 : 0 }}>
                 <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", marginBottom: 12, textTransform: "uppercase" }}>
-                  ✦ to do
+                  to do
                 </div>
                 {pendingItems.map((item) => (
                   <BucketRow
@@ -255,7 +255,7 @@ export default function VibePage() {
             {doneItems.length > 0 && (
               <div>
                 <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", marginBottom: 12, textTransform: "uppercase" }}>
-                  ✦ done
+                  done
                 </div>
                 {doneItems.map((item) => (
                   <BucketRow
@@ -291,7 +291,7 @@ export default function VibePage() {
         >
           <div className="tape tape-teal" style={{ top: -12, left: "50%", marginLeft: -40 }} />
           <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
-            ✦ how are you, really? ✦
+            how are you, really?
           </div>
           <form
             onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }}

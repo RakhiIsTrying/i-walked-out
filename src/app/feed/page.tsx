@@ -102,8 +102,8 @@ export default function FeedPage() {
         <div className="feed-header-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 32, alignItems: "start", marginBottom: 24 }}>
           {/* Header */}
           <div>
-            <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-              ✦ the wall · everyone ✦
+            <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
+              the wall · everyone
             </div>
             <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, letterSpacing: "-0.02em", fontStyle: "italic" }}>
               Dreams strangers <em style={{ color: "var(--rose)" }}>have set down.</em>
@@ -121,8 +121,8 @@ export default function FeedPage() {
           >
             <div className="tape tape-rose" style={{ top: -12, left: 30, transform: "rotate(-3deg)" }} />
             <div className="tape tape-teal" style={{ top: -12, right: 30, transform: "rotate(3deg)" }} />
-            <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
-              ✦ pin a new one ✦
+            <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
+              pin a new one
             </div>
             <h3 className="serif" style={{ fontSize: 28, margin: 0, marginBottom: 16, fontStyle: "italic", fontWeight: 400 }}>
               what are you letting go of?

@@ -6,7 +6,7 @@ export default function TelegramCard() {
       <div className="telegram-split" style={{ maxWidth: 980, margin: "0 auto", display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 50, alignItems: "center" }}>
         <div>
           <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            ✦ from your pocket ✦
+            from your pocket
           </div>
           <h2 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic", marginBottom: 20 }}>
             Text us a dream. We&apos;ll bury it discreetly.
