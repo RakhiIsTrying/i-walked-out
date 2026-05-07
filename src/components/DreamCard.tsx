@@ -38,20 +38,18 @@ function getReactedKey(dreamId: string): string {
   return `reacted_${dreamId}`;
 }
 
-function getReacted(dreamId: string): Record<string, boolean> {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(getReactedKey(dreamId)) || "{}");
-  } catch {
-    return {};
-  }
+function getReacted(dreamId: string): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(getReactedKey(dreamId)) || null;
 }
 
-function setReacted(dreamId: string, reaction: string) {
+function setReacted(dreamId: string, reaction: string | null) {
   if (typeof window === "undefined") return;
-  const current = getReacted(dreamId);
-  current[reaction] = true;
-  localStorage.setItem(getReactedKey(dreamId), JSON.stringify(current));
+  if (reaction) {
+    localStorage.setItem(getReactedKey(dreamId), reaction);
+  } else {
+    localStorage.removeItem(getReactedKey(dreamId));
+  }
 }
 
 export default function DreamCard({ dream }: { dream: Dream }) {
@@ -63,18 +61,25 @@ export default function DreamCard({ dream }: { dream: Dream }) {
   const [reactions, setReactions] = useState<Record<string, number>>(
     dream.reactions || {}
   );
-  const [reacted, setReactedState] = useState<Record<string, boolean>>(() =>
+  const [picked, setPicked] = useState<string | null>(() =>
     getReacted(dream.id)
   );
   const [animating, setAnimating] = useState<string | null>(null);
 
   const handleReact = useCallback(
     async (key: string) => {
-      if (reacted[key]) return;
+      if (picked === key) return;
 
+      const previous = picked;
       setReacted(dream.id, key);
-      setReactedState((prev) => ({ ...prev, [key]: true }));
-      setReactions((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+      setPicked(key);
+      setReactions((prev) => {
+        const next = { ...prev, [key]: (prev[key] || 0) + 1 };
+        if (previous && next[previous]) {
+          next[previous] = Math.max(0, next[previous] - 1);
+        }
+        return next;
+      });
       setAnimating(key);
       setTimeout(() => setAnimating(null), 600);
 
@@ -82,7 +87,7 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         const res = await fetch("/api/dreams/reactions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dream_id: dream.id, reaction: key }),
+          body: JSON.stringify({ dream_id: dream.id, reaction: key, previous }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -92,7 +97,7 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         /* optimistic update stays */
       }
     },
-    [dream.id, reacted]
+    [dream.id, picked]
   );
 
   const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
@@ -171,7 +176,7 @@ export default function DreamCard({ dream }: { dream: Dream }) {
       >
         {REACTIONS.map((r) => {
           const count = reactions[r.key] || 0;
-          const didReact = reacted[r.key];
+          const isActive = picked === r.key;
           const isAnimating = animating === r.key;
           return (
             <button
@@ -184,15 +189,15 @@ export default function DreamCard({ dream }: { dream: Dream }) {
                 gap: 3,
                 padding: "3px 8px",
                 fontSize: 12,
-                background: didReact
+                background: isActive
                   ? "rgba(0,0,0,0.08)"
                   : "rgba(0,0,0,0.03)",
-                border: didReact
+                border: isActive
                   ? "1.5px solid var(--ink-faded)"
                   : "1px solid transparent",
                 borderRadius: 20,
-                cursor: didReact ? "default" : "pointer",
-                opacity: didReact ? 1 : 0.7,
+                cursor: "pointer",
+                opacity: isActive ? 1 : 0.7,
                 transition: "all 0.2s ease",
                 transform: isAnimating ? "scale(1.3)" : "scale(1)",
               }}

@@ -4,7 +4,7 @@ import { getAdmin } from "@/lib/supabase/admin";
 const VALID_REACTIONS = ["skull", "oof", "rip", "haunting", "dramatic", "pour_one_out"];
 
 export async function POST(request: Request) {
-  const { dream_id, reaction } = await request.json();
+  const { dream_id, reaction, previous } = await request.json();
 
   if (!dream_id || !reaction || !VALID_REACTIONS.includes(reaction)) {
     return NextResponse.json({ error: "Invalid reaction" }, { status: 400 });
@@ -28,6 +28,9 @@ export async function POST(request: Request) {
   }
 
   const reactions = (dream.reactions as Record<string, number>) || {};
+  if (previous && VALID_REACTIONS.includes(previous) && reactions[previous]) {
+    reactions[previous] = Math.max(0, reactions[previous] - 1);
+  }
   reactions[reaction] = (reactions[reaction] || 0) + 1;
 
   const { error: updateErr } = await db
