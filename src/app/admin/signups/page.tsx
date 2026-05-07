@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 interface Signup {
   id: string;
   email: string;
+  phone: string | null;
+  provider: string;
   anonymous_alias: string;
   dream_count: number;
   personality_generated: boolean;
@@ -131,6 +133,8 @@ export default function AdminSignups() {
                 >
                   <th style={{ padding: "10px 12px" }}>#</th>
                   <th style={{ padding: "10px 12px" }}>email</th>
+                  <th style={{ padding: "10px 12px" }}>phone</th>
+                  <th style={{ padding: "10px 12px" }}>via</th>
                   <th style={{ padding: "10px 12px" }}>alias</th>
                   <th style={{ padding: "10px 12px" }}>dreams</th>
                   <th style={{ padding: "10px 12px" }}>personality</th>
@@ -156,6 +160,8 @@ export default function AdminSignups() {
                       {i + 1}
                     </td>
                     <td style={{ padding: "10px 12px", fontFamily: "monospace" }}>{s.email || "—"}</td>
+                    <td style={{ padding: "10px 12px", fontFamily: "monospace" }}>{s.phone || "—"}</td>
+                    <td className="typewriter" style={{ padding: "10px 12px", fontSize: 10 }}>{s.provider}</td>
                     <td className="hand" style={{ padding: "10px 12px", fontSize: 16 }}>
                       {s.anonymous_alias}
                     </td>
