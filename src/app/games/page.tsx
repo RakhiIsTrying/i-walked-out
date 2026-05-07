@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { getStats, GameStats, buildShareText, shareOrCopy } from "@/lib/games";
 import { getArchive, ArchiveEntry } from "@/lib/archive";
-import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trophy, ScrollText } from "lucide-react";
 import ArchiveView from "@/components/games/ArchiveView";
 import LeaderboardView from "@/components/games/LeaderboardView";
 
@@ -15,11 +15,11 @@ const CrosswordGame = dynamic(() => import("@/components/games/CrosswordGame"), 
 const TangoGame = dynamic(() => import("@/components/games/TangoGame"), { ssr: false });
 
 const GAMES = [
-  { id: "wordle", label: "Wordle", emoji: "🟩" },
-  { id: "crossword", label: "Crossword", emoji: "✏️" },
-  { id: "sudoku", label: "Sudoku", emoji: "🔢" },
-  { id: "spelling", label: "Spelling Bee", emoji: "🐝" },
-  { id: "tango", label: "Tango", emoji: "☀️" },
+  { id: "wordle", label: "Wordle", emoji: "🟩", color: "var(--moss)" },
+  { id: "crossword", label: "Crossword", emoji: "✏️", color: "var(--butter)" },
+  { id: "sudoku", label: "Sudoku", emoji: "🔢", color: "var(--teal)" },
+  { id: "spelling", label: "Spelling Bee", emoji: "🐝", color: "var(--rose)" },
+  { id: "tango", label: "Tango", emoji: "☀️", color: "var(--plum)" },
 ] as const;
 
 type GameId = (typeof GAMES)[number]["id"] | "archive" | "leaderboard";
@@ -115,63 +115,66 @@ export default function GamesPage() {
     if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
 
+  const isGameActive = (id: string) => active === id;
+
   return (
     <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            games corner · daily
+        {/* Header row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 6 }}>
+              games corner
+            </div>
+            <h1 className="serif" style={{ fontSize: "clamp(28px, 4vw, 40px)", margin: 0, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1 }}>
+              Daily Puzzles
+            </h1>
           </div>
-          <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 56px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
-            Play something. <em style={{ color: "var(--rose)" }}>Keep a streak.</em>
-          </h1>
-          <p style={{ fontSize: 18, color: "var(--ink-soft)", marginTop: 14, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
-            New puzzles every day. Solve them all, build your streak, challenge your friends.
-          </p>
-        </div>
 
-        {/* Date navigator */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-          marginBottom: 20,
-        }}>
-          <button
-            onClick={goBack}
-            className="btn-ghost"
-            style={{ padding: "6px 10px", display: "flex", alignItems: "center" }}
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={goToday}
-            className="typewriter"
-            style={{
-              fontSize: 13, letterSpacing: "0.1em", padding: "6px 16px",
-              background: isToday ? "var(--ink)" : "var(--paper-deep)",
-              color: isToday ? "var(--paper-light)" : "var(--ink)",
-              border: "1.5px solid var(--ink)", borderRadius: 2, cursor: "pointer",
-              minWidth: 160, textAlign: "center",
-            }}
-          >
-            {isToday ? "TODAY" : formatDate(playDate)}
-          </button>
-          <button
-            onClick={goForward}
-            disabled={isToday}
-            className="btn-ghost"
-            style={{
-              padding: "6px 10px", display: "flex", alignItems: "center",
-              opacity: isToday ? 0.3 : 1, cursor: isToday ? "default" : "pointer",
-            }}
-          >
-            <ChevronRight size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={goBack} className="btn-ghost" style={{ padding: "6px 8px", display: "flex", alignItems: "center", border: "1px solid rgba(106,112,140,0.3)" }}>
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={goToday}
+              className="typewriter"
+              style={{
+                fontSize: 12, letterSpacing: "0.1em", padding: "6px 14px",
+                background: isToday ? "var(--ink)" : "var(--paper-deep)",
+                color: isToday ? "var(--paper-light)" : "var(--ink)",
+                border: "1px solid var(--ink)", borderRadius: 2, cursor: "pointer",
+                minWidth: 120, textAlign: "center",
+              }}
+            >
+              {isToday ? "TODAY" : formatDate(playDate)}
+            </button>
+            <button
+              onClick={goForward}
+              disabled={isToday}
+              className="btn-ghost"
+              style={{ padding: "6px 8px", display: "flex", alignItems: "center", opacity: isToday ? 0.3 : 1, cursor: isToday ? "default" : "pointer", border: "1px solid rgba(106,112,140,0.3)" }}
+            >
+              <ChevronRight size={16} />
+            </button>
+
+            <button
+              onClick={shareAllStreaks}
+              className="typewriter"
+              style={{
+                fontSize: 10, color: "var(--teal)", background: "none",
+                border: "1px solid rgba(42, 95, 214, 0.3)", borderRadius: 2,
+                padding: "6px 12px", cursor: "pointer", letterSpacing: "0.1em",
+                marginLeft: 4,
+              }}
+            >
+              {shareMsg || "share"}
+            </button>
+          </div>
         </div>
 
         {!isToday && (
-          <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <div style={{ marginBottom: 16 }}>
             <span className="typewriter" style={{
               fontSize: 11, letterSpacing: "0.12em", color: "var(--teal)",
               background: "rgba(42, 95, 214, 0.08)", padding: "5px 14px", borderRadius: 2,
@@ -181,204 +184,143 @@ export default function GamesPage() {
           </div>
         )}
 
-        {/* Streak bar */}
-        <div
-          className="paper"
-          style={{
-            padding: "16px 24px",
-            background: "#faf3df",
-            margin: "0 auto 28px",
-            maxWidth: 700,
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
+        {/* Two-column layout */}
+        <div className="games-layout" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20, alignItems: "start" }}>
 
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {/* Sidebar */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+            {/* Game cards */}
             {GAMES.map((g) => {
               const s = allStats[g.id];
+              const streak = s?.currentStreak || 0;
+              const won = s?.gamesWon || 0;
+              const selected = isGameActive(g.id);
+
               return (
-                <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 17 }}>{g.emoji}</span>
-                  <span className="typewriter" style={{ fontSize: 12, letterSpacing: "0.08em", color: "var(--ink-soft)" }}>
-                    {s?.currentStreak || 0}
-                  </span>
-                  {(s?.currentStreak || 0) > 0 && <span style={{ fontSize: 12 }}>🔥</span>}
-                </div>
+                <button
+                  key={g.id}
+                  onClick={() => setActive(g.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "14px 16px",
+                    background: selected ? "var(--ink)" : "var(--paper-light)",
+                    color: selected ? "var(--paper-light)" : "var(--ink)",
+                    border: "none",
+                    borderRadius: 3,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s ease",
+                    boxShadow: selected
+                      ? "0 2px 8px rgba(26, 31, 58, 0.25)"
+                      : "0 1px 3px rgba(34, 30, 24, 0.08)",
+                  }}
+                >
+                  <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{g.emoji}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="serif" style={{ fontSize: 15, fontWeight: 500, marginBottom: 2 }}>
+                      {g.label}
+                    </div>
+                    <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.08em", opacity: 0.6 }}>
+                      {streak > 0 ? `${streak} day streak` : `${won} won`}
+                    </div>
+                  </div>
+                  {streak > 0 && (
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>🔥</span>
+                  )}
+                </button>
               );
             })}
-          </div>
 
-          <button
-            onClick={shareAllStreaks}
-            className="typewriter"
-            style={{
-              fontSize: 11, color: "var(--teal)", background: "none",
-              border: "1px dashed var(--teal)", borderRadius: 2,
-              padding: "5px 12px", cursor: "pointer", letterSpacing: "0.1em",
-            }}
-          >
-            {shareMsg || "challenge a friend"}
-          </button>
-        </div>
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(106, 112, 140, 0.15)", margin: "4px 0" }} />
 
-        {/* Game tabs */}
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
-          {GAMES.map((g) => (
+            {/* Archive */}
             <button
-              key={g.id}
-              onClick={() => setActive(g.id)}
-              className="typewriter"
+              onClick={() => {
+                setActive("archive");
+                if (archive.length === 0) {
+                  setArchiveLoading(true);
+                  getArchive().then((a) => { setArchive(a); setArchiveLoading(false); });
+                }
+              }}
               style={{
-                padding: "10px 20px",
-                background: active === g.id ? "var(--ink)" : "transparent",
-                color: active === g.id ? "var(--paper-light)" : "var(--ink)",
-                border: `1.5px solid ${active === g.id ? "var(--ink)" : "var(--ink-faded)"}`,
-                fontSize: 12,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 16px",
+                background: active === "archive" ? "var(--ink)" : "transparent",
+                color: active === "archive" ? "var(--paper-light)" : "var(--ink-soft)",
+                border: "none",
+                borderRadius: 3,
                 cursor: "pointer",
-                borderRadius: 2,
-                transition: "all 0.2s ease",
+                textAlign: "left",
+                transition: "all 0.15s ease",
               }}
             >
-              {g.emoji} {g.label}
+              <ScrollText size={18} style={{ flexShrink: 0, opacity: 0.6 }} />
+              <span className="serif" style={{ fontSize: 14 }}>Archive</span>
             </button>
-          ))}
-          <button
-            onClick={() => {
-              setActive("archive");
-              if (archive.length === 0) {
-                setArchiveLoading(true);
-                getArchive().then((a) => { setArchive(a); setArchiveLoading(false); });
-              }
-            }}
-            className="typewriter"
-            style={{
-              padding: "10px 20px",
-              background: active === "archive" ? "var(--ink)" : "transparent",
-              color: active === "archive" ? "var(--paper-light)" : "var(--ink)",
-              border: `1.5px solid ${active === "archive" ? "var(--ink)" : "var(--ink-faded)"}`,
-              fontSize: 12,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              borderRadius: 2,
-              transition: "all 0.2s ease",
-            }}
-          >
-            📜 Archive
-          </button>
-          <button
-            onClick={() => setActive("leaderboard")}
-            className="typewriter"
-            style={{
-              padding: "10px 20px",
-              background: active === "leaderboard" ? "var(--ink)" : "transparent",
-              color: active === "leaderboard" ? "var(--paper-light)" : "var(--ink)",
-              border: `1.5px solid ${active === "leaderboard" ? "var(--ink)" : "var(--ink-faded)"}`,
-              fontSize: 12,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              borderRadius: 2,
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <Trophy size={14} /> Leaderboard
-          </button>
-        </div>
 
-        {/* Game container */}
-        <div
-          className="paper page-in"
-          key={playDate}
-          style={{
-            padding: "32px 24px 40px",
-            position: "relative",
-            minHeight: 400,
-            background: "var(--paper-light)",
-          }}
-        >
-          <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20, textAlign: "center" }}>
-            {active === "archive" ? "your game archive" : active === "leaderboard" ? "leaderboard" : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
+            {/* Leaderboard */}
+            <button
+              onClick={() => setActive("leaderboard")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 16px",
+                background: active === "leaderboard" ? "var(--ink)" : "transparent",
+                color: active === "leaderboard" ? "var(--paper-light)" : "var(--ink-soft)",
+                border: "none",
+                borderRadius: 3,
+                cursor: "pointer",
+                textAlign: "left",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <Trophy size={18} style={{ flexShrink: 0, opacity: 0.6 }} />
+              <span className="serif" style={{ fontSize: 14 }}>Leaderboard</span>
+            </button>
           </div>
 
-          {active === "leaderboard" ? (
-            <LeaderboardView />
-          ) : active === "archive" ? (
-            <ArchiveView entries={archive} loading={archiveLoading} />
-          ) : loading ? (
-            <div style={{ textAlign: "center", padding: 60 }}>
-              <div className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.15em" }}>
-                loading {isToday ? "today" : formatDate(playDate)}&apos;s puzzles...
-              </div>
+          {/* Main game area */}
+          <div
+            className="paper page-in"
+            key={`${playDate}-${active}`}
+            style={{
+              padding: "28px 24px 36px",
+              position: "relative",
+              minHeight: 460,
+              background: "var(--paper-light)",
+            }}
+          >
+            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20 }}>
+              {active === "archive" ? "your game archive" : active === "leaderboard" ? "leaderboard" : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
             </div>
-          ) : (
-            <>
-              {active === "wordle" && <WordleGame answer={puzzles?.wordle?.answer} playDate={playDate} />}
-              {active === "sudoku" && <SudokuGame puzzle={puzzles?.sudoku} playDate={playDate} />}
-              {active === "spelling" && <SpellingBeeGame puzzle={puzzles?.spelling} playDate={playDate} />}
-              {active === "crossword" && <CrosswordGame puzzle={puzzles?.crossword} playDate={playDate} />}
-              {active === "tango" && <TangoGame puzzle={puzzles?.tango} playDate={playDate} />}
-            </>
-          )}
-        </div>
 
-        {/* Stats section */}
-        <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
-          {GAMES.map((g) => {
-            const s = allStats[g.id];
-            return (
-              <div
-                key={g.id}
-                className="paper"
-                style={{
-                  padding: "20px 18px",
-                  textAlign: "center",
-                  transform: "none",
-                }}
-              >
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{g.emoji}</div>
-                <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
-                  {g.label}
-                </div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
-                  <div>
-                    <div style={{ fontSize: 28, fontFamily: "'Bungee', system-ui", color: "var(--ink)" }}>
-                      {s?.currentStreak || 0}
-                    </div>
-                    <div className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
-                      STREAK
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 28, fontFamily: "'Bungee', system-ui", color: "var(--ink-faded)" }}>
-                      {s?.maxStreak || 0}
-                    </div>
-                    <div className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
-                      BEST
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 28, fontFamily: "'Bungee', system-ui", color: "var(--teal)" }}>
-                      {s?.gamesWon || 0}
-                    </div>
-                    <div className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
-                      WON
-                    </div>
-                  </div>
+            {active === "leaderboard" ? (
+              <LeaderboardView />
+            ) : active === "archive" ? (
+              <ArchiveView entries={archive} loading={archiveLoading} />
+            ) : loading ? (
+              <div style={{ textAlign: "center", padding: 60 }}>
+                <div className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.15em" }}>
+                  loading {isToday ? "today" : formatDate(playDate)}&apos;s puzzles...
                 </div>
               </div>
-            );
-          })}
+            ) : (
+              <>
+                {active === "wordle" && <WordleGame answer={puzzles?.wordle?.answer} playDate={playDate} />}
+                {active === "sudoku" && <SudokuGame puzzle={puzzles?.sudoku} playDate={playDate} />}
+                {active === "spelling" && <SpellingBeeGame puzzle={puzzles?.spelling} playDate={playDate} />}
+                {active === "crossword" && <CrosswordGame puzzle={puzzles?.crossword} playDate={playDate} />}
+                {active === "tango" && <TangoGame puzzle={puzzles?.tango} playDate={playDate} />}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
