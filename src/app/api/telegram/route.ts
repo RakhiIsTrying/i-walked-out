@@ -5,7 +5,7 @@ import { handleDream, handleFeed } from "@/lib/telegram/dreams";
 import { handleVibe, handleBucket } from "@/lib/telegram/vibe";
 import { handlePersonality, handleChatMode, handleExitChat, handleDugDugMode } from "@/lib/telegram/chat";
 import { handleSticky, handleDecisions, handleVote } from "@/lib/telegram/sticky";
-import { handleWordleStart, handleBeeStart, handleEndGame, handleGameLeaderboard } from "@/lib/telegram/games";
+import { handleWordleStart, handleBeeStart, handleEndGame, handleGameLeaderboard, handleGamesStatus } from "@/lib/telegram/games";
 import { handleFreeText } from "@/lib/telegram/intent";
 import { handleHelp } from "@/lib/telegram/help";
 
@@ -90,6 +90,8 @@ export async function POST(request: Request) {
       await handleGameLeaderboard(chatId, text);
     } else if (text.startsWith("/endgame") || text.startsWith("/quit")) {
       await handleEndGame(chatId);
+    } else if (text.startsWith("/games")) {
+      await handleGamesStatus(chatId);
     } else if (text.startsWith("/bucket")) {
       await handleBucket(chatId, text);
     } else if (text.startsWith("/help")) {

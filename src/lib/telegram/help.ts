@@ -22,6 +22,7 @@ export async function handleHelp(chatId: number) {
       `/bucket add <cat> | <item> — Add to list\n` +
       `/bucket done <num> — Check off an item\n\n` +
       `🎮 *Games*\n` +
+      `/games — See today's games & your status\n` +
       `/wordle — Play today's Wordle\n` +
       `/bee — Play today's Spelling Bee\n` +
       `/endgame — Quit current game\n` +

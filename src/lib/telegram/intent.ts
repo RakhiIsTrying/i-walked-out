@@ -5,7 +5,7 @@ import { moderateTexts } from "@/lib/moderate";
 import { getUserLink, getActiveChatMode, getGameState } from "./helpers";
 import { handleVibe } from "./vibe";
 import { handleDugDugChat, handlePersonalityChat } from "./chat";
-import { handleWordleGuess, handleBeeGuess } from "./games";
+import { handleWordleGuess, handleBeeGuess, getActiveGame } from "./games";
 
 async function detectIntent(text: string): Promise<{ intent: "dream" | "sticky" | "vibe" | "chat" | "unknown"; parsed?: Record<string, string> }> {
   const completion = await getAI().chat.completions.create({
@@ -68,19 +68,20 @@ export async function handleFreeText(chatId: number, text: string) {
     return;
   }
 
-  // Check for active game sessions (single-word alpha input)
-  if (/^[a-zA-Z]+$/.test(text)) {
-    if (text.length === 5) {
+  const cleaned = text.trim();
+  if (/^[a-zA-Z]+$/.test(cleaned)) {
+    const activeGame = await getActiveGame(chatId);
+    if (activeGame === "wordle" && cleaned.length === 5) {
       const ws = await getGameState(chatId, "wordle");
       if (ws && !ws.gameOver) {
-        await handleWordleGuess(chatId, link.user_id, text.toUpperCase(), ws);
+        await handleWordleGuess(chatId, link.user_id, cleaned.toUpperCase(), ws);
         return;
       }
     }
-    if (text.length >= 4) {
+    if (activeGame === "spelling" && cleaned.length >= 4) {
       const bs = await getGameState(chatId, "spelling");
       if (bs && !bs.gameOver) {
-        await handleBeeGuess(chatId, link.user_id, text.toLowerCase(), bs);
+        await handleBeeGuess(chatId, link.user_id, cleaned.toLowerCase(), bs);
         return;
       }
     }

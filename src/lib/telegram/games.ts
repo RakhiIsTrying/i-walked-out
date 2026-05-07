@@ -84,6 +84,42 @@ function getBeeRank(score: number, max: number): string {
   return "Beginner";
 }
 
+async function endOtherGame(chatId: number, userId: string, keep: "wordle" | "spelling") {
+  const other = keep === "wordle" ? "spelling" : "wordle";
+  const state = await getGameState(chatId, other);
+  if (!state || state.gameOver) return;
+
+  const today = new Date().toISOString().split("T")[0];
+  const db = getAdmin();
+
+  if (other === "wordle") {
+    const answer = state.answer || await getTodayWordleAnswer();
+    await setGameState(chatId, "wordle", { ...state, gameOver: true, won: false, answer });
+    await db.from("game_archives").insert({
+      user_id: userId, game_type: "wordle", won: false, score: 0,
+      result: { answer, guesses: state.guesses || [], attempts: (state.guesses || []).length },
+      played_at: today,
+    });
+  } else {
+    const puzzle = await getTodayBeeData();
+    const rank = getBeeRank(state.score || 0, puzzle.maxScore);
+    await setGameState(chatId, "spelling", { ...state, gameOver: true });
+    await db.from("game_archives").insert({
+      user_id: userId, game_type: "spelling", won: rank === "Genius", score: state.score || 0,
+      result: { words: state.found || [], rank, maxScore: puzzle.maxScore },
+      played_at: today,
+    });
+  }
+}
+
+export async function getActiveGame(chatId: number): Promise<"wordle" | "spelling" | null> {
+  const ws = await getGameState(chatId, "wordle");
+  if (ws && !ws.gameOver) return "wordle";
+  const bs = await getGameState(chatId, "spelling");
+  if (bs && !bs.gameOver) return "spelling";
+  return null;
+}
+
 export async function handleWordleStart(chatId: number) {
   const link = await getUserLink(chatId);
   if (!link) {
@@ -104,7 +140,10 @@ export async function handleWordleStart(chatId: number) {
     return;
   }
 
-  await setGameState(chatId, "wordle", { guesses: [], states: [], gameOver: false, won: false });
+  await endOtherGame(chatId, link.user_id, "wordle");
+
+  const answer = await getTodayWordleAnswer();
+  await setGameState(chatId, "wordle", { guesses: [], states: [], gameOver: false, won: false, answer });
   await sendMessage(chatId, `🟩 *WORDLE — Day #${getDayNumber()}*\n\nGuess a 5-letter word! You have 6 attempts.\nJust type any 5-letter word.\n\n/endgame to quit.`);
 }
 
@@ -121,7 +160,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
     return;
   }
 
-  const answer = await getTodayWordleAnswer();
+  const answer = state.answer || await getTodayWordleAnswer();
   const result = evalWordleGuess(guess, answer);
 
   const guesses = [...(state.guesses || []), guess];
@@ -131,7 +170,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
   const isLoss = !isWin && guesses.length >= 6;
   const gameOver = isWin || isLoss;
 
-  await setGameState(chatId, "wordle", { guesses, states, gameOver, won: isWin, answer: gameOver ? answer : undefined });
+  await setGameState(chatId, "wordle", { guesses, states, gameOver, won: isWin, answer });
 
   const grid = guesses.map((g: string, i: number) => formatWordleRow(g, states[i])).join("\n");
 
@@ -139,10 +178,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
     await sendMessage(chatId, `🟩 *WORDLE — ${guesses.length}/6*\n\n${grid}\n\n🎉 *Got it in ${guesses.length}!*`);
     const db = getAdmin();
     await db.from("game_archives").insert({
-      user_id: userId,
-      game_type: "wordle",
-      won: true,
-      score: guesses.length,
+      user_id: userId, game_type: "wordle", won: true, score: guesses.length,
       result: { answer, guesses, attempts: guesses.length },
       played_at: new Date().toISOString().split("T")[0],
     });
@@ -150,10 +186,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
     await sendMessage(chatId, `🟩 *WORDLE — X/6*\n\n${grid}\n\nThe word was *${answer}*. Better luck tomorrow!`);
     const db = getAdmin();
     await db.from("game_archives").insert({
-      user_id: userId,
-      game_type: "wordle",
-      won: false,
-      score: 0,
+      user_id: userId, game_type: "wordle", won: false, score: 0,
       result: { answer, guesses, attempts: guesses.length },
       played_at: new Date().toISOString().split("T")[0],
     });
@@ -189,7 +222,14 @@ export async function handleBeeStart(chatId: number) {
     return;
   }
 
-  await setGameState(chatId, "spelling", { found: [], score: 0, gameOver: false });
+  await endOtherGame(chatId, link.user_id, "spelling");
+
+  const validWordsList = puzzle.validWords.map((w: string) => w);
+  await setGameState(chatId, "spelling", {
+    found: [], score: 0, gameOver: false,
+    center: puzzle.center, outer: puzzle.outer,
+    validWords: validWordsList, maxScore: puzzle.maxScore,
+  });
   await sendMessage(
     chatId,
     `🐝 *SPELLING BEE — Day #${getDayNumber()}*\n\nCenter: ${letters}\n\nFind words using these letters (4+ letters). Every word must use the center letter. Letters can repeat.\n\nType a word to guess. /endgame to quit.`
@@ -198,23 +238,25 @@ export async function handleBeeStart(chatId: number) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleBeeGuess(chatId: number, userId: string, word: string, state: any) {
-  const puzzle = await getTodayBeeData();
-  const allLetters = new Set([puzzle.center, ...puzzle.outer]);
+  const center = state.center;
+  const outer = state.outer || [];
+  const allLetters = new Set([center, ...outer]);
+  const maxScore = state.maxScore || 0;
 
   if (word.length < 4) { await sendMessage(chatId, "Too short — need 4+ letters."); return; }
-  if (!word.includes(puzzle.center)) { await sendMessage(chatId, `Must use center letter *${puzzle.center.toUpperCase()}*.`); return; }
+  if (!word.includes(center)) { await sendMessage(chatId, `Must use center letter *${center.toUpperCase()}*.`); return; }
   for (const ch of word) {
     if (!allLetters.has(ch)) { await sendMessage(chatId, `Letter "${ch.toUpperCase()}" is not in the puzzle.`); return; }
   }
   if ((state.found || []).includes(word)) { await sendMessage(chatId, "Already found that one!"); return; }
 
-  const validSet = new Set(puzzle.validWords);
+  const validSet = new Set(state.validWords || []);
   let isValid = validSet.has(word);
   if (!isValid) {
     try {
       const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, { signal: AbortSignal.timeout(3000) });
       isValid = res.ok;
-    } catch {}
+    } catch { /* timeout or network error — reject the word */ }
   }
 
   if (!isValid) { await sendMessage(chatId, `"${word.toUpperCase()}" is not a valid word.`); return; }
@@ -223,10 +265,10 @@ export async function handleBeeGuess(chatId: number, userId: string, word: strin
   const isPangram = new Set(word).size === allLetters.size && [...allLetters].every(l => word.includes(l));
   const found = [...(state.found || []), word];
   const score = (state.score || 0) + pts;
-  const rank = getBeeRank(score, puzzle.maxScore);
+  const rank = getBeeRank(score, maxScore);
   const isGenius = rank === "Genius";
 
-  await setGameState(chatId, "spelling", { found, score, gameOver: isGenius });
+  await setGameState(chatId, "spelling", { ...state, found, score, gameOver: isGenius });
 
   let msg = isPangram ? `🎯 *PANGRAM! +${pts}*` : `+${pts}`;
   msg += `\n\n${rank} · ${score} pts · ${found.length} words`;
@@ -235,11 +277,8 @@ export async function handleBeeGuess(chatId: number, userId: string, word: strin
     msg += `\n\n🎉 *You reached Genius!* Amazing work!`;
     const db = getAdmin();
     await db.from("game_archives").insert({
-      user_id: userId,
-      game_type: "spelling",
-      won: true,
-      score,
-      result: { words: found, rank: "Genius", maxScore: puzzle.maxScore },
+      user_id: userId, game_type: "spelling", won: true, score,
+      result: { words: found, rank: "Genius", maxScore },
       played_at: new Date().toISOString().split("T")[0],
     });
   }
@@ -255,7 +294,7 @@ export async function handleEndGame(chatId: number) {
   let ended = false;
   const ws = await getGameState(chatId, "wordle");
   if (ws && !ws.gameOver) {
-    const answer = await getTodayWordleAnswer();
+    const answer = ws.answer || await getTodayWordleAnswer();
     await setGameState(chatId, "wordle", { ...ws, gameOver: true, won: false, answer });
     if (link) {
       await db.from("game_archives").insert({
@@ -269,13 +308,13 @@ export async function handleEndGame(chatId: number) {
 
   const bs = await getGameState(chatId, "spelling");
   if (bs && !bs.gameOver) {
-    const puzzle = await getTodayBeeData();
-    const rank = getBeeRank(bs.score || 0, puzzle.maxScore);
+    const maxScore = bs.maxScore || 0;
+    const rank = getBeeRank(bs.score || 0, maxScore);
     await setGameState(chatId, "spelling", { ...bs, gameOver: true });
     if (link) {
       await db.from("game_archives").insert({
         user_id: link.user_id, game_type: "spelling", won: rank === "Genius", score: bs.score || 0,
-        result: { words: bs.found || [], rank, maxScore: puzzle.maxScore },
+        result: { words: bs.found || [], rank, maxScore },
         played_at: today,
       });
     }
@@ -287,6 +326,40 @@ export async function handleEndGame(chatId: number) {
   } else {
     await sendMessage(chatId, "No active game to end.");
   }
+}
+
+export async function handleGamesStatus(chatId: number) {
+  const ws = await getGameState(chatId, "wordle");
+  const bs = await getGameState(chatId, "spelling");
+
+  const lines: string[] = [];
+
+  if (ws) {
+    if (ws.gameOver) {
+      lines.push(`🟩 Wordle: ${ws.won ? `Won in ${ws.guesses?.length}` : "Lost"} (done for today)`);
+    } else {
+      lines.push(`🟩 Wordle: *In progress* — ${ws.guesses?.length || 0}/6 guesses`);
+    }
+  } else {
+    lines.push("🟩 Wordle: Not played today");
+  }
+
+  if (bs) {
+    if (bs.gameOver) {
+      const rank = getBeeRank(bs.score || 0, bs.maxScore || 0);
+      lines.push(`🐝 Spelling Bee: ${rank} — ${bs.score || 0} pts (done for today)`);
+    } else {
+      const rank = getBeeRank(bs.score || 0, bs.maxScore || 0);
+      lines.push(`🐝 Spelling Bee: *In progress* — ${rank} · ${bs.score || 0} pts · ${bs.found?.length || 0} words`);
+    }
+  } else {
+    lines.push("🐝 Spelling Bee: Not played today");
+  }
+
+  await sendMessage(
+    chatId,
+    `🎮 *Games — Day #${getDayNumber()}*\n\n${lines.join("\n")}\n\n/wordle — Play Wordle\n/bee — Play Spelling Bee\n/leaderboard — View top players`
+  );
 }
 
 export async function handleGameLeaderboard(chatId: number, text: string) {
