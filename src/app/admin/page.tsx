@@ -1,0 +1,423 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
+interface Stats {
+  users: number;
+  dreams: number;
+  sticky_decisions: number;
+  votes: number;
+  vibe_searches: number;
+  bucket_items: number;
+  telegram_links: number;
+  personalities: number;
+  games_played: number;
+  chat_messages: number;
+  today_users: number;
+  today_dreams: number;
+}
+
+interface User {
+  id: string;
+  email: string;
+  phone: string | null;
+  provider: string;
+  anonymous_alias: string;
+  dream_count: number;
+  personality_generated: boolean;
+  created_at: string;
+}
+
+interface RecentDream {
+  id: string;
+  title: string;
+  category: string;
+  emotion: string;
+  created_at: string;
+}
+
+interface RecentSticky {
+  id: string;
+  title: string;
+  options: string[];
+  created_at: string;
+}
+
+interface RecentVibe {
+  id: string;
+  query: string;
+  created_at: string;
+}
+
+interface RecentGame {
+  id: string;
+  game_type: string;
+  score: number;
+  won: boolean;
+  created_at: string;
+}
+
+type Tab = "overview" | "users" | "dreams" | "decisions" | "vibes" | "games";
+
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [tab, setTab] = useState<Tab>("overview");
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [recentDreams, setRecentDreams] = useState<RecentDream[]>([]);
+  const [recentSticky, setRecentSticky] = useState<RecentSticky[]>([]);
+  const [recentVibes, setRecentVibes] = useState<RecentVibe[]>([]);
+  const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  async function checkAuth() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.email !== "rakhisinha100896@gmail.com") {
+      router.push("/");
+      return;
+    }
+    setAuthChecking(false);
+    loadStats();
+  }
+
+  async function loadStats() {
+    const res = await fetch("/api/admin/stats");
+    if (res.ok) {
+      const data = await res.json();
+      setStats(data.stats);
+      setUsers(data.users);
+      setRecentDreams(data.recentDreams);
+      setRecentSticky(data.recentSticky);
+      setRecentVibes(data.recentVibes);
+      setRecentGames(data.recentGames);
+    }
+    setLoading(false);
+  }
+
+  if (authChecking) {
+    return (
+      <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p className="typewriter" style={{ fontSize: 13, letterSpacing: "0.15em", color: "var(--ink-faded)" }}>
+          verifying...
+        </p>
+      </div>
+    );
+  }
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "overview", label: "Overview" },
+    { key: "users", label: "Users" },
+    { key: "dreams", label: "Dreams" },
+    { key: "decisions", label: "Decisions" },
+    { key: "vibes", label: "Vibes" },
+    { key: "games", label: "Games" },
+  ];
+
+  function formatDate(d: string) {
+    return new Date(d).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+    });
+  }
+
+  return (
+    <div className="page-in" style={{ padding: "24px clamp(16px, 4vw, 48px) 60px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+        <header style={{ marginBottom: 32 }}>
+          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 8 }}>
+            admin · private
+          </div>
+          <h1 className="serif" style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 400, fontStyle: "italic", margin: 0, lineHeight: 1.05 }}>
+            Command Center
+          </h1>
+        </header>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 32, borderBottom: "1.5px solid rgba(106,112,140,0.15)", paddingBottom: 12 }}>
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="typewriter"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                padding: "8px 16px",
+                cursor: "pointer",
+                border: "none",
+                borderRadius: 2,
+                background: tab === t.key ? "var(--ink)" : "transparent",
+                color: tab === t.key ? "var(--paper-light)" : "var(--ink-faded)",
+                transition: "all 0.15s",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <p className="hand" style={{ fontSize: 22, color: "var(--ink-faded)", textAlign: "center", padding: "60px 0" }}>
+            loading dashboard...
+          </p>
+        ) : (
+          <>
+            {/* Overview */}
+            {tab === "overview" && stats && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
+
+                {/* Today */}
+                <div>
+                  <SectionLabel text="today" />
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
+                    <StatCard value={stats.today_users} label="new signups" color="var(--rose)" />
+                    <StatCard value={stats.today_dreams} label="dreams logged" color="var(--teal)" />
+                  </div>
+                </div>
+
+                {/* All time */}
+                <div>
+                  <SectionLabel text="all time" />
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
+                    <StatCard value={stats.users} label="users" color="var(--ink)" />
+                    <StatCard value={stats.dreams} label="dreams" color="var(--rose)" />
+                    <StatCard value={stats.sticky_decisions} label="decisions" color="var(--plum)" />
+                    <StatCard value={stats.votes} label="votes" color="var(--teal)" />
+                    <StatCard value={stats.vibe_searches} label="vibe searches" color="var(--butter)" />
+                    <StatCard value={stats.bucket_items} label="bucket items" color="var(--rose)" />
+                    <StatCard value={stats.games_played} label="games played" color="var(--teal)" />
+                    <StatCard value={stats.personalities} label="personalities" color="var(--plum)" />
+                    <StatCard value={stats.telegram_links} label="telegram links" color="var(--ink)" />
+                    <StatCard value={stats.chat_messages} label="chat messages" color="var(--butter)" />
+                  </div>
+                </div>
+
+                {/* Recent activity */}
+                <div>
+                  <SectionLabel text="recent activity" />
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))", gap: 20 }}>
+                    <ActivityCard title="Latest Dreams">
+                      {recentDreams.length === 0 ? <EmptyMsg /> : recentDreams.slice(0, 5).map((d) => (
+                        <ActivityRow key={d.id} primary={d.title} secondary={`${d.category} · ${d.emotion}`} time={formatDate(d.created_at)} />
+                      ))}
+                    </ActivityCard>
+                    <ActivityCard title="Latest Vibes">
+                      {recentVibes.length === 0 ? <EmptyMsg /> : recentVibes.slice(0, 5).map((v) => (
+                        <ActivityRow key={v.id} primary={v.query} time={formatDate(v.created_at)} />
+                      ))}
+                    </ActivityCard>
+                    <ActivityCard title="Latest Decisions">
+                      {recentSticky.length === 0 ? <EmptyMsg /> : recentSticky.slice(0, 5).map((s) => (
+                        <ActivityRow key={s.id} primary={s.title} secondary={s.options?.join(" vs ")} time={formatDate(s.created_at)} />
+                      ))}
+                    </ActivityCard>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Users */}
+            {tab === "users" && (
+              <div>
+                <SectionLabel text={`${users.length} users`} />
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr className="typewriter" style={{ borderBottom: "2px solid var(--ink)", textAlign: "left", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+                        <th style={thStyle}>#</th>
+                        <th style={thStyle}>email</th>
+                        <th style={thStyle}>phone</th>
+                        <th style={thStyle}>via</th>
+                        <th style={thStyle}>alias</th>
+                        <th style={thStyle}>dreams</th>
+                        <th style={thStyle}>personality</th>
+                        <th style={thStyle}>signed up</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((u, i) => (
+                        <tr key={u.id} style={{ borderBottom: "1px dashed var(--ink-faded)" }}>
+                          <td className="typewriter" style={{ ...tdStyle, color: "var(--ink-faded)" }}>{i + 1}</td>
+                          <td style={{ ...tdStyle, fontFamily: "monospace" }}>{u.email || "—"}</td>
+                          <td style={{ ...tdStyle, fontFamily: "monospace" }}>{u.phone || "—"}</td>
+                          <td className="typewriter" style={{ ...tdStyle, fontSize: 10 }}>{u.provider}</td>
+                          <td className="hand" style={{ ...tdStyle, fontSize: 16 }}>{u.anonymous_alias}</td>
+                          <td className="typewriter" style={{ ...tdStyle, textAlign: "center" }}>{u.dream_count}</td>
+                          <td style={{ ...tdStyle, textAlign: "center" }}>{u.personality_generated ? "yes" : "—"}</td>
+                          <td className="typewriter" style={{ ...tdStyle, fontSize: 11, color: "var(--ink-faded)" }}>{formatDate(u.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Dreams */}
+            {tab === "dreams" && (
+              <div>
+                <SectionLabel text={`${stats?.dreams || 0} total dreams`} />
+                {recentDreams.length === 0 ? <EmptyMsg /> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {recentDreams.map((d) => (
+                      <div key={d.id} className="paper" style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                          <h3 className="serif" style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{d.title}</h3>
+                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{formatDate(d.created_at)}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                          <Pill text={d.category} color="var(--rose)" />
+                          <Pill text={d.emotion} color="var(--teal)" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Decisions */}
+            {tab === "decisions" && (
+              <div>
+                <SectionLabel text={`${stats?.sticky_decisions || 0} decisions · ${stats?.votes || 0} votes`} />
+                {recentSticky.length === 0 ? <EmptyMsg /> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {recentSticky.map((s) => (
+                      <div key={s.id} className="paper" style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                          <h3 className="serif" style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{s.title}</h3>
+                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{formatDate(s.created_at)}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                          {s.options?.map((opt, i) => (
+                            <Pill key={i} text={opt} color="var(--plum)" />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Vibes */}
+            {tab === "vibes" && (
+              <div>
+                <SectionLabel text={`${stats?.vibe_searches || 0} searches · ${stats?.bucket_items || 0} bucket items`} />
+                {recentVibes.length === 0 ? <EmptyMsg /> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {recentVibes.map((v) => (
+                      <div key={v.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-faded)" }}>
+                        <span className="hand" style={{ fontSize: 20 }}>&ldquo;{v.query}&rdquo;</span>
+                        <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0, marginLeft: 12 }}>{formatDate(v.created_at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Games */}
+            {tab === "games" && (
+              <div>
+                <SectionLabel text={`${stats?.games_played || 0} games played`} />
+                {recentGames.length === 0 ? <EmptyMsg /> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {recentGames.map((g) => (
+                      <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-faded)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <Pill text={g.game_type} color="var(--teal)" />
+                          <span className="typewriter" style={{ fontSize: 13 }}>
+                            {g.won ? "Won" : "Lost"} · {g.score} pts
+                          </span>
+                        </div>
+                        <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0 }}>{formatDate(g.created_at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const thStyle: React.CSSProperties = { padding: "10px 12px" };
+const tdStyle: React.CSSProperties = { padding: "10px 12px" };
+
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+      <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", whiteSpace: "nowrap" }}>
+        {text}
+      </span>
+      <div style={{ flex: 1, height: 1, borderTop: "1.5px dashed var(--ink-faded)" }} />
+    </div>
+  );
+}
+
+function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div style={{
+      background: "var(--paper-light)",
+      border: "1px solid rgba(106,112,140,0.12)",
+      borderRadius: 4,
+      padding: "20px 18px",
+      textAlign: "center",
+    }}>
+      <div className="serif" style={{ fontSize: 36, fontWeight: 500, color, lineHeight: 1 }}>{value}</div>
+      <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 6, textTransform: "uppercase" }}>{label}</div>
+    </div>
+  );
+}
+
+function ActivityCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.12)", borderRadius: 4, padding: "18px 20px" }}>
+      <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
+        {title}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
+    </div>
+  );
+}
+
+function ActivityRow({ primary, secondary, time }: { primary: string; secondary?: string; time: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 14, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{primary}</div>
+        {secondary && <div style={{ fontSize: 11, color: "var(--ink-faded)", marginTop: 2 }}>{secondary}</div>}
+      </div>
+      <span className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", flexShrink: 0 }}>{time}</span>
+    </div>
+  );
+}
+
+function Pill({ text, color }: { text: string; color: string }) {
+  return (
+    <span className="typewriter" style={{
+      fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase",
+      padding: "3px 10px", borderRadius: 12,
+      border: `1.5px solid ${color}`, color,
+    }}>
+      {text}
+    </span>
+  );
+}
+
+function EmptyMsg() {
+  return <p className="hand" style={{ fontSize: 18, color: "var(--ink-faded)", textAlign: "center", padding: "20px 0" }}>nothing yet</p>;
+}
