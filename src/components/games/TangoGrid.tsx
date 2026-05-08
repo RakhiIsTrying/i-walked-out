@@ -27,9 +27,9 @@ export default function TangoGrid({ grid, given, violations, gameOver, size, onT
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 24,
                 background: hasViolation ? "rgba(210, 70, 70, 0.1)" :
-                  isGiven ? "var(--paper-deep)" : "var(--paper-light)",
-                border: hasViolation ? "2px solid var(--rose)" :
-                  isGiven ? "2px solid var(--ink)" : "2px solid var(--ink-faded)",
+                  isGiven ? "var(--paper-deep)" : "var(--paper)",
+                border: hasViolation ? "2px solid var(--accent-deep)" :
+                  isGiven ? "2px solid var(--ink)" : "2px solid var(--ink-3)",
                 borderRadius: 4,
                 cursor: isGiven || gameOver ? "default" : "pointer",
                 transition: "all 0.15s",

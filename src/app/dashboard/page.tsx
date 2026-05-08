@@ -54,98 +54,164 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="page-in" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px 80px" }}>
+    <div className="page-in" style={{ padding: "72px 0 40px" }}>
+      <div className="wrap" style={{ maxWidth: 960 }}>
 
-      {/* Welcome + Stats */}
-      <header style={{ marginBottom: 40 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: 24, marginBottom: 28 }}>
-          <div>
-            <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 8 }}>
-              your graveyard
-            </p>
-            <h1 className="serif" style={{ fontSize: "clamp(32px, 5vw, 48px)", fontStyle: "italic", fontWeight: 400, color: "var(--ink)", margin: 0, lineHeight: 1.1 }}>
-              Welcome back.
-            </h1>
+        {/* Welcome + Stats */}
+        <header style={{ marginBottom: 40 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: 24, marginBottom: 28 }}>
+            <div>
+              <div className="eyebrow">your graveyard</div>
+              <h1
+                style={{
+                  fontFamily: "var(--serif)",
+                  fontWeight: 400,
+                  fontSize: "clamp(40px, 5vw, 64px)",
+                  lineHeight: 0.98,
+                  letterSpacing: "-0.025em",
+                  margin: "18px 0 0",
+                  fontStyle: "italic",
+                }}
+              >
+                Welcome back.
+              </h1>
+            </div>
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <StatCapsule value={String(dreamCount)} label="dreams" />
+              <StatCapsule value={personalityReady ? "Yes" : "No"} label="profile" accent={personalityReady} />
+            </div>
           </div>
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <StatCapsule value={String(dreamCount)} label="dreams" color="var(--ink)" />
-            <StatCapsule value={personalityReady ? "Yes" : "No"} label="profile" color={personalityReady ? "var(--teal)" : "var(--ink-faded)"} />
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <button onClick={() => setShowForm(!showForm)} className="btn-ink">
+              {showForm ? "cancel ×" : "walk out ↳"}
+            </button>
+            {dreamCount >= 3 && (
+              <Link href="/personality" className="btn-outline">
+                {personalityReady ? "view personality" : "generate personality"} →
+              </Link>
+            )}
           </div>
-        </div>
+        </header>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-          <button onClick={() => setShowForm(!showForm)} className="btn-paper">
-            {showForm ? "cancel" : "walk out"} {showForm ? "×" : "↳"}
-          </button>
-          {dreamCount >= 3 && (
-            <Link href="/personality" className="btn-ghost" style={{ fontSize: 14 }}>
-              {personalityReady ? "view personality" : "generate personality"} &rarr;
-            </Link>
-          )}
-        </div>
-      </header>
+        {showForm && <DreamForm onSubmitted={handleFormSubmitted} />}
 
-      {showForm && <DreamForm onSubmitted={handleFormSubmitted} />}
+        <TelegramSection />
 
-      <TelegramSection />
-
-      {/* Dream List */}
-      {!loading && dreams.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-          <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", margin: 0, whiteSpace: "nowrap" }}>
-            your dreams ({dreams.length})
-          </p>
-          <div style={{ flex: 1, height: 1, background: "rgba(106,112,140,0.15)" }} />
-        </div>
-      )}
-      {loading ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
+        {/* Dream List */}
+        {!loading && dreams.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+            <span
               style={{
-                borderRadius: 4, padding: "28px 20px",
-                background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.1)",
-                opacity: 0.5,
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+                whiteSpace: "nowrap",
               }}
             >
-              <div style={{ height: 10, width: "40%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 12 }} />
-              <div style={{ height: 16, width: "90%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 8 }} />
-              <div style={{ height: 16, width: "65%", background: "var(--paper-deep)", borderRadius: 2 }} />
-            </div>
-          ))}
-        </div>
-      ) : dreams.length === 0 ? (
-        <div className="page-in" style={{ textAlign: "center", padding: "80px 20px" }}>
-          <p className="hand" style={{ fontSize: 28, color: "var(--ink-faded)", lineHeight: 1.4, maxWidth: 400, margin: "0 auto" }}>
-            No ghosts here yet. Every dream you walk away from deserves a proper farewell.
-          </p>
-          <p className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.12em", marginTop: 20, opacity: 0.6 }}>
-            click &quot;walk out&quot; to begin
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))", gap: 24 }}>
-          {dreams.map((dream, index) => (
-            <div key={dream.id} className="page-in" style={{ animationDelay: `${index * 0.06}s` }}>
-              <DreamCard dream={dream} />
-            </div>
-          ))}
-        </div>
-      )}
+              your dreams ({dreams.length})
+            </span>
+            <div style={{ flex: 1, height: 1, background: "var(--rule)" }} />
+          </div>
+        )}
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                style={{
+                  borderRadius: 3,
+                  padding: "28px 20px",
+                  background: "var(--paper)",
+                  border: "1px solid var(--rule)",
+                  opacity: 0.5,
+                }}
+              >
+                <div style={{ height: 10, width: "40%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 12 }} />
+                <div style={{ height: 16, width: "90%", background: "var(--paper-deep)", borderRadius: 2, marginBottom: 8 }} />
+                <div style={{ height: 16, width: "65%", background: "var(--paper-deep)", borderRadius: 2 }} />
+              </div>
+            ))}
+          </div>
+        ) : dreams.length === 0 ? (
+          <div className="page-in" style={{ textAlign: "center", padding: "80px 20px" }}>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 24,
+                color: "var(--ink-3)",
+                lineHeight: 1.4,
+                maxWidth: 400,
+                margin: "0 auto",
+              }}
+            >
+              No ghosts here yet. Every dream you walk away from deserves a proper farewell.
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                color: "var(--ink-3)",
+                letterSpacing: "0.12em",
+                marginTop: 20,
+                opacity: 0.6,
+              }}
+            >
+              click &quot;walk out&quot; to begin
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))", gap: 24 }}>
+            {dreams.map((dream, index) => (
+              <div key={dream.id} className="page-in" style={{ animationDelay: `${index * 0.06}s` }}>
+                <DreamCard dream={dream} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function StatCapsule({ value, label, color }: { value: string; label: string; color: string }) {
+function StatCapsule({ value, label, accent }: { value: string; label: string; accent?: boolean }) {
   return (
     <div style={{
-      background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)",
-      borderRadius: 4, padding: "12px 20px", textAlign: "center", minWidth: 90,
+      background: "var(--paper)",
+      border: "1px solid var(--ink)",
+      borderRadius: 3,
+      padding: "12px 20px",
+      textAlign: "center",
+      minWidth: 90,
+      boxShadow: "3px 3px 0 var(--paper-edge)",
     }}>
-      <div className="serif" style={{ fontSize: 28, fontWeight: 500, color, lineHeight: 1 }}>{value}</div>
-      <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 4, textTransform: "uppercase" }}>{label}</div>
+      <div
+        style={{
+          fontFamily: "var(--serif)",
+          fontSize: 28,
+          fontWeight: 500,
+          color: accent ? "var(--accent)" : "var(--ink)",
+          lineHeight: 1,
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          fontFamily: "var(--mono)",
+          fontSize: 9,
+          letterSpacing: "0.15em",
+          color: "var(--ink-3)",
+          marginTop: 4,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </div>
     </div>
   );
 }

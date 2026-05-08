@@ -23,7 +23,7 @@ export default function ArchiveView({ entries, loading }: { entries: ArchiveEntr
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 60 }}>
-        <div className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.15em" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.15em" }}>
           loading archive...
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function ArchiveView({ entries, loading }: { entries: ArchiveEntr
     return (
       <div style={{ textAlign: "center", padding: 60 }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>📜</div>
-        <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.12em" }}>
           No games archived yet. Sign in and play to start building your history.
         </p>
       </div>
@@ -53,19 +53,19 @@ export default function ArchiveView({ entries, loading }: { entries: ArchiveEntr
             padding: "12px 16px",
             background: "var(--paper-deep)",
             borderRadius: 2,
-            border: "1px solid var(--ink-faded)",
+            border: "1px solid var(--ink-3)",
           }}
         >
           <span style={{ fontSize: 20 }}>{GAME_EMOJI[entry.game_type] || "🎮"}</span>
           <div style={{ flex: 1 }}>
-            <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.1em", textTransform: "capitalize", color: "var(--ink)" }}>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.1em", textTransform: "capitalize", color: "var(--ink)" }}>
               {entry.game_type === "spelling" ? "Spelling Bee" : entry.game_type}
             </div>
-            <div className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", letterSpacing: "0.08em", marginTop: 2 }}>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", letterSpacing: "0.08em", marginTop: 2 }}>
               {new Date(entry.played_at + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </div>
           </div>
-          <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.08em", color: "var(--ink-soft)" }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.08em", color: "var(--ink-2)" }}>
             {formatArchiveResult(entry)}
           </div>
           <span
@@ -73,10 +73,10 @@ export default function ArchiveView({ entries, loading }: { entries: ArchiveEntr
               fontSize: 11,
               padding: "3px 10px",
               borderRadius: 2,
-              background: entry.won ? "var(--teal)" : "var(--rose)",
+              background: entry.won ? "var(--accent)" : "var(--accent-deep)",
               color: "#fff",
               fontWeight: 700,
-              fontFamily: "'Bungee', system-ui",
+              fontFamily: "var(--mono)",
               letterSpacing: "0.05em",
             }}
           >

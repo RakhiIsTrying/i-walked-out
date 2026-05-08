@@ -59,8 +59,7 @@ export default function AdminSignups() {
           style={{ padding: 40, maxWidth: 360, width: "100%", textAlign: "center" }}
         >
           <h2
-            className="serif"
-            style={{ fontSize: 28, fontStyle: "italic", fontWeight: 400, marginBottom: 20 }}
+            style={{ fontFamily: "var(--serif)", fontSize: 28, fontStyle: "italic", fontWeight: 400, marginBottom: 20 }}
           >
             admin
           </h2>
@@ -69,10 +68,9 @@ export default function AdminSignups() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="password"
-            className="typewriter"
-            style={{ width: "100%", padding: "10px 14px", fontSize: 14, marginBottom: 14 }}
+            style={{ fontFamily: "var(--mono)", width: "100%", padding: "10px 14px", fontSize: 14, marginBottom: 14 }}
           />
-          <button type="submit" className="btn-paper" style={{ width: "100%", justifyContent: "center" }}>
+          <button type="submit" className="btn-ink" style={{ width: "100%", justifyContent: "center" }}>
             enter
           </button>
         </form>
@@ -85,32 +83,31 @@ export default function AdminSignups() {
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ marginBottom: 30 }}>
           <div
-            className="typewriter"
             style={{
+              fontFamily: "var(--mono)",
               fontSize: 11,
               letterSpacing: "0.25em",
               textTransform: "uppercase",
-              color: "var(--rose)",
+              color: "var(--accent)",
               marginBottom: 10,
             }}
           >
             admin panel
           </div>
           <h1
-            className="serif"
-            style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 400, fontStyle: "italic", margin: 0 }}
+            style={{ fontFamily: "var(--serif)", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 400, fontStyle: "italic", margin: 0 }}
           >
             All Signups
           </h1>
           {!loading && (
-            <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", marginTop: 8 }}>
+            <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", marginTop: 8 }}>
               {signups.length} total users
             </p>
           )}
         </div>
 
         {loading ? (
-          <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)" }}>loading...</p>
+          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-3)" }}>loading...</p>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table
@@ -122,8 +119,8 @@ export default function AdminSignups() {
             >
               <thead>
                 <tr
-                  className="typewriter"
                   style={{
+                    fontFamily: "var(--mono)",
                     borderBottom: "2px solid var(--ink)",
                     textAlign: "left",
                     fontSize: 10,
@@ -146,7 +143,7 @@ export default function AdminSignups() {
                   <tr
                     key={s.id}
                     style={{
-                      borderBottom: "1px dashed var(--ink-faded)",
+                      borderBottom: "1px dashed var(--ink-3)",
                       transition: "background 0.15s",
                     }}
                     onMouseEnter={(e) =>
@@ -156,22 +153,22 @@ export default function AdminSignups() {
                       (e.currentTarget.style.background = "transparent")
                     }
                   >
-                    <td className="typewriter" style={{ padding: "10px 12px", color: "var(--ink-faded)" }}>
+                    <td style={{ fontFamily: "var(--mono)", padding: "10px 12px", color: "var(--ink-3)" }}>
                       {i + 1}
                     </td>
                     <td style={{ padding: "10px 12px", fontFamily: "monospace" }}>{s.email || "—"}</td>
                     <td style={{ padding: "10px 12px", fontFamily: "monospace" }}>{s.phone || "—"}</td>
-                    <td className="typewriter" style={{ padding: "10px 12px", fontSize: 10 }}>{s.provider}</td>
-                    <td className="hand" style={{ padding: "10px 12px", fontSize: 16 }}>
+                    <td style={{ fontFamily: "var(--mono)", padding: "10px 12px", fontSize: 10 }}>{s.provider}</td>
+                    <td style={{ fontFamily: "var(--serif)", fontStyle: "italic", padding: "10px 12px", fontSize: 16 }}>
                       {s.anonymous_alias}
                     </td>
-                    <td className="typewriter" style={{ padding: "10px 12px", textAlign: "center" }}>
+                    <td style={{ fontFamily: "var(--mono)", padding: "10px 12px", textAlign: "center" }}>
                       {s.dream_count}
                     </td>
                     <td style={{ padding: "10px 12px", textAlign: "center" }}>
                       {s.personality_generated ? "yes" : "—"}
                     </td>
-                    <td className="typewriter" style={{ padding: "10px 12px", fontSize: 11, color: "var(--ink-faded)" }}>
+                    <td style={{ fontFamily: "var(--mono)", padding: "10px 12px", fontSize: 11, color: "var(--ink-3)" }}>
                       {new Date(s.created_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

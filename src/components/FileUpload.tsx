@@ -98,24 +98,23 @@ export default function FileUpload() {
 
   return (
     <section
-      className="paper"
-      style={{ borderRadius: 3, padding: "28px 24px", marginBottom: 48, position: "relative" }}
+      style={{ borderRadius: 3, padding: "28px 24px", marginBottom: 48, position: "relative", border: "1px solid var(--ink)", boxShadow: "4px 5px 0 var(--paper-edge)", background: "var(--paper)" }}
     >
       <div className="tape tape-rose" style={{ top: -10, left: 28, transform: "rotate(-5deg)" }} />
 
       <p
-        className="typewriter"
         style={{
+          fontFamily: "var(--mono)",
           fontSize: 11,
           letterSpacing: "0.15em",
           textTransform: "uppercase",
-          color: "var(--ink-faded)",
+          color: "var(--ink-3)",
           marginBottom: 6,
         }}
       >
         Your Files
       </p>
-      <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6, marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
         Upload images, PDFs, or any file. Private to you.
       </p>
 
@@ -126,12 +125,12 @@ export default function FileUpload() {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         style={{
-          border: `2px dashed ${dragOver ? "var(--teal)" : "var(--ink-faded)"}`,
+          border: `2px dashed ${dragOver ? "var(--accent)" : "var(--ink-3)"}`,
           borderRadius: 3,
           padding: "28px 20px",
           textAlign: "center",
           cursor: "pointer",
-          background: dragOver ? "rgba(42, 95, 214, 0.06)" : "transparent",
+          background: dragOver ? "oklch(0.62 0.14 35 / 0.06)" : "transparent",
           transition: "all 0.2s",
           marginBottom: 20,
         }}
@@ -143,15 +142,15 @@ export default function FileUpload() {
           style={{ display: "none" }}
         />
         {uploading ? (
-          <p className="typewriter" style={{ fontSize: 12, color: "var(--teal)", letterSpacing: "0.1em" }}>
+          <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--accent)", letterSpacing: "0.1em" }}>
             uploading...
           </p>
         ) : (
           <>
-            <p className="hand" style={{ fontSize: 20, color: "var(--ink-soft)", marginBottom: 4 }}>
+            <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-2)", marginBottom: 4 }}>
               drop a file here or click to browse
             </p>
-            <p className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", letterSpacing: "0.08em" }}>
+            <p style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", letterSpacing: "0.08em" }}>
               max 50 MB
             </p>
           </>
@@ -159,14 +158,14 @@ export default function FileUpload() {
       </div>
 
       {error && (
-        <p className="typewriter" style={{ fontSize: 11, color: "var(--rose)", marginBottom: 12, letterSpacing: "0.08em" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent)", marginBottom: 12, letterSpacing: "0.08em" }}>
           {error}
         </p>
       )}
 
       {/* File list */}
       {loading ? (
-        <p className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", textAlign: "center" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.1em", textAlign: "center" }}>
           loading files...
         </p>
       ) : files.length > 0 ? (
@@ -181,14 +180,14 @@ export default function FileUpload() {
                 padding: "10px 14px",
                 background: "var(--paper-deep)",
                 borderRadius: 2,
-                border: "1px solid var(--ink-faded)",
+                border: "1px solid var(--ink-3)",
               }}
             >
               <span style={{ fontSize: 20, flexShrink: 0 }}>{fileIcon(f.file_type)}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
-                  className="typewriter"
                   style={{
+                    fontFamily: "var(--mono)",
                     fontSize: 12,
                     letterSpacing: "0.04em",
                     color: "var(--ink)",
@@ -199,21 +198,21 @@ export default function FileUpload() {
                 >
                   {f.filename}
                 </p>
-                <p className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", letterSpacing: "0.06em", marginTop: 2 }}>
+                <p style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--ink-3)", letterSpacing: "0.06em", marginTop: 2 }}>
                   {formatSize(f.file_size)} &middot; {new Date(f.created_at).toLocaleDateString()}
                 </p>
               </div>
               <button
                 onClick={() => handleDownload(f.id)}
-                className="btn-ghost"
+                className="btn-outline"
                 style={{ fontSize: 11, padding: "4px 10px", flexShrink: 0 }}
               >
                 download
               </button>
               <button
                 onClick={() => handleDelete(f.id)}
-                className="btn-ghost"
-                style={{ fontSize: 11, padding: "4px 10px", flexShrink: 0, color: "var(--rose)", borderColor: "var(--rose)" }}
+                className="btn-outline"
+                style={{ fontSize: 11, padding: "4px 10px", flexShrink: 0, color: "var(--accent)", borderColor: "var(--accent)" }}
               >
                 delete
               </button>

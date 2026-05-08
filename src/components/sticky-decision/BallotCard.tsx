@@ -1,7 +1,7 @@
 import { StickyDecision } from "@/lib/types";
 
 function fireSmallConfetti(x: number, y: number) {
-  const colors = ["var(--rose)", "var(--teal)", "var(--butter)"];
+  const colors = ["var(--accent)", "var(--accent-deep)", "var(--note-1)"];
   const shapes = ["✦", "✶", "♡", "✿"];
   for (let i = 0; i < 18; i++) {
     const el = document.createElement("div");
@@ -37,8 +37,9 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
       className="page-in"
       style={{
         padding: "0",
-        background: "var(--paper-light)",
-        border: "1px solid rgba(106,112,140,0.12)",
+        background: "var(--paper)",
+        border: "1px solid var(--ink)",
+        boxShadow: "4px 5px 0 var(--paper-edge)",
         borderRadius: 6,
         overflow: "hidden",
         maxWidth: 560,
@@ -46,23 +47,23 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
         animationDelay: `${index * 0.08}s`,
       }}
     >
-      <div style={{ height: 4, background: index % 2 === 0 ? "var(--rose)" : "var(--teal)" }} />
+      <div style={{ height: 4, background: "var(--accent)" }} />
       <div style={{ padding: "24px 28px 24px" }}>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)" }}>
           ballot no. {String(index + 1).padStart(3, "0")}
         </div>
-        <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-3)" }}>
           {decision.anonymous_alias}
         </div>
       </div>
 
-      <h3 className="serif" style={{ fontSize: 26, fontWeight: 400, fontStyle: "italic", lineHeight: 1.2, margin: 0, marginBottom: 12 }}>
+      <h3 style={{ fontFamily: "var(--serif)", fontSize: 26, fontWeight: 400, fontStyle: "italic", lineHeight: 1.2, margin: 0, marginBottom: 12 }}>
         {decision.title}
       </h3>
       {decision.description && (
-        <p className="hand" style={{ fontSize: 19, color: "var(--ink-soft)", margin: 0, marginBottom: 22 }}>
+        <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 19, color: "var(--ink-2)", margin: 0, marginBottom: 22 }}>
           — {decision.description}
         </p>
       )}
@@ -89,12 +90,12 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
                 width: "100%",
                 padding: "14px 18px",
                 textAlign: "left",
-                background: hasVoted && isWinning ? "rgba(255, 90, 78, 0.04)" : "var(--paper-deep)",
-                border: hasVoted && isWinning ? "1.5px solid var(--rose)" : "1px solid rgba(106,112,140,0.12)",
+                background: hasVoted && isWinning ? "oklch(0.62 0.14 35 / 0.06)" : "var(--paper-deep)",
+                border: hasVoted && isWinning ? "1.5px solid var(--accent)" : "1px solid var(--rule)",
                 cursor: hasVoted || !isLoggedIn ? "default" : "pointer",
                 borderRadius: 4,
                 overflow: "hidden",
-                fontFamily: "'Fraunces', serif",
+                fontFamily: "var(--serif)",
                 fontSize: 17,
                 color: "var(--ink)",
                 transition: "all 0.25s ease",
@@ -106,7 +107,8 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
                     position: "absolute",
                     inset: 0,
                     width: `${pct}%`,
-                    background: isWinning ? "rgba(255, 90, 78, 0.2)" : "rgba(42, 95, 214, 0.12)",
+                    background: isWinning ? "var(--accent)" : "var(--rule)",
+                    opacity: isWinning ? 0.2 : 0.12,
                     transition: "width 0.6s cubic-bezier(.2,.7,.2,1)",
                   }}
                 />
@@ -121,7 +123,7 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 14,
-                    color: hasVoted && isWinning ? "var(--rose)" : "transparent",
+                    color: hasVoted && isWinning ? "var(--accent)" : "transparent",
                     fontWeight: 700,
                   }}>
                     ✓
@@ -129,7 +131,7 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
                   {opt}
                 </span>
                 {hasVoted && (
-                  <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.05em" }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.05em" }}>
                     {pct}% · {voteCount}
                   </span>
                 )}
@@ -140,7 +142,7 @@ export default function BallotCard({ decision, index, hasVoted, onVote, isLogged
       </div>
 
       {hasVoted && (
-        <div className="hand" style={{ fontSize: 19, color: "var(--rose)", marginTop: 18, textAlign: "center" }}>
+        <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 19, color: "var(--accent)", marginTop: 18, textAlign: "center" }}>
           thank you for voting kindly. {totalVotes} kind strangers have weighed in.
         </div>
       )}

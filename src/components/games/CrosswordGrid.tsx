@@ -66,13 +66,13 @@ export default function CrosswordGrid({
                 height: cellSize,
                 position: "relative",
                 background: isSel
-                  ? "rgba(42, 95, 214, 0.2)"
+                  ? "oklch(0.62 0.14 35 / 0.2)"
                   : isHL
-                    ? "rgba(42, 95, 214, 0.08)"
+                    ? "oklch(0.62 0.14 35 / 0.08)"
                     : isCorrect
-                      ? "rgba(42, 95, 214, 0.06)"
-                      : "var(--paper-light)",
-                border: "1px solid var(--ink-faded)",
+                      ? "oklch(0.62 0.14 35 / 0.06)"
+                      : "var(--paper)",
+                border: "1px solid var(--ink-3)",
                 cursor: "pointer",
               }}
             >
@@ -84,8 +84,8 @@ export default function CrosswordGrid({
                     left: 2,
                     fontSize: numSize,
                     fontWeight: 700,
-                    color: "var(--ink-faded)",
-                    fontFamily: "'Inter', system-ui",
+                    color: "var(--ink-3)",
+                    fontFamily: "var(--mono)",
                     lineHeight: 1,
                   }}
                 >
@@ -107,7 +107,7 @@ export default function CrosswordGrid({
                   textAlign: "center",
                   fontSize: letterSize,
                   fontWeight: 700,
-                  fontFamily: "'Bungee', system-ui",
+                  fontFamily: "var(--mono)",
                   color: "var(--ink)",
                   background: "transparent",
                   border: "none",

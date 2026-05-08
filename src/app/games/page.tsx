@@ -111,51 +111,130 @@ export default function GamesPage() {
     <div className="page-in" style={{ padding: "20px clamp(12px, 4vw, 48px) 40px", overflow: "hidden" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", overflow: "hidden" }}>
 
-        {/* Header row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+        {/* Header row - puzzle-head style */}
+        <div style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 24,
+          flexWrap: "wrap",
+          marginBottom: 28,
+        }}>
           <div>
-            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 6 }}>
+            {/* Eyebrow */}
+            <div style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--ink-3)",
+              marginBottom: 8,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}>
+              <span style={{ display: "inline-block", width: 22, height: 1, background: "var(--ink-3)" }} />
               games corner
             </div>
-            <h1 className="serif" style={{ fontSize: "clamp(28px, 4vw, 40px)", margin: 0, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1 }}>
-              Daily Puzzles
+            <h1 style={{
+              fontFamily: "var(--serif)",
+              fontSize: "clamp(28px, 4vw, 40px)",
+              margin: 0,
+              fontWeight: 400,
+              fontStyle: "italic",
+              lineHeight: 1.1,
+              color: "var(--ink)",
+            }}>
+              Daily <em>Puzzles.</em>
             </h1>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={goBack} className="btn-ghost" style={{ padding: "6px 8px", display: "flex", alignItems: "center", border: "1px solid rgba(106,112,140,0.3)" }}>
-              <ChevronLeft size={16} />
+          {/* Date navigation */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={goBack}
+              style={{
+                appearance: "none",
+                border: "1px solid var(--ink)",
+                background: "var(--paper)",
+                color: "var(--ink)",
+                fontFamily: "var(--mono)",
+                fontSize: 14,
+                padding: "10px 0",
+                width: 38,
+                cursor: "pointer",
+                borderRadius: 3,
+                transition: "background 0.15s, color 0.15s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ChevronLeft size={14} />
             </button>
+
             <button
               onClick={goToday}
-              className="typewriter"
               style={{
-                fontSize: 12, letterSpacing: "0.1em", padding: "6px 14px",
-                background: isToday ? "var(--ink)" : "var(--paper-deep)",
-                color: isToday ? "var(--paper-light)" : "var(--ink)",
-                border: "1px solid var(--ink)", borderRadius: 2, cursor: "pointer",
-                minWidth: 120, textAlign: "center",
+                appearance: "none",
+                border: "1px solid var(--ink)",
+                background: isToday ? "var(--ink)" : "var(--paper)",
+                color: isToday ? "var(--paper)" : "var(--ink)",
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                padding: "10px 24px",
+                cursor: "pointer",
+                borderRadius: 3,
+                fontWeight: isToday ? 500 : 400,
+                transition: "background 0.15s, color 0.15s",
+                minWidth: 120,
+                textAlign: "center",
               }}
             >
               {isToday ? "TODAY" : formatDate(playDate)}
             </button>
+
             <button
               onClick={goForward}
               disabled={isToday}
-              className="btn-ghost"
-              style={{ padding: "6px 8px", display: "flex", alignItems: "center", opacity: isToday ? 0.3 : 1, cursor: isToday ? "default" : "pointer", border: "1px solid rgba(106,112,140,0.3)" }}
+              style={{
+                appearance: "none",
+                border: "1px solid var(--ink)",
+                background: "var(--paper)",
+                color: "var(--ink)",
+                fontFamily: "var(--mono)",
+                fontSize: 14,
+                padding: "10px 0",
+                width: 38,
+                cursor: "pointer",
+                borderRadius: 3,
+                transition: "background 0.15s, color 0.15s",
+                opacity: isToday ? 0.3 : 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
 
             <button
               onClick={shareAllStreaks}
-              className="typewriter"
               style={{
-                fontSize: 10, color: "var(--teal)", background: "none",
-                border: "1px solid rgba(42, 95, 214, 0.3)", borderRadius: 2,
-                padding: "6px 12px", cursor: "pointer", letterSpacing: "0.1em",
-                marginLeft: 4,
+                appearance: "none",
+                border: "1px solid var(--ink)",
+                background: "var(--paper)",
+                color: "var(--ink)",
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                padding: "10px 16px",
+                cursor: "pointer",
+                borderRadius: 3,
+                transition: "background 0.15s, color 0.15s",
               }}
             >
               {shareMsg || "share"}
@@ -165,17 +244,28 @@ export default function GamesPage() {
 
         {!isToday && (
           <div style={{ marginBottom: 16 }}>
-            <span className="typewriter" style={{
-              fontSize: 11, letterSpacing: "0.12em", color: "var(--teal)",
-              background: "rgba(42, 95, 214, 0.08)", padding: "5px 14px", borderRadius: 2,
+            <span style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              color: "var(--accent)",
+              background: "var(--note-1)",
+              padding: "5px 14px",
+              borderRadius: 3,
+              textTransform: "uppercase",
             }}>
               playing {formatDate(playDate)}&apos;s puzzles
             </span>
           </div>
         )}
 
-        {/* Two-column layout */}
-        <div className="games-layout" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20, alignItems: "start" }}>
+        {/* Arcade layout: 320px sidebar + fluid main */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "320px 1fr",
+          gap: 32,
+          alignItems: "start",
+        }}>
 
           <GameSidebar
             active={active}
@@ -190,22 +280,37 @@ export default function GamesPage() {
             }}
           />
 
-          {/* Main game area */}
+          {/* Main puzzle area - paper card */}
           <div
-            className="paper page-in"
+            className="page-in"
             key={`${playDate}-${active}`}
             style={{
-              padding: "28px clamp(12px, 3vw, 24px) 36px",
+              border: "1px solid var(--ink)",
+              background: "var(--paper)",
+              borderRadius: 4,
+              padding: "36px 40px 40px",
+              boxShadow: "6px 6px 0 var(--paper-edge)",
               position: "relative",
               minHeight: 460,
-              background: "var(--paper-light)",
               overflow: "hidden",
               maxWidth: "100%",
               boxSizing: "border-box",
             }}
           >
-            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20 }}>
-              {active === "archive" ? "your game archive" : active === "leaderboard" ? "leaderboard" : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
+            {/* Eyebrow line */}
+            <div style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              color: "var(--ink-3)",
+              margin: "0 0 20px",
+            }}>
+              {active === "archive"
+                ? "your game archive"
+                : active === "leaderboard"
+                  ? "leaderboard"
+                  : `${isToday ? "daily" : formatDate(playDate)} ${GAMES.find((g) => g.id === active)?.label}`}
             </div>
 
             {active === "leaderboard" ? (
@@ -214,7 +319,13 @@ export default function GamesPage() {
               <ArchiveView entries={archive} loading={archiveLoading} />
             ) : loading ? (
               <div style={{ textAlign: "center", padding: 60 }}>
-                <div className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.15em" }}>
+                <div style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 12,
+                  color: "var(--ink-3)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}>
                   loading {isToday ? "today" : formatDate(playDate)}&apos;s puzzles...
                 </div>
               </div>
@@ -226,9 +337,18 @@ export default function GamesPage() {
                 {active === "crossword" && (
                   <>
                     {puzzles?.crossword?.theme && (
-                      <div className="serif" style={{ fontSize: 18, fontStyle: "italic", color: "var(--teal)", textAlign: "center", marginBottom: 16 }}>
+                      <h2 style={{
+                        fontFamily: "var(--serif)",
+                        fontStyle: "italic",
+                        fontWeight: 400,
+                        fontSize: 32,
+                        lineHeight: 1.2,
+                        textAlign: "center",
+                        color: "var(--accent)",
+                        margin: "0 0 24px",
+                      }}>
                         Today&apos;s Theme: {puzzles.crossword.theme}
-                      </div>
+                      </h2>
                     )}
                     <CrosswordGame
                       puzzle={puzzles?.crossword}

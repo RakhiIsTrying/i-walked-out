@@ -15,7 +15,7 @@ export default function SudokuPad({ cellPx, disabled, onNumber }: SudokuPadProps
           style={{
             width: cellPx, height: cellPx,
             fontSize: cellPx < 34 ? 14 : 18, fontWeight: 700,
-            fontFamily: "'Bungee', system-ui",
+            fontFamily: "var(--mono)",
             background: "var(--paper-deep)",
             border: "2px solid var(--ink)",
             color: "var(--ink)",
@@ -29,13 +29,13 @@ export default function SudokuPad({ cellPx, disabled, onNumber }: SudokuPadProps
       <button
         onClick={() => onNumber(0)}
         disabled={disabled}
-        className="typewriter"
         style={{
+          fontFamily: "var(--mono)",
           width: cellPx, height: cellPx,
           fontSize: 11, fontWeight: 700,
           background: "var(--paper-deep)",
-          border: "2px solid var(--ink-faded)",
-          color: "var(--ink-faded)",
+          border: "2px solid var(--ink-3)",
+          color: "var(--ink-3)",
           cursor: disabled ? "default" : "pointer",
           borderRadius: 2,
         }}

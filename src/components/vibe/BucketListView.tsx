@@ -35,24 +35,24 @@ export default function BucketListView({ bucket, onToggle, onRemove, disabled }:
   return (
     <div
       className="paper page-in"
-      style={{ padding: "28px 28px 32px", marginBottom: 36, background: "#faf3df", position: "relative" }}
+      style={{ padding: "28px 28px 32px", marginBottom: 36, background: "var(--paper)", border: "1px solid var(--ink)", boxShadow: "4px 5px 0 var(--paper-edge)", position: "relative" }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
-        <h2 className="serif" style={{ fontSize: 30, fontWeight: 400, fontStyle: "italic", margin: 0 }}>
+        <h2 style={{ fontFamily: "var(--serif)", fontSize: 30, fontWeight: 400, fontStyle: "italic", margin: 0 }}>
           Bucket List
         </h2>
-        <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.12em" }}>
           {doneItems.length}/{bucket.length} done
         </span>
       </div>
 
       {bucket.length > 0 && (
-        <div style={{ height: 6, background: "var(--ink-faded)", borderRadius: 3, marginBottom: 24, opacity: 0.3 }}>
+        <div style={{ height: 6, background: "var(--ink-3)", borderRadius: 3, marginBottom: 24, opacity: 0.3 }}>
           <div
             style={{
               height: "100%",
               width: `${(doneItems.length / bucket.length) * 100}%`,
-              background: "var(--teal)",
+              background: "var(--accent)",
               borderRadius: 3,
               transition: "width 0.4s ease",
               opacity: 1,
@@ -63,7 +63,7 @@ export default function BucketListView({ bucket, onToggle, onRemove, disabled }:
 
       {pendingItems.length > 0 && (
         <div style={{ marginBottom: doneItems.length > 0 ? 24 : 0 }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", marginBottom: 12, textTransform: "uppercase" }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-3)", marginBottom: 12, textTransform: "uppercase" }}>
             to do
           </div>
           {pendingItems.map((item) => (
@@ -74,7 +74,7 @@ export default function BucketListView({ bucket, onToggle, onRemove, disabled }:
 
       {doneItems.length > 0 && (
         <div>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", marginBottom: 12, textTransform: "uppercase" }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-3)", marginBottom: 12, textTransform: "uppercase" }}>
             done
           </div>
           {doneItems.map((item) => (
@@ -84,7 +84,7 @@ export default function BucketListView({ bucket, onToggle, onRemove, disabled }:
       )}
 
       {bucket.length === 0 && (
-        <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", textAlign: "center", margin: "20px 0" }}>
+        <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-3)", textAlign: "center", margin: "20px 0" }}>
           Nothing here yet. Add items from your vibe results!
         </p>
       )}
@@ -105,7 +105,7 @@ function BucketRow({
     <div
       style={{
         display: "flex", alignItems: "center", gap: 12,
-        padding: "10px 12px", borderBottom: "1px dashed var(--ink-faded)",
+        padding: "10px 12px", borderBottom: "1px dashed var(--ink-3)",
         opacity: item.completed ? 0.6 : 1, transition: "opacity 0.3s ease",
       }}
     >
@@ -114,31 +114,31 @@ function BucketRow({
         disabled={disabled}
         style={{
           width: 24, height: 24, borderRadius: 4,
-          border: item.completed ? "2px solid var(--teal)" : "2px dashed var(--ink-faded)",
-          background: item.completed ? "var(--teal)" : "transparent",
+          border: item.completed ? "2px solid var(--accent)" : "2px dashed var(--ink-3)",
+          background: item.completed ? "var(--accent)" : "transparent",
           cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-          color: "var(--paper-light)", fontSize: 14, flexShrink: 0, transition: "all 0.2s ease",
+          color: "var(--paper)", fontSize: 14, flexShrink: 0, transition: "all 0.2s ease",
         }}
       >
         {item.completed ? "✓" : ""}
       </button>
       <div style={{ flex: 1, minWidth: 0 }}>
         <span
-          className="serif"
           style={{
+            fontFamily: "var(--serif)",
             fontSize: 18, fontWeight: 500,
             textDecoration: item.completed ? "line-through" : "none",
-            color: item.completed ? "var(--ink-faded)" : "var(--ink)",
+            color: item.completed ? "var(--ink-3)" : "var(--ink)",
           }}
         >
           {item.item_text}
         </span>
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 2 }}>
-          <span className="typewriter" style={{ fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-faded)", textTransform: "uppercase" }}>
+          <span style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-3)", textTransform: "uppercase" }}>
             {config?.emoji} {config?.label}
           </span>
-          <span style={{ fontSize: 10, color: "var(--ink-faded)" }}>·</span>
-          <span className="hand" style={{ fontSize: 14, color: "var(--ink-faded)" }}>
+          <span style={{ fontSize: 10, color: "var(--ink-3)" }}>·</span>
+          <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14, color: "var(--ink-3)" }}>
             &ldquo;{item.vibe_query}&rdquo;
           </span>
         </div>
@@ -148,7 +148,7 @@ function BucketRow({
         title="Remove"
         style={{
           background: "none", border: "none", cursor: "pointer",
-          color: "var(--ink-faded)", fontSize: 16, padding: "4px 8px",
+          color: "var(--ink-3)", fontSize: 16, padding: "4px 8px",
           opacity: 0.5, transition: "opacity 0.2s ease",
         }}
         onMouseEnter={(e) => { (e.target as HTMLElement).style.opacity = "1"; }}

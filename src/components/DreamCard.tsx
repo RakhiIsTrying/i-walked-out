@@ -3,27 +3,15 @@
 import { useState, useCallback } from "react";
 import { Dream } from "@/lib/types";
 
-const categoryPinClass: Record<string, string> = {
-  career: "pin-teal",
-  relationship: "",
-  creative: "pin-butter",
-  business: "pin-teal",
-  education: "pin-plum",
-  travel: "pin-butter",
-  health: "",
-  other: "pin-plum",
-};
+const noteColors = [
+  "var(--note-1)",
+  "var(--note-2)",
+  "var(--note-3)",
+  "var(--note-4)",
+  "var(--note-5)",
+];
 
-const categoryBg: Record<string, string> = {
-  career: "#f1e4d2",
-  relationship: "#f4e2d4",
-  creative: "#faf3df",
-  business: "#e4d9c2",
-  education: "#f0e8d8",
-  travel: "#e8eed8",
-  health: "#f4dede",
-  other: "#eee6d4",
-};
+const tiltAngles = [-1.4, 0.8, -0.5, 1.2, -0.9, 0.4, -1.1];
 
 const REACTIONS: { key: string; emoji: string; label: string }[] = [
   { key: "skull", emoji: "💀", label: "been there" },
@@ -52,11 +40,10 @@ function setReacted(dreamId: string, reaction: string | null) {
   }
 }
 
-export default function DreamCard({ dream }: { dream: Dream }) {
+export default function DreamCard({ dream, index = 0 }: { dream: Dream; index?: number }) {
   const timeAgo = getTimeAgo(dream.created_at);
-  const rotation = (dream.id.charCodeAt(0) % 7) - 3;
-  const pinClass = categoryPinClass[dream.category] ?? "pin-plum";
-  const bg = categoryBg[dream.category] ?? categoryBg.other;
+  const noteColor = noteColors[index % noteColors.length];
+  const tilt = tiltAngles[index % tiltAngles.length];
 
   const [reactions, setReactions] = useState<Record<string, number>>(
     dream.reactions || {}
@@ -101,65 +88,75 @@ export default function DreamCard({ dream }: { dream: Dream }) {
   );
 
   const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
+  const isLong = dream.description.length > 120;
 
   return (
     <div
-      className="paper lift"
       style={{
         width: "100%",
+        breakInside: "avoid" as const,
+        marginBottom: 24,
+        backgroundColor: noteColor,
+        border: "1px solid var(--ink)",
+        boxShadow: "4px 5px 0 var(--paper-edge)",
+        padding: "22px 20px 16px",
         borderRadius: 3,
-        padding: "32px 22px 18px",
-        transform: `rotate(${rotation}deg)`,
-        "--hover-rot": `${-rotation}deg`,
-        backgroundColor: bg,
         position: "relative",
-      } as React.CSSProperties}
+        transform: `rotate(${tilt}deg)`,
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-3px) rotate(0deg)";
+        e.currentTarget.style.boxShadow = "6px 8px 0 var(--paper-edge)";
+        e.currentTarget.style.zIndex = "5";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = `rotate(${tilt}deg)`;
+        e.currentTarget.style.boxShadow = "4px 5px 0 var(--paper-edge)";
+        e.currentTarget.style.zIndex = "0";
+      }}
     >
+      {/* Pin */}
       <div
-        className={`pin ${pinClass}`}
-        style={{ top: -6, left: "50%", marginLeft: -8 }}
-      />
-
-      <span
-        className="typewriter"
         style={{
           position: "absolute",
-          top: 10,
-          right: 14,
-          fontSize: 9,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: "var(--ink-faded)",
+          top: -7,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 14,
+          height: 14,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle at 35% 30%, var(--accent) 0 35%, var(--accent-deep) 36% 60%, #6e2f0e 61% 100%)",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+        }}
+      />
+
+      {/* Tag eyebrow */}
+      <div
+        style={{
+          fontFamily: "var(--mono)",
+          fontSize: 10,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase" as const,
+          color: "var(--ink-3)",
+          marginBottom: 10,
         }}
       >
-        {dream.category}
-      </span>
+        {dream.category} · pinned {timeAgo}
+      </div>
 
+      {/* Dream body */}
       <p
-        className="typewriter"
         style={{
-          fontSize: 11,
-          letterSpacing: "0.08em",
-          color: "var(--ink-faded)",
-          marginBottom: 6,
-          lineHeight: 1.3,
-          textTransform: "uppercase",
-        }}
-      >
-        {dream.title}
-      </p>
-
-      <p
-        className="hand"
-        style={{
-          fontSize: 22,
+          fontFamily: "var(--serif)",
+          fontStyle: "italic",
+          fontSize: isLong ? 17 : 19,
           lineHeight: 1.35,
-          color: "var(--ink-soft)",
-          marginBottom: 16,
-          display: "-webkit-box",
-          WebkitLineClamp: 4,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
+          color: "var(--ink)",
+          letterSpacing: "-0.005em",
+          margin: 0,
+          marginBottom: 0,
         }}
       >
         {dream.description}
@@ -171,7 +168,8 @@ export default function DreamCard({ dream }: { dream: Dream }) {
           display: "flex",
           flexWrap: "wrap",
           gap: 5,
-          marginBottom: 12,
+          marginTop: 14,
+          marginBottom: 0,
         }}
       >
         {REACTIONS.map((r) => {
@@ -192,36 +190,34 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         })}
       </div>
 
-      {/* Bottom separator and meta */}
+      {/* Meta row */}
       <div
         style={{
-          borderTop: "1.5px dashed var(--ink-faded)",
+          marginTop: 14,
           paddingTop: 10,
+          borderTop: "1px dashed var(--rule)",
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
+          alignItems: "center",
+          fontFamily: "var(--mono)",
+          fontSize: 10.5,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase" as const,
+          color: "var(--ink-3)",
         }}
       >
-        <span
-          className="typewriter"
-          style={{ fontSize: 10, color: "var(--ink-faded)" }}
-        >
-          {dream.anonymous_alias}
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span>— {dream.anonymous_alias}</span>
+        <div style={{ display: "inline-flex", gap: 10, alignItems: "center" }}>
           {totalReactions > 0 && (
-            <span
-              className="typewriter"
-              style={{ fontSize: 10, color: "var(--ink-faded)" }}
-            >
+            <span>
               {totalReactions} react{totalReactions !== 1 ? "s" : ""}
             </span>
           )}
-          <span
-            className="typewriter"
-            style={{ fontSize: 10, color: "var(--ink-faded)" }}
-          >
-            {timeAgo}
+          <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
+            ⌇ me too
+          </span>
+          <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
+            ❀ ribbon
           </span>
         </div>
       </div>
@@ -247,28 +243,30 @@ function ReactionButton({
   return (
     <button
       onClick={onClick}
-      className="reaction-btn typewriter"
       style={{
         display: "flex",
         alignItems: "center",
         gap: 3,
         padding: "4px 8px",
+        fontFamily: "var(--mono)",
         fontSize: 11,
+        letterSpacing: "0.1em",
         background: isActive ? "var(--ink)" : "transparent",
-        color: isActive ? "var(--paper-light)" : "var(--ink-soft)",
+        color: isActive ? "var(--paper)" : "var(--ink-2)",
         border: isActive
-          ? "1.5px solid var(--ink)"
-          : "1px solid rgba(106,112,140,0.2)",
-        borderRadius: 14,
+          ? "1px solid var(--ink)"
+          : "1px solid var(--rule)",
+        borderRadius: 999,
         cursor: "pointer",
         transition: "all 0.2s ease",
         transform: isAnimating ? "scale(1.35)" : "scale(1)",
+        textTransform: "uppercase" as const,
       }}
     >
       <span style={{ fontSize: 14 }}>{emoji}</span>
       {count > 0 && <span>{count}</span>}
-      {!isAnimating && <span className="reaction-label">{label}</span>}
-      {isAnimating && <span className="reaction-pop">{label}</span>}
+      {!isAnimating && <span>{label}</span>}
+      {isAnimating && <span style={{ fontWeight: 500 }}>{label}</span>}
     </button>
   );
 }

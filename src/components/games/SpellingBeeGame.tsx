@@ -213,18 +213,18 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
       />
 
       <div style={{ textAlign: "center" }}>
-        <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", textTransform: "uppercase" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-3)", textTransform: "uppercase" }}>
           {rank} · {score} pts · {found.length} words
         </div>
         <div style={{ height: 6, width: 200, background: "var(--paper-deep)", borderRadius: 3, marginTop: 8, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${Math.min(100, (score / puzzle.maxScore) * 100)}%`, background: "var(--teal)", borderRadius: 3, transition: "width 0.4s" }} />
+          <div style={{ height: "100%", width: `${Math.min(100, (score / puzzle.maxScore) * 100)}%`, background: "var(--accent)", borderRadius: 3, transition: "width 0.4s" }} />
         </div>
       </div>
 
       {message && (
-        <div className="typewriter pop-in" style={{
-          fontSize: 13, letterSpacing: "0.1em",
-          color: msgType === "good" ? "var(--teal)" : "var(--rose)",
+        <div className="pop-in" style={{
+          fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.1em",
+          color: msgType === "good" ? "var(--accent)" : "var(--accent-deep)",
           textTransform: "uppercase",
         }}>
           {message}
@@ -235,15 +235,15 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         onClick={focusMobileInput}
         style={{
           minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 28, fontFamily: "'Bungee', system-ui", letterSpacing: "0.1em",
-          color: "var(--ink)", minWidth: 160, borderBottom: "2px dashed var(--ink-faded)",
+          fontSize: 28, fontFamily: "var(--mono)", letterSpacing: "0.1em",
+          color: "var(--ink)", minWidth: 160, borderBottom: "2px dashed var(--ink-3)",
           padding: "4px 8px", cursor: "pointer",
         }}
       >
         {checking ? (
-          <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>checking...</span>
+          <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.1em" }}>checking...</span>
         ) : (
-          current || <span style={{ color: "var(--ink-faded)", fontSize: 16 }}>tap to type</span>
+          current || <span style={{ color: "var(--ink-3)", fontSize: 16 }}>tap to type</span>
         )}
       </div>
 
@@ -258,9 +258,9 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
       </div>
 
       <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => setCurrent((p) => p.slice(0, -1))} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>⌫</button>
-        <button onClick={shuffle} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>↻</button>
-        <button onClick={() => submitRefFn.current()} disabled={checking} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
+        <button onClick={() => setCurrent((p) => p.slice(0, -1))} className="btn-outline" style={{ fontSize: 13, padding: "8px 14px" }}>⌫</button>
+        <button onClick={shuffle} className="btn-outline" style={{ fontSize: 13, padding: "8px 14px" }}>↻</button>
+        <button onClick={() => submitRefFn.current()} disabled={checking} className="btn-ink" style={{ fontSize: 13, padding: "8px 18px" }}>
           {checking ? "..." : "enter"}
         </button>
       </div>
@@ -268,7 +268,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
       <FoundWords words={found} allLetters={puzzle.letterSet} />
 
       {found.length > 0 && (
-        <button onClick={handleShare} className="btn-ghost" style={{ fontSize: 12, padding: "6px 14px", marginTop: 4 }}>
+        <button onClick={handleShare} className="btn-outline" style={{ fontSize: 12, padding: "6px 14px", marginTop: 4 }}>
           {shareMsg || "share progress"}
         </button>
       )}

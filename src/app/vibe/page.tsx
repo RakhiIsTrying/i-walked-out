@@ -132,34 +132,58 @@ export default function VibePage() {
   const doneCount = bucket.filter((b) => b.completed).length;
 
   return (
-    <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
-      <div style={{ maxWidth: 1080, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            vibe coding · irl
-          </div>
-          <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
-            Type a feeling. <em style={{ color: "var(--rose)" }}>Get an evening.</em>
+    <div className="page-in" style={{ padding: "72px 0 40px" }}>
+      <div className="wrap" style={{ maxWidth: 1080 }}>
+        {/* Page intro */}
+        <div style={{ marginBottom: 44 }}>
+          <div className="eyebrow">vibe coding &middot; irl</div>
+          <h1
+            style={{
+              fontFamily: "var(--serif)",
+              fontWeight: 400,
+              fontSize: "clamp(48px, 6.4vw, 88px)",
+              lineHeight: 0.98,
+              letterSpacing: "-0.025em",
+              margin: "18px 0 18px",
+              maxWidth: "16ch",
+            }}
+          >
+            Type a feeling.{" "}
+            <em
+              style={{
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "var(--accent)",
+                position: "relative",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Get an evening.
+              <span
+                style={{
+                  position: "absolute",
+                  left: "2%",
+                  right: "2%",
+                  bottom: -4,
+                  height: 8,
+                  background:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'><path d='M2 7 Q 50 1 100 5 T 198 5' stroke='%23b6651e' stroke-width='2' fill='none' stroke-linecap='round'/></svg>\") center / 100% 100% no-repeat",
+                }}
+              />
+            </em>
           </h1>
-          <p style={{ fontSize: 18, color: "var(--ink-soft)", marginTop: 14, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
-            No optimization. No reviews. Tell us how you are, and we&apos;ll hand you instructions for the next few hours.
+          <p style={{ maxWidth: "56ch", color: "var(--ink-2)", fontSize: 19, lineHeight: 1.55 }}>
+            No optimization. No reviews. Tell us how you are, and we&apos;ll hand you instructions for
+            the next few hours.
           </p>
         </div>
 
         {/* Bucket list toggle */}
         {isLoggedIn && bucket.length > 0 && (
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ marginBottom: 24 }}>
             <button
               onClick={() => setShowBucket(!showBucket)}
-              className="typewriter"
-              style={{
-                fontSize: 12, letterSpacing: "0.15em",
-                color: showBucket ? "var(--paper-light)" : "var(--teal)",
-                background: showBucket ? "var(--teal)" : "transparent",
-                border: "1.5px solid var(--teal)", borderRadius: 20,
-                padding: "8px 20px", cursor: "pointer", transition: "all 0.2s ease",
-              }}
+              className={`chip ${showBucket ? "on" : ""}`}
             >
               {showBucket ? "close bucket list" : `my bucket list (${pendingCount} pending · ${doneCount} done)`}
             </button>
@@ -169,44 +193,87 @@ export default function VibePage() {
         {showBucket && <BucketListView bucket={bucket} onToggle={toggleComplete} onRemove={removeFromBucket} disabled={bucketLoading} />}
 
         {/* Input area */}
-        <div className="paper" style={{ padding: "26px 28px", background: "#faf3df", margin: "0 auto 30px", maxWidth: 760, position: "relative" }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
+        <div
+          style={{
+            padding: "22px 22px 18px",
+            background: "var(--note-1)",
+            border: "1px solid var(--ink)",
+            borderRadius: 4,
+            boxShadow: "6px 6px 0 var(--paper-edge)",
+            marginBottom: 30,
+            maxWidth: 760,
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: "10.5px",
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--ink-3)",
+            }}
+          >
             how are you, really?
-          </div>
-          <form onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }} style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
+          </label>
+          <form
+            onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }}
+            style={{ display: "flex", gap: 10, alignItems: "stretch", marginTop: 8 }}
+          >
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="like a sunday afternoon that won't end..."
-              className="hand"
               style={{
-                flex: 1, background: "var(--paper-light)", border: "1px dashed var(--ink-faded)",
-                padding: "14px 16px", fontSize: 24, color: "var(--ink-soft)",
-                fontFamily: "'Caveat', cursive", outline: "none", borderRadius: 2,
+                flex: 1,
+                background: "var(--paper)",
+                border: "1px solid var(--ink)",
+                padding: "14px 16px",
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 22,
+                color: "var(--ink)",
+                borderRadius: 3,
               }}
             />
-            <button className="btn-paper" type="submit" disabled={loading || !query.trim()}>
-              {loading ? "feeling..." : "make a board"}
-              <span style={{ fontSize: 18 }}>↳</span>
+            <button className="btn-ink" type="submit" disabled={loading || !query.trim()}>
+              {loading ? "feeling..." : "make a board ↳"}
             </button>
           </form>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14, alignItems: "center" }}>
-            <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)" }}>or borrow a vibe →</span>
-            <button type="button" onClick={randomVibe} disabled={loading} className="typewriter"
-              style={{ fontSize: 11, color: "var(--teal)", background: "none", border: "1px dashed var(--teal)", borderRadius: 2, padding: "4px 10px", cursor: "pointer", marginRight: 4 }}>
+            <span
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.15em",
+                color: "var(--ink-3)",
+              }}
+            >
+              or borrow a vibe →
+            </span>
+            <button
+              type="button"
+              onClick={randomVibe}
+              disabled={loading}
+              className="chip"
+              style={{ fontSize: 11 }}
+            >
               ↻ random
             </button>
             {vibeStarters.map((p) => (
-              <button key={p} onClick={() => pickPreset(p)} disabled={loading} className="hand"
+              <button
+                key={p}
+                onClick={() => pickPreset(p)}
+                disabled={loading}
+                className={`chip ${activePreset === p ? "on" : ""}`}
                 style={{
-                  padding: "4px 12px",
-                  background: activePreset === p ? "var(--ink)" : "transparent",
-                  color: activePreset === p ? "var(--paper-light)" : "var(--ink)",
-                  border: `1.5px solid ${activePreset === p ? "var(--ink)" : "var(--ink-faded)"}`,
-                  fontSize: 18, cursor: "pointer", borderRadius: 14,
-                  fontFamily: "'Caveat', cursive", transition: "all 0.2s ease",
+                  fontFamily: "var(--serif)",
+                  fontStyle: "italic",
+                  fontSize: 14,
+                  letterSpacing: 0,
+                  textTransform: "none",
                   opacity: loading ? 0.5 : 1,
-                }}>
+                }}
+              >
                 {p}
               </button>
             ))}
@@ -215,7 +282,16 @@ export default function VibePage() {
 
         {loading && (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
-            <p className="hand" style={{ fontSize: 26, color: "var(--ink-faded)" }}>feeling...</p>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 24,
+                color: "var(--ink-3)",
+              }}
+            >
+              feeling...
+            </p>
           </div>
         )}
 

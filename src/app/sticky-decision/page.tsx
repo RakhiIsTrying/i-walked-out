@@ -85,57 +85,138 @@ export default function StickyDecisionPage() {
   }
 
   return (
-    <div className="page-in" style={{ padding: "20px clamp(16px, 4vw, 48px) 40px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            sticky decision
-          </div>
-          <h1 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic" }}>
-            Help a stranger <em style={{ color: "var(--rose)" }}>get unstuck.</em>
+    <div className="page-in" style={{ padding: "72px 0 40px" }}>
+      <div className="wrap" style={{ maxWidth: 1100 }}>
+        {/* Page intro */}
+        <div style={{ marginBottom: 44 }}>
+          <div className="eyebrow">sticky decision</div>
+          <h1
+            style={{
+              fontFamily: "var(--serif)",
+              fontWeight: 400,
+              fontSize: "clamp(48px, 6.4vw, 88px)",
+              lineHeight: 0.98,
+              letterSpacing: "-0.025em",
+              margin: "18px 0 18px",
+              maxWidth: "16ch",
+            }}
+          >
+            Help a stranger{" "}
+            <em
+              style={{
+                fontStyle: "italic",
+                fontWeight: 500,
+                color: "var(--accent)",
+                position: "relative",
+                whiteSpace: "nowrap",
+              }}
+            >
+              get unstuck.
+              <span
+                style={{
+                  position: "absolute",
+                  left: "2%",
+                  right: "2%",
+                  bottom: -4,
+                  height: 8,
+                  background:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'><path d='M2 7 Q 50 1 100 5 T 198 5' stroke='%23b6651e' stroke-width='2' fill='none' stroke-linecap='round'/></svg>\") center / 100% 100% no-repeat",
+                }}
+              />
+            </em>
           </h1>
-          <p style={{ fontSize: 18, color: "var(--ink-soft)", marginTop: 14, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
-            Real questions from real people. No advice, no comments — just a kind, anonymous vote. They&apos;ll see what the room thought.
+          <p style={{ maxWidth: "56ch", color: "var(--ink-2)", fontSize: 19, lineHeight: 1.55 }}>
+            Real questions from real people. No advice, no comments — just a kind, anonymous vote.
+            They&apos;ll see what the room thought.
           </p>
         </div>
 
         {/* Compose Form */}
         {userId && (
-          <div style={{ maxWidth: 720, margin: "0 auto 60px" }}>
+          <div style={{ maxWidth: 720, marginBottom: 60 }}>
             {!showForm ? (
-              <div style={{ textAlign: "center" }}>
-                <button className="btn-chunky" onClick={() => setShowForm(true)}>+ POST A BALLOT</button>
-              </div>
+              <button className="btn-ink" onClick={() => setShowForm(true)}>
+                + post a ballot
+              </button>
             ) : (
               <form
                 onSubmit={handleSubmit}
-                style={{ padding: "32px 32px 28px", position: "relative", background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.15)", borderRadius: 6 }}
+                style={{
+                  padding: "22px 22px 18px",
+                  background: "var(--paper)",
+                  border: "1px solid var(--ink)",
+                  borderRadius: 4,
+                  boxShadow: "6px 6px 0 var(--paper-edge)",
+                }}
               >
-                <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 8 }}>
-                  post your own
-                </div>
-                <h3 className="serif" style={{ fontSize: 26, margin: 0, marginBottom: 14, fontStyle: "italic", fontWeight: 400 }}>
+                <label
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: "10.5px",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-3)",
+                  }}
+                >
+                  Post your own
+                </label>
+                <h3
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: 26,
+                    fontWeight: 400,
+                    margin: "8px 0 14px",
+                  }}
+                >
                   what are you stuck on?
                 </h3>
                 <textarea
-                  className="hand"
                   placeholder="Describe your dilemma..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                   rows={2}
-                  style={{ width: "100%", fontSize: 22, marginBottom: 12, resize: "vertical" }}
+                  style={{
+                    width: "100%",
+                    fontSize: 20,
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    marginBottom: 12,
+                    resize: "vertical",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: "1px dashed var(--rule)",
+                    padding: "6px 0",
+                    outline: "none",
+                    color: "var(--ink)",
+                  }}
                 />
                 <textarea
                   placeholder="Add some context (optional)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  style={{ width: "100%", fontSize: 15, minHeight: 60, resize: "vertical", marginBottom: 20 }}
+                  style={{
+                    width: "100%",
+                    fontSize: 15,
+                    minHeight: 60,
+                    resize: "vertical",
+                    marginBottom: 20,
+                  }}
                 />
 
                 <div style={{ marginBottom: 24 }}>
-                  <label className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", display: "block", marginBottom: 12 }}>
+                  <label
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: 11,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-3)",
+                      display: "block",
+                      marginBottom: 12,
+                    }}
+                  >
                     Options
                   </label>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -143,12 +224,11 @@ export default function StickyDecisionPage() {
                       <input
                         key={i}
                         type="text"
-                        className="typewriter"
                         placeholder={`Option ${i + 1}`}
                         value={opt}
                         onChange={(e) => updateOption(i, e.target.value)}
                         required={i < 2}
-                        style={{ fontSize: 15, padding: "10px 14px" }}
+                        style={{ fontSize: 15, padding: "10px 14px", fontFamily: "var(--mono)" }}
                       />
                     ))}
                   </div>
@@ -156,8 +236,19 @@ export default function StickyDecisionPage() {
                     <button
                       type="button"
                       onClick={addOption}
-                      className="typewriter"
-                      style={{ marginTop: 12, fontSize: 13, color: "var(--teal)", background: "none", border: "1px dashed var(--teal)", borderRadius: 2, padding: "6px 14px", cursor: "pointer" }}
+                      style={{
+                        marginTop: 12,
+                        fontFamily: "var(--mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "var(--accent)",
+                        background: "none",
+                        border: "1px dashed var(--accent)",
+                        borderRadius: 999,
+                        padding: "6px 14px",
+                        cursor: "pointer",
+                      }}
                     >
                       + add another option
                     </button>
@@ -165,10 +256,10 @@ export default function StickyDecisionPage() {
                 </div>
 
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <button type="submit" className="btn-paper" disabled={submitting}>
+                  <button type="submit" className="btn-ink" disabled={submitting}>
                     {submitting ? "posting..." : "post ballot"}
                   </button>
-                  <button type="button" className="btn-ghost" onClick={() => setShowForm(false)} style={{ fontSize: 14, padding: "10px 18px" }}>
+                  <button type="button" className="btn-outline" onClick={() => setShowForm(false)}>
                     cancel
                   </button>
                 </div>
@@ -180,12 +271,40 @@ export default function StickyDecisionPage() {
         {/* Content */}
         {loading ? (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p className="hand" style={{ fontSize: 24, color: "var(--ink-faded)" }}>loading ballots...</p>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 22,
+                color: "var(--ink-3)",
+              }}
+            >
+              loading ballots...
+            </p>
           </div>
         ) : decisions.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: "var(--ink-faded)" }}>No sticky decisions yet.</p>
-            <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", marginTop: 8 }}>Be the first to let strangers run your life.</p>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 22,
+                color: "var(--ink-3)",
+              }}
+            >
+              No sticky decisions yet.
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 18,
+                color: "var(--ink-3)",
+                marginTop: 8,
+              }}
+            >
+              Be the first to let strangers run your life.
+            </p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 44, alignItems: "center" }}>

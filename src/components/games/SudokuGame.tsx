@@ -95,8 +95,8 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
   if (gameOver && board.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: 40 }}>
-        <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: "var(--teal)" }}>Already solved today!</p>
-        <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", marginTop: 8 }}>
+        <p style={{ fontFamily: "var(--serif)", fontSize: 22, fontStyle: "italic", color: "var(--accent)" }}>Already solved today!</p>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", marginTop: 8 }}>
           🔥 {stats?.currentStreak || 0} day streak
         </p>
       </div>
@@ -110,7 +110,7 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: "100%", overflow: "hidden" }}>
-      <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.1em", color: "var(--ink-faded)" }}>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.1em", color: "var(--ink-3)" }}>
         {formatTime(timer)}
       </div>
 
@@ -119,10 +119,10 @@ export default function SudokuGame({ puzzle: puzzleProp, playDate }: SudokuProps
 
       {gameOver && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
-          <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: "var(--teal)" }}>
+          <p style={{ fontFamily: "var(--serif)", fontSize: 22, fontStyle: "italic", color: "var(--accent)" }}>
             Solved in {formatTime(timer)}!
           </p>
-          <button onClick={handleShare} className="btn-paper" style={{ marginTop: 8, fontSize: 13 }}>
+          <button onClick={handleShare} className="btn-ink" style={{ marginTop: 8, fontSize: 13 }}>
             {shareMsg || "share result"}
           </button>
         </div>

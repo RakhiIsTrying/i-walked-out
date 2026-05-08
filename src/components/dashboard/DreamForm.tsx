@@ -49,10 +49,10 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
 
   return (
     <section
-      className="paper page-in"
-      style={{ borderRadius: 3, padding: "36px 28px 28px", marginBottom: 48, position: "relative" }}
+      className="page-in"
+      style={{ borderRadius: 3, padding: "36px 28px 28px", marginBottom: 48, position: "relative", border: "1px solid var(--ink)", boxShadow: "4px 5px 0 var(--paper-edge)", background: "var(--paper)" }}
     >
-      <h2 className="serif" style={{ fontSize: 24, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", marginBottom: 24 }}>
+      <h2 style={{ fontFamily: "var(--serif)", fontSize: 24, fontStyle: "italic", fontWeight: 400, color: "var(--ink)", marginBottom: 24 }}>
         what are you letting go of?
       </h2>
 
@@ -62,8 +62,7 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
           placeholder="What did you walk away from?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="typewriter"
-          style={{ fontSize: 13, letterSpacing: "0.04em", width: "100%" }}
+          style={{ fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.04em", width: "100%" }}
           required
         />
 
@@ -71,13 +70,12 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
           placeholder="Tell the story. Why did you give it up? What was the last straw?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="hand"
-          style={{ fontSize: 20, lineHeight: 1.45, minHeight: 120, resize: "vertical", width: "100%" }}
+          style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, lineHeight: 1.45, minHeight: 120, resize: "vertical", width: "100%" }}
           required
         />
 
         <div>
-          <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
+          <p style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 10 }}>
             Category
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -86,14 +84,14 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
                 key={c.value}
                 type="button"
                 onClick={() => setCategory(c.value)}
-                className="typewriter"
                 style={{
+                  fontFamily: "var(--mono)",
                   fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase",
                   padding: "6px 14px",
-                  border: category === c.value ? "1.5px solid var(--ink)" : "1px dashed var(--ink-faded)",
+                  border: category === c.value ? "1.5px solid var(--ink)" : "1px dashed var(--ink-3)",
                   borderRadius: 2,
                   background: category === c.value ? "var(--ink)" : "transparent",
-                  color: category === c.value ? "var(--paper-light)" : "var(--ink-faded)",
+                  color: category === c.value ? "var(--paper)" : "var(--ink-3)",
                   cursor: "pointer", transition: "all 0.15s ease",
                 }}
               >
@@ -104,7 +102,7 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
         </div>
 
         <div>
-          <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 10 }}>
+          <p style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 10 }}>
             How did it feel?
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -113,13 +111,13 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
                 key={em}
                 type="button"
                 onClick={() => setEmotion(em)}
-                className="typewriter"
                 style={{
+                  fontFamily: "var(--mono)",
                   fontSize: 10, letterSpacing: "0.1em", padding: "6px 14px",
-                  border: emotion === em ? "1.5px solid var(--rose)" : "1px dashed var(--ink-faded)",
+                  border: emotion === em ? "1.5px solid var(--accent)" : "1px dashed var(--ink-3)",
                   borderRadius: 2,
-                  background: emotion === em ? "var(--rose)" : "transparent",
-                  color: emotion === em ? "var(--paper-light)" : "var(--ink-faded)",
+                  background: emotion === em ? "var(--accent)" : "transparent",
+                  color: emotion === em ? "var(--paper)" : "var(--ink-3)",
                   cursor: "pointer", transition: "all 0.15s ease",
                 }}
               >
@@ -130,7 +128,7 @@ export default function DreamForm({ onSubmitted }: { onSubmitted: () => void }) 
         </div>
 
         <div style={{ marginTop: 4 }}>
-          <button type="submit" disabled={submitting} className="btn-paper">
+          <button type="submit" disabled={submitting} className="btn-ink">
             {submitting ? "walking out..." : "walk out ↳"}
           </button>
         </div>

@@ -77,17 +77,17 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
       className="paper"
       style={{ borderRadius: 3, overflow: "hidden", position: "relative" }}
     >
-      <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-faded)" }}>
-        <p className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 4 }}>
+      <div style={{ padding: "24px 24px 16px", borderBottom: "1.5px dashed var(--ink-3)" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 4 }}>
           Chat with your Future Self
         </p>
-        <p style={{ fontSize: 13, color: "var(--ink-faded)" }}>{subtitle}</p>
+        <p style={{ fontSize: 13, color: "var(--ink-3)" }}>{subtitle}</p>
       </div>
 
       <div style={{ maxHeight: 450, minHeight: 180, overflowY: "auto", padding: 24 }}>
         {messages.length === 0 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 140 }}>
-            <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", opacity: 0.5, textAlign: "center" }}>
+            <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-3)", opacity: 0.5, textAlign: "center" }}>
               {emptyText}
             </p>
           </div>
@@ -111,19 +111,20 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
                 ...(msg.role === "user"
                   ? {
                       background: "var(--paper-deep)",
-                      border: "1px dashed var(--ink-faded)",
-                      fontFamily: "'Caveat', cursive",
+                      border: "1px dashed var(--ink-3)",
+                      fontFamily: "var(--serif)",
+                      fontStyle: "italic" as const,
                       fontSize: 19,
                       lineHeight: 1.4,
-                      color: "var(--ink-soft)",
+                      color: "var(--ink-2)",
                     }
                   : {
-                      background: "var(--paper-light)",
-                      border: "1px solid var(--ink-faded)",
-                      borderLeft: "3px solid var(--teal)",
+                      background: "var(--paper)",
+                      border: "1px solid var(--ink-3)",
+                      borderLeft: "3px solid var(--accent)",
                       fontSize: 14,
                       lineHeight: 1.6,
-                      color: "var(--ink-soft)",
+                      color: "var(--ink-2)",
                     }),
               }}
             >
@@ -137,13 +138,13 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
             <div
               style={{
                 padding: "14px 18px",
-                background: "var(--paper-light)",
-                border: "1px solid var(--ink-faded)",
-                borderLeft: "3px solid var(--teal)",
+                background: "var(--paper)",
+                border: "1px solid var(--ink-3)",
+                borderLeft: "3px solid var(--accent)",
                 borderRadius: 3,
               }}
             >
-              <span className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.1em" }}>
                 {profile ? "analyzing..." : "thinking..."}
               </span>
             </div>
@@ -153,7 +154,7 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
         <div ref={chatEndRef} />
       </div>
 
-      <div style={{ borderTop: "1.5px dashed var(--ink-faded)", padding: 16 }}>
+      <div style={{ borderTop: "1.5px dashed var(--ink-3)", padding: 16 }}>
         <form
           onSubmit={(e) => { e.preventDefault(); send(); }}
           style={{ display: "flex", gap: 12 }}
@@ -163,13 +164,12 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
             placeholder="Ask your future self..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="hand"
-            style={{ flex: 1, fontSize: 18 }}
+            style={{ fontFamily: "var(--serif)", fontStyle: "italic", flex: 1, fontSize: 18 }}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="btn-paper"
+            className="btn-ink"
             style={{ padding: "10px 20px", fontSize: 14 }}
           >
             send &rarr;

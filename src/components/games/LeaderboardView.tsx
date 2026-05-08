@@ -53,15 +53,15 @@ export default function LeaderboardView() {
           <button
             key={g.id}
             onClick={() => setGameFilter(g.id)}
-            className="typewriter"
             style={{
+              fontFamily: "var(--mono)",
               padding: "7px 14px",
               fontSize: 11,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              background: gameFilter === g.id ? "var(--teal)" : "transparent",
+              background: gameFilter === g.id ? "var(--accent)" : "transparent",
               color: gameFilter === g.id ? "#fff" : "var(--ink)",
-              border: `1.5px solid ${gameFilter === g.id ? "var(--teal)" : "var(--ink-faded)"}`,
+              border: `1.5px solid ${gameFilter === g.id ? "var(--accent)" : "var(--ink-3)"}`,
               borderRadius: 2,
               cursor: "pointer",
               transition: "all 0.2s ease",
@@ -77,15 +77,15 @@ export default function LeaderboardView() {
           <button
             key={p.id}
             onClick={() => setPeriod(p.id)}
-            className="typewriter"
             style={{
+              fontFamily: "var(--mono)",
               padding: "7px 16px",
               fontSize: 11,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              background: period === p.id ? "var(--rose)" : "transparent",
+              background: period === p.id ? "var(--accent-deep)" : "transparent",
               color: period === p.id ? "#fff" : "var(--ink)",
-              border: `1.5px solid ${period === p.id ? "var(--rose)" : "var(--ink-faded)"}`,
+              border: `1.5px solid ${period === p.id ? "var(--accent-deep)" : "var(--ink-3)"}`,
               borderRadius: 2,
               cursor: "pointer",
               transition: "all 0.2s ease",
@@ -98,22 +98,23 @@ export default function LeaderboardView() {
 
       {loading ? (
         <div style={{ textAlign: "center", padding: 60 }}>
-          <div className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.15em" }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.15em" }}>
             loading leaderboard...
           </div>
         </div>
       ) : entries.length === 0 ? (
         <div style={{ textAlign: "center", padding: 60 }}>
-          <Trophy size={40} style={{ color: "var(--ink-faded)", marginBottom: 16 }} />
-          <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
+          <Trophy size={40} style={{ color: "var(--ink-3)", marginBottom: 16 }} />
+          <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.12em" }}>
             No games played yet for this period. Be the first!
           </p>
         </div>
       ) : (
         <div style={{ width: "100%", maxWidth: 560 }}>
           <div
-            className="typewriter leaderboard-row"
+            className="leaderboard-row"
             style={{
+              fontFamily: "var(--mono)",
               display: "grid",
               gridTemplateColumns: "40px 1fr 70px 80px 70px",
               gap: 8,
@@ -121,8 +122,8 @@ export default function LeaderboardView() {
               fontSize: 9,
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "var(--ink-faded)",
-              borderBottom: "1.5px dashed var(--ink-faded)",
+              color: "var(--ink-3)",
+              borderBottom: "1.5px dashed var(--ink-3)",
             }}
           >
             <span>#</span>
@@ -145,19 +146,20 @@ export default function LeaderboardView() {
                   gap: 8,
                   padding: "12px 14px",
                   alignItems: "center",
-                  background: rank <= 3 ? "rgba(42, 95, 214, 0.04)" : "transparent",
+                  background: rank <= 3 ? "oklch(0.62 0.14 35 / 0.04)" : "transparent",
                   borderBottom: "1px solid var(--paper-deep)",
                   transition: "background 0.2s",
                 }}
               >
                 <span style={{
-                  fontFamily: "'Bungee', system-ui",
+                  fontFamily: "var(--mono)",
                   fontSize: medal ? 18 : 16,
                   color: "var(--ink)",
                 }}>
                   {medal || rank}
                 </span>
-                <span className="typewriter" style={{
+                <span style={{
+                  fontFamily: "var(--mono)",
                   fontSize: 13,
                   letterSpacing: "0.06em",
                   color: "var(--ink)",
@@ -167,25 +169,27 @@ export default function LeaderboardView() {
                 </span>
                 <span style={{
                   textAlign: "center",
-                  fontFamily: "'Bungee', system-ui",
+                  fontFamily: "var(--mono)",
                   fontSize: 16,
-                  color: "var(--teal)",
+                  color: "var(--accent)",
                 }}>
                   {entry.wins}
                 </span>
-                <span className="typewriter" style={{
+                <span style={{
+                  fontFamily: "var(--mono)",
                   textAlign: "center",
                   fontSize: 12,
                   letterSpacing: "0.06em",
-                  color: "var(--ink-soft)",
+                  color: "var(--ink-2)",
                 }}>
                   {entry.total_score}
                 </span>
-                <span className="typewriter" style={{
+                <span style={{
+                  fontFamily: "var(--mono)",
                   textAlign: "center",
                   fontSize: 12,
                   letterSpacing: "0.06em",
-                  color: "var(--ink-faded)",
+                  color: "var(--ink-3)",
                 }}>
                   {entry.games_played}
                 </span>

@@ -272,11 +272,11 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
       }}
     >
       <div
-        className="typewriter"
         style={{
+          fontFamily: "var(--mono)",
           fontSize: 12,
           letterSpacing: "0.1em",
-          color: "var(--ink-faded)",
+          color: "var(--ink-3)",
         }}
       >
         {formatTime(timer)}
@@ -322,18 +322,18 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
       {gameOver && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
           <p
-            className="serif"
             style={{
+              fontFamily: "var(--serif)",
               fontSize: 22,
               fontStyle: "italic",
-              color: "var(--teal)",
+              color: "var(--accent)",
             }}
           >
             Solved in {formatTime(timer)}!
           </p>
           <button
             onClick={handleShare}
-            className="btn-paper"
+            className="btn-ink"
             style={{ marginTop: 8, fontSize: 13 }}
           >
             {shareMsg || "share result"}

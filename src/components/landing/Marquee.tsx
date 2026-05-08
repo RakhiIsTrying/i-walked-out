@@ -3,27 +3,49 @@ export default function Marquee() {
     "1,247 dreams quit today",
     "zero refunds issued",
     "dreams formally fired",
-    "avg. time to give up: 4.7 years",
+    "avg. time to give up — 4.7 years",
     "smug 42%",
     "weird about it 21%",
-    "honestly, hungry 8%",
+    "honestly hungry 8%",
   ];
+
   return (
     <div
+      aria-hidden="true"
       style={{
+        borderTop: "1px solid var(--ink)",
+        borderBottom: "1px solid var(--ink)",
         background: "var(--ink)",
-        color: "var(--paper-deep)",
-        padding: "16px 0",
+        color: "var(--paper)",
         overflow: "hidden",
-        position: "relative",
-        margin: "60px 0",
+        padding: "14px 0",
       }}
     >
-      <div className="marquee-track" style={{ display: "flex", gap: 48, whiteSpace: "nowrap", width: "max-content" }}>
-        {[...items, ...items, ...items].map((item, i) => (
-          <span key={i} className="typewriter" style={{ fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+      <div
+        className="marquee-track"
+        style={{
+          display: "inline-flex",
+          whiteSpace: "nowrap",
+          fontFamily: "var(--mono)",
+          fontSize: 12,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+        }}
+      >
+        {[...items, ...items].map((item, i) => (
+          <span
+            key={i}
+            style={{
+              padding: "0 28px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 28,
+            }}
+          >
             {item}
-            <span style={{ margin: "0 24px", opacity: 0.3 }}>·</span>
+            <span style={{ color: "var(--accent)", fontSize: 13, opacity: 0.9 }}>
+              ✺
+            </span>
           </span>
         ))}
       </div>

@@ -10,15 +10,15 @@ const traitKeys: { key: string; label: string }[] = [
 ];
 
 function traitColor(value: number): string {
-  if (value >= 70) return "var(--teal)";
-  if (value >= 40) return "var(--rose)";
-  return "var(--butter)";
+  if (value >= 70) return "var(--accent)";
+  if (value >= 40) return "var(--accent-deep)";
+  return "var(--note-1)";
 }
 
 export default function TraitBars({ profile }: { profile: PersonalityProfile }) {
   return (
     <section>
-      <p className="typewriter" style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 20, textAlign: "center" }}>
+      <p style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 20, textAlign: "center" }}>
         Personality Traits
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -29,18 +29,18 @@ export default function TraitBars({ profile }: { profile: PersonalityProfile }) 
             <div
               key={key}
               style={{
-                background: "var(--paper-light)",
+                background: "var(--paper)",
                 padding: "16px 20px",
                 borderRadius: 3,
-                border: "1px dashed var(--ink-faded)",
+                border: "1px dashed var(--ink-3)",
                 position: "relative",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-                <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-soft)" }}>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-2)" }}>
                   {label}
                 </span>
-                <span className="hand" style={{ fontSize: 22, color: barColor, fontWeight: 600 }}>
+                <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, color: barColor, fontWeight: 600 }}>
                   {value}%
                 </span>
               </div>

@@ -33,79 +33,210 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
     router.refresh();
   }
 
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <nav
+    <header
       style={{
+        borderBottom: "1px solid var(--ink)",
+        padding: "14px 0 0",
+        background: "var(--paper)",
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(251, 247, 236, 0.88)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        borderBottom: "1px dashed rgba(106, 112, 140, 0.3)",
       }}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 lg:px-12 py-5">
-        <Link
-          href="/"
-          className="serif flex items-center gap-2.5 text-[22px] font-semibold tracking-tight"
-          style={{ color: "var(--ink)", textDecoration: "none" }}
+      <div
+        className="wrap"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          alignItems: "center",
+          gap: 24,
+        }}
+      >
+        {/* Left: meta info */}
+        <div
+          style={{
+            fontFamily: "var(--mono)",
+            fontSize: "10.5px",
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: "var(--ink-2)",
+            display: "flex",
+            gap: 18,
+          }}
         >
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="11" stroke="var(--ink)" strokeWidth="1.5" strokeDasharray="2 2" />
-            <path d="M9 14 Q14 8 19 14 Q14 20 9 14 Z" fill="var(--rose)" opacity="0.75" />
-          </svg>
-          i walked out
-        </Link>
-
-        <div className="hidden items-center gap-5 lg:gap-6 md:flex">
-          {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`nav-link ${pathname === href ? "active" : ""}`}
-            >
-              {label}
-            </Link>
-          ))}
+          <span>Est. 2025</span>
+          <span style={{ color: "var(--ink-3)" }}>Vol. 03</span>
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
+        {/* Center: logo */}
+        <Link
+          href="/"
+          style={{
+            textAlign: "center",
+            fontFamily: "var(--serif)",
+            fontStyle: "italic",
+            fontWeight: 500,
+            fontSize: 26,
+            letterSpacing: "-0.01em",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+            color: "var(--ink)",
+          }}
+        >
+          i walked{" "}
+          <em style={{ color: "var(--accent)", fontStyle: "italic" }}>out</em>
+        </Link>
+
+        {/* Right: user / sign in */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 22,
+            fontFamily: "var(--mono)",
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+          }}
+        >
           {user ? (
             <>
-              <span className="typewriter text-xs" style={{ color: "var(--ink-faded)", letterSpacing: "0.05em", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span
+                style={{
+                  color: "var(--ink-3)",
+                  maxWidth: 140,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  fontSize: 10,
+                }}
+              >
                 {user.email}
               </span>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1.5 rounded px-3 py-2 text-sm transition-colors"
-                style={{ color: "var(--ink-faded)" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--ink-3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                }}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut size={14} />
               </button>
             </>
           ) : (
-            <Link href="/auth/login" className="btn-paper" style={{ padding: "10px 18px", fontSize: 14 }}>
+            <Link
+              href="/auth/login"
+              style={{
+                border: "1px solid var(--ink)",
+                padding: "7px 12px",
+                borderRadius: 999,
+                transition: "background .2s, color .2s",
+                color: "var(--ink)",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                fontFamily: "var(--mono)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--ink)";
+                e.currentTarget.style.color = "var(--paper)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--ink)";
+              }}
+            >
               Sign in
             </Link>
           )}
-        </div>
 
-        <button
-          className="md:hidden"
-          style={{ color: "var(--ink-faded)" }}
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--ink)",
+              padding: 4,
+            }}
+            className="mobile-nav-toggle"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
+      {/* Nav row */}
+      <nav
+        className="wrap desktop-nav"
+        style={{
+          marginTop: 10,
+          borderTop: "1px solid var(--rule)",
+          paddingTop: 10,
+          paddingBottom: 12,
+          display: "flex",
+          justifyContent: "center",
+          gap: 38,
+          fontFamily: "var(--serif)",
+          fontSize: 15,
+          fontStyle: "italic",
+          color: "var(--ink-2)",
+        }}
+      >
+        {links.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            style={{
+              position: "relative",
+              color: isActive(href) ? "var(--ink)" : "var(--ink-2)",
+              transition: "color .15s",
+            }}
+          >
+            {label}
+            {isActive(href) && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: -4,
+                  height: 4,
+                  background:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 4' preserveAspectRatio='none'><path d='M1 3 Q 20 0 40 2 T 79 2' stroke='%23b6651e' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>\") center / 100% 100% no-repeat",
+                }}
+              />
+            )}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Mobile nav */}
       {mobileOpen && (
         <div
-          className="px-6 py-4 md:hidden"
+          className="mobile-nav"
           style={{
-            borderTop: "1px dashed rgba(106, 112, 140, 0.3)",
-            background: "rgba(251, 247, 236, 0.95)",
+            borderTop: "1px solid var(--rule)",
+            padding: "16px 32px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
           }}
         >
           {links.map(({ href, label }) => (
@@ -113,33 +244,56 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className={`serif block py-2.5 text-base`}
-              style={{ color: pathname === href ? "var(--rose)" : "var(--ink)", textDecoration: "none" }}
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 17,
+                padding: "8px 0",
+                color: isActive(href) ? "var(--accent)" : "var(--ink)",
+                borderBottom: "1px dashed var(--rule)",
+              }}
             >
               {label}
             </Link>
           ))}
-          {user ? (
+          {user && (
             <button
               onClick={handleLogout}
-              className="mt-2 flex w-full items-center gap-2 py-2.5 text-sm"
-              style={{ color: "var(--rose)" }}
+              style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "10px 0",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut size={14} />
               Sign Out
             </button>
-          ) : (
-            <Link
-              href="/auth/login"
-              onClick={() => setMobileOpen(false)}
-              className="btn-paper mt-3 block text-center"
-              style={{ fontSize: 14 }}
-            >
-              Sign In
-            </Link>
           )}
         </div>
       )}
-    </nav>
+
+      <style>{`
+        @media (max-width: 980px) {
+          .mobile-nav-toggle { display: flex !important; }
+          .desktop-nav { display: none !important; }
+          header > .wrap:first-child {
+            grid-template-columns: 1fr auto auto !important;
+          }
+          header > .wrap:first-child > div:first-child { display: none; }
+        }
+        @media (min-width: 981px) {
+          .mobile-nav { display: none !important; }
+        }
+      `}</style>
+    </header>
   );
 }

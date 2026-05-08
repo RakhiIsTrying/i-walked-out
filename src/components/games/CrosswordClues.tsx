@@ -69,11 +69,11 @@ function ClueSection({
   return (
     <div>
       <div
-        className="typewriter"
         style={{
+          fontFamily: "var(--mono)",
           fontSize: 10,
           letterSpacing: "0.2em",
-          color: "var(--ink-faded)",
+          color: "var(--ink-3)",
           marginBottom: 6,
           textTransform: "uppercase",
         }}
@@ -90,7 +90,7 @@ function ClueSection({
               fontSize: 12,
               padding: "2px 0",
               cursor: "pointer",
-              color: isActive ? "var(--teal)" : "var(--ink-soft)",
+              color: isActive ? "var(--accent)" : "var(--ink-2)",
               fontWeight: isActive ? 600 : 400,
               lineHeight: 1.4,
             }}

@@ -20,7 +20,7 @@ export default function WordleGrid({
   const cellPx = isMobile ? 44 : 52;
 
   const cellBg = (s: CellState) =>
-    s === "correct" ? "var(--teal)" : s === "present" ? "var(--butter)" : s === "absent" ? "var(--ink-faded)" : "transparent";
+    s === "correct" ? "var(--accent)" : s === "present" ? "var(--note-1)" : s === "absent" ? "var(--ink-3)" : "transparent";
 
   const cellColor = (s: CellState) => (s === "empty" ? "var(--ink)" : "#fff");
 
@@ -46,9 +46,9 @@ export default function WordleGrid({
                     width: cellPx, height: cellPx,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     background: cellBg(state),
-                    border: state === "empty" ? "2px solid var(--ink-faded)" : "2px solid transparent",
+                    border: state === "empty" ? "2px solid var(--ink-3)" : "2px solid transparent",
                     fontSize: isMobile ? 20 : 24, fontWeight: 700,
-                    fontFamily: "'Bungee', system-ui",
+                    fontFamily: "var(--mono)",
                     color: cellColor(state),
                     transition: "all 0.3s",
                     animationDelay: s ? `${ci * 0.1}s` : "0s",

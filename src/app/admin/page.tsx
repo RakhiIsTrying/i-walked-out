@@ -123,7 +123,7 @@ export default function AdminDashboard() {
   if (authChecking) {
     return (
       <div style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p className="typewriter" style={{ fontSize: 13, letterSpacing: "0.15em", color: "var(--ink-faded)" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.15em", color: "var(--ink-3)" }}>
           verifying...
         </p>
       </div>
@@ -151,22 +151,22 @@ export default function AdminDashboard() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         <header style={{ marginBottom: 32 }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 8 }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 8 }}>
             admin · private
           </div>
-          <h1 className="serif" style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 400, fontStyle: "italic", margin: 0, lineHeight: 1.05 }}>
+          <h1 style={{ fontFamily: "var(--serif)", fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 400, fontStyle: "italic", margin: 0, lineHeight: 1.05 }}>
             Command Center
           </h1>
         </header>
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 32, borderBottom: "1.5px solid rgba(106,112,140,0.15)", paddingBottom: 12 }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 32, borderBottom: "1.5px solid var(--rule)", paddingBottom: 12 }}>
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className="typewriter"
               style={{
+                fontFamily: "var(--mono)",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                 border: "none",
                 borderRadius: 2,
                 background: tab === t.key ? "var(--ink)" : "transparent",
-                color: tab === t.key ? "var(--paper-light)" : "var(--ink-faded)",
+                color: tab === t.key ? "var(--paper)" : "var(--ink-3)",
                 transition: "all 0.15s",
               }}
             >
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
         </div>
 
         {loading ? (
-          <p className="hand" style={{ fontSize: 22, color: "var(--ink-faded)", textAlign: "center", padding: "60px 0" }}>
+          <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, color: "var(--ink-3)", textAlign: "center", padding: "60px 0" }}>
             loading dashboard...
           </p>
         ) : (
@@ -198,8 +198,8 @@ export default function AdminDashboard() {
                 <div>
                   <SectionLabel text="today" />
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
-                    <StatCard value={stats.today_users} label="new signups" color="var(--rose)" />
-                    <StatCard value={stats.today_dreams} label="dreams logged" color="var(--teal)" />
+                    <StatCard value={stats.today_users} label="new signups" color="var(--accent)" />
+                    <StatCard value={stats.today_dreams} label="dreams logged" color="var(--accent-deep)" />
                   </div>
                 </div>
 
@@ -208,15 +208,15 @@ export default function AdminDashboard() {
                   <SectionLabel text="all time" />
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
                     <StatCard value={stats.users} label="users" color="var(--ink)" />
-                    <StatCard value={stats.dreams} label="dreams" color="var(--rose)" />
-                    <StatCard value={stats.sticky_decisions} label="decisions" color="var(--plum)" />
-                    <StatCard value={stats.votes} label="votes" color="var(--teal)" />
-                    <StatCard value={stats.vibe_searches} label="vibe searches" color="var(--butter)" />
-                    <StatCard value={stats.bucket_items} label="bucket items" color="var(--rose)" />
-                    <StatCard value={stats.games_played} label="games played" color="var(--teal)" />
-                    <StatCard value={stats.personalities} label="personalities" color="var(--plum)" />
+                    <StatCard value={stats.dreams} label="dreams" color="var(--accent-deep)" />
+                    <StatCard value={stats.sticky_decisions} label="decisions" color="var(--note-5)" />
+                    <StatCard value={stats.votes} label="votes" color="var(--accent)" />
+                    <StatCard value={stats.vibe_searches} label="vibe searches" color="var(--note-1)" />
+                    <StatCard value={stats.bucket_items} label="bucket items" color="var(--accent-deep)" />
+                    <StatCard value={stats.games_played} label="games played" color="var(--accent)" />
+                    <StatCard value={stats.personalities} label="personalities" color="var(--note-5)" />
                     <StatCard value={stats.telegram_links} label="telegram links" color="var(--ink)" />
-                    <StatCard value={stats.chat_messages} label="chat messages" color="var(--butter)" />
+                    <StatCard value={stats.chat_messages} label="chat messages" color="var(--note-1)" />
                   </div>
                 </div>
 
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                     <thead>
-                      <tr className="typewriter" style={{ borderBottom: "2px solid var(--ink)", textAlign: "left", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+                      <tr style={{ fontFamily: "var(--mono)", borderBottom: "2px solid var(--ink)", textAlign: "left", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase" }}>
                         <th style={thStyle}>#</th>
                         <th style={thStyle}>email</th>
                         <th style={thStyle}>phone</th>
@@ -264,15 +264,15 @@ export default function AdminDashboard() {
                     </thead>
                     <tbody>
                       {users.map((u, i) => (
-                        <tr key={u.id} style={{ borderBottom: "1px dashed var(--ink-faded)" }}>
-                          <td className="typewriter" style={{ ...tdStyle, color: "var(--ink-faded)" }}>{i + 1}</td>
+                        <tr key={u.id} style={{ borderBottom: "1px dashed var(--ink-3)" }}>
+                          <td style={{ ...tdStyle, fontFamily: "var(--mono)", color: "var(--ink-3)" }}>{i + 1}</td>
                           <td style={{ ...tdStyle, fontFamily: "monospace" }}>{u.email || "—"}</td>
                           <td style={{ ...tdStyle, fontFamily: "monospace" }}>{u.phone || "—"}</td>
-                          <td className="typewriter" style={{ ...tdStyle, fontSize: 10 }}>{u.provider}</td>
-                          <td className="hand" style={{ ...tdStyle, fontSize: 16 }}>{u.anonymous_alias}</td>
-                          <td className="typewriter" style={{ ...tdStyle, textAlign: "center" }}>{u.dream_count}</td>
+                          <td style={{ ...tdStyle, fontFamily: "var(--mono)", fontSize: 10 }}>{u.provider}</td>
+                          <td style={{ ...tdStyle, fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 16 }}>{u.anonymous_alias}</td>
+                          <td style={{ ...tdStyle, fontFamily: "var(--mono)", textAlign: "center" }}>{u.dream_count}</td>
                           <td style={{ ...tdStyle, textAlign: "center" }}>{u.personality_generated ? "yes" : "—"}</td>
-                          <td className="typewriter" style={{ ...tdStyle, fontSize: 11, color: "var(--ink-faded)" }}>{formatDate(u.created_at)}</td>
+                          <td style={{ ...tdStyle, fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink-3)" }}>{formatDate(u.created_at)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -290,12 +290,12 @@ export default function AdminDashboard() {
                     {recentDreams.map((d) => (
                       <div key={d.id} className="paper" style={{ padding: "16px 20px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-                          <h3 className="serif" style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{d.title}</h3>
-                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{formatDate(d.created_at)}</span>
+                          <h3 style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 500, margin: 0 }}>{d.title}</h3>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)" }}>{formatDate(d.created_at)}</span>
                         </div>
                         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                          <Pill text={d.category} color="var(--rose)" />
-                          <Pill text={d.emotion} color="var(--teal)" />
+                          <Pill text={d.category} color="var(--accent)" />
+                          <Pill text={d.emotion} color="var(--accent-deep)" />
                         </div>
                       </div>
                     ))}
@@ -313,12 +313,12 @@ export default function AdminDashboard() {
                     {recentSticky.map((s) => (
                       <div key={s.id} className="paper" style={{ padding: "16px 20px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
-                          <h3 className="serif" style={{ fontSize: 20, fontWeight: 500, margin: 0 }}>{s.title}</h3>
-                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{formatDate(s.created_at)}</span>
+                          <h3 style={{ fontFamily: "var(--serif)", fontSize: 20, fontWeight: 500, margin: 0 }}>{s.title}</h3>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)" }}>{formatDate(s.created_at)}</span>
                         </div>
                         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                           {s.options?.map((opt, i) => (
-                            <Pill key={i} text={opt} color="var(--plum)" />
+                            <Pill key={i} text={opt} color="var(--note-5)" />
                           ))}
                         </div>
                       </div>
@@ -335,9 +335,9 @@ export default function AdminDashboard() {
                 {recentVibes.length === 0 ? <EmptyMsg /> : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {recentVibes.map((v) => (
-                      <div key={v.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-faded)" }}>
-                        <span className="hand" style={{ fontSize: 20 }}>&ldquo;{v.query}&rdquo;</span>
-                        <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0, marginLeft: 12 }}>{formatDate(v.created_at)}</span>
+                      <div key={v.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-3)" }}>
+                        <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20 }}>&ldquo;{v.query}&rdquo;</span>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", flexShrink: 0, marginLeft: 12 }}>{formatDate(v.created_at)}</span>
                       </div>
                     ))}
                   </div>
@@ -352,14 +352,14 @@ export default function AdminDashboard() {
                 {recentGames.length === 0 ? <EmptyMsg /> : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {recentGames.map((g) => (
-                      <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-faded)" }}>
+                      <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px dashed var(--ink-3)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <Pill text={g.game_type} color="var(--teal)" />
-                          <span className="typewriter" style={{ fontSize: 13 }}>
+                          <Pill text={g.game_type} color="var(--accent-deep)" />
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 13 }}>
                             {g.won ? "Won" : "Lost"} · {g.score} pts
                           </span>
                         </div>
-                        <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0 }}>{formatDate(g.created_at)}</span>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{formatDate(g.created_at)}</span>
                       </div>
                     ))}
                   </div>
@@ -378,13 +378,13 @@ export default function AdminDashboard() {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             {f.emoji && <span style={{ fontSize: 22 }}>{f.emoji}</span>}
-                            <span style={{ fontSize: 15, color: "var(--ink)" }}>{f.message || <em style={{ color: "var(--ink-faded)" }}>emoji only</em>}</span>
+                            <span style={{ fontSize: 15, color: "var(--ink)" }}>{f.message || <em style={{ color: "var(--ink-3)" }}>emoji only</em>}</span>
                           </div>
-                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0 }}>{formatDate(f.created_at)}</span>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", flexShrink: 0 }}>{formatDate(f.created_at)}</span>
                         </div>
                         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                          {f.page && <Pill text={f.page} color="var(--teal)" />}
-                          <Pill text={f.user_email || "anonymous"} color="var(--ink-faded)" />
+                          {f.page && <Pill text={f.page} color="var(--accent-deep)" />}
+                          <Pill text={f.user_email || "anonymous"} color="var(--ink-3)" />
                         </div>
                       </div>
                     ))}

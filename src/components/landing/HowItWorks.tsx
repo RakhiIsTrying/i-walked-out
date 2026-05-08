@@ -1,53 +1,132 @@
 export default function HowItWorks() {
   const steps = [
-    { num: "01", title: "Release", body: "Tell us what you're letting go of. Two sentences. Thirty seconds.", color: "var(--rose)", emoji: "✉️" },
-    { num: "02", title: "We listen", body: "Quietly, our AI builds a portrait of you from your releases. No quizzes.", color: "var(--teal)", emoji: "👂" },
-    { num: "03", title: "Wander", body: "Browse other people's released dreams. Realize how many strangers carry the same story.", color: "var(--butter)", emoji: "🌫️" },
-    { num: "04", title: "Meet you", body: "Chat with a self shaped by your choices. Ask about regrets, about what's next.", color: "var(--plum)", emoji: "🪞" },
+    { num: "01", title: "Release", body: "Tell us what you're letting go of. Two sentences. Thirty seconds.", tag: "~30 sec" },
+    { num: "02", title: "We listen", body: "Quietly, our AI builds a portrait of you from your releases. No quizzes.", tag: "background" },
+    { num: "03", title: "Wander", body: "Browse other people's released dreams. Realize how many strangers carry the same story.", tag: "whenever" },
+    { num: "04", title: "Meet you", body: "Chat with a self shaped by your choices. Ask about regrets, about what's next.", tag: "eventually" },
   ];
 
   return (
-    <section style={{ padding: "80px clamp(16px, 4vw, 48px)", background: "var(--ink)", color: "var(--paper-light)", margin: "60px 0" }}>
-      <div style={{ maxWidth: 1080, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--paper-light)", opacity: 0.5, marginBottom: 16 }}>
-            how it works
-          </div>
-          <h2 className="serif" style={{ fontSize: "clamp(40px, 6vw, 72px)", lineHeight: 1, margin: 0, fontWeight: 400, fontStyle: "italic", color: "var(--butter)" }}>
-            Four soft steps.
+    <section
+      style={{
+        padding: "80px 0",
+        background: "var(--paper-deep)",
+        borderTop: "1px solid var(--ink)",
+        borderBottom: "1px solid var(--ink)",
+      }}
+    >
+      <div
+        className="wrap"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto",
+          alignItems: "end",
+          gap: 24,
+          marginBottom: 44,
+        }}
+      >
+        <div>
+          <div className="eyebrow">How it works</div>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontWeight: 400,
+              fontSize: "clamp(40px, 5vw, 64px)",
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+              margin: "14px 0 0",
+              maxWidth: "18ch",
+            }}
+          >
+            Four soft{" "}
+            <em style={{ fontStyle: "italic", color: "var(--accent)", fontWeight: 500 }}>steps.</em>
           </h2>
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24 }}>
-          {steps.map((s, i) => (
-            <div
-              key={i}
-              className="paper"
-              style={{
-                padding: "28px 24px",
-                background: "rgba(255,255,255,0.06)",
-                boxShadow: "none",
-                border: "1px solid rgba(255,255,255,0.1)",
-                transform: "none",
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 220,
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                <span className="typewriter" style={{ fontSize: 13, color: s.color, letterSpacing: "0.1em" }}>{s.num}</span>
-                <span style={{ fontSize: 28 }}>{s.emoji}</span>
-              </div>
-              <h3 className="serif" style={{ fontSize: 22, margin: 0, marginBottom: 10, color: "var(--paper-light)", fontWeight: 500, fontStyle: "italic" }}>
-                {s.title}
-              </h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.55, margin: 0, flex: 1 }}>
-                {s.body}
-              </p>
-            </div>
-          ))}
+        <div style={{ maxWidth: "32ch", color: "var(--ink-2)", fontSize: 17 }}>
+          No quizzes. No streaks. Nothing optimised. We promise to never gamify your grief.
         </div>
       </div>
+
+      <div
+        className="wrap steps-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 0,
+        }}
+      >
+        {steps.map((s, i) => (
+          <div
+            key={i}
+            style={{
+              padding: "0 24px",
+              borderRight: i < 3 ? "1px dashed var(--rule)" : "none",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 56,
+                lineHeight: 1,
+                color: "var(--accent)",
+                fontWeight: 400,
+              }}
+            >
+              {s.num}
+            </div>
+            <h3
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: 24,
+                fontWeight: 500,
+                margin: "14px 0 8px",
+              }}
+            >
+              {s.title}
+            </h3>
+            <p
+              style={{
+                color: "var(--ink-2)",
+                fontSize: 15,
+                margin: 0,
+                maxWidth: "28ch",
+              }}
+            >
+              {s.body}
+            </p>
+            <span
+              style={{
+                marginTop: 14,
+                display: "inline-block",
+                fontFamily: "var(--mono)",
+                fontSize: 10,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--ink-3)",
+                border: "1px solid var(--rule)",
+                padding: "3px 8px",
+                borderRadius: 999,
+              }}
+            >
+              {s.tag}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @media (max-width: 980px) {
+          .steps-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .steps-grid > div { border-right: 0 !important; padding: 24px !important; border-bottom: 1px dashed var(--rule); }
+          section > .wrap:first-child { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 560px) {
+          .steps-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </section>
   );
 }

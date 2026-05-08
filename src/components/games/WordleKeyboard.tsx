@@ -26,15 +26,15 @@ export default function WordleKeyboard({ keyColors, isMobile, onKey }: WordleKey
               <button
                 key={key}
                 onClick={() => onKey(key)}
-                className="typewriter"
                 style={{
+                  fontFamily: "var(--mono)",
                   flex: isWide ? 1.5 : 1,
                   minWidth: 0,
                   height: isMobile ? 40 : 44,
                   padding: "0 2px",
                   fontSize: isWide ? (isMobile ? 10 : 11) : (isMobile ? 13 : 14),
                   fontWeight: 700,
-                  background: state === "correct" ? "var(--teal)" : state === "present" ? "var(--butter)" : state === "absent" ? "var(--ink-faded)" : "var(--paper-deep)",
+                  background: state === "correct" ? "var(--accent)" : state === "present" ? "var(--note-1)" : state === "absent" ? "var(--ink-3)" : "var(--paper-deep)",
                   color: state && state !== "empty" ? "#fff" : "var(--ink)",
                   border: isMobile ? "1.5px solid var(--ink)" : "2px solid var(--ink)",
                   cursor: "pointer",

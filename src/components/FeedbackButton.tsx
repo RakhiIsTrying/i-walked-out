@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
 
-const FEEDBACK_EMOJIS = [
+const MOODS = [
   { emoji: "😍", label: "love it" },
   { emoji: "👍", label: "good" },
   { emoji: "🤔", label: "hmm" },
@@ -14,12 +13,12 @@ const FEEDBACK_EMOJIS = [
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [emoji, setEmoji] = useState<string | null>(null);
+  const [mood, setMood] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   async function handleSubmit() {
-    if (!message.trim() && !emoji) return;
+    if (!message.trim() && !mood) return;
     setSending(true);
     try {
       const res = await fetch("/api/feedback", {
@@ -27,21 +26,21 @@ export default function FeedbackButton() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: message.trim(),
-          emoji,
+          emoji: mood,
           page: window.location.pathname,
         }),
       });
       if (res.ok) {
         setSent(true);
         setMessage("");
-        setEmoji(null);
+        setMood(null);
         setTimeout(() => {
           setSent(false);
           setOpen(false);
         }, 1500);
       }
     } catch {
-      // network error
+      // silent
     } finally {
       setSending(false);
     }
@@ -49,187 +48,257 @@ export default function FeedbackButton() {
 
   return (
     <>
-      {/* Floating trigger */}
+      {/* Sticky-note trigger */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(true)}
         aria-label="Give feedback"
         style={{
           position: "fixed",
-          bottom: 24,
-          right: 24,
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          background: open ? "var(--ink)" : "var(--teal)",
-          color: "var(--paper-light)",
-          border: "none",
+          right: 22,
+          bottom: 22,
+          zIndex: 9998,
+          background: "var(--accent)",
+          color: "var(--paper)",
+          border: "1.5px solid var(--ink)",
+          borderRadius: 4,
+          padding: "12px 18px 14px",
+          boxShadow: "4px 4px 0 var(--ink)",
+          fontFamily: "var(--serif)",
+          fontStyle: "italic",
+          fontSize: 17,
+          lineHeight: 1.05,
           cursor: "pointer",
+          transform: "rotate(-3deg)",
+          transformOrigin: "bottom right",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
-          zIndex: 1000,
-          transition: "all 0.2s ease",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          maxWidth: 220,
+          textAlign: "left",
+          animation: "iwoFbWiggle 4.2s ease-in-out infinite",
+          transition: "transform .25s cubic-bezier(.5,1.6,.6,1), box-shadow .2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "rotate(0deg) scale(1.05)";
+          e.currentTarget.style.boxShadow = "6px 6px 0 var(--ink)";
+          e.currentTarget.style.animationPlayState = "paused";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "rotate(-3deg)";
+          e.currentTarget.style.boxShadow = "4px 4px 0 var(--ink)";
+          e.currentTarget.style.animationPlayState = "running";
         }}
       >
-        {open ? <X size={20} /> : <MessageCircle size={20} />}
-      </button>
-
-      {/* Feedback panel */}
-      {open && (
-        <div
-          className="page-in"
+        <span
           style={{
-            position: "fixed",
-            bottom: 84,
-            right: 24,
-            width: 320,
-            maxWidth: "calc(100vw - 48px)",
-            background: "var(--paper-light)",
-            borderRadius: 6,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1)",
-            zIndex: 1000,
-            overflow: "hidden",
+            position: "absolute",
+            top: -8,
+            left: 18,
+            width: 30,
+            height: 14,
+            background: "rgba(220,200,160,0.55)",
+            border: "1px solid rgba(60,40,20,0.18)",
+            borderRadius: 2,
+            transform: "rotate(-6deg)",
+            boxShadow: "1px 1px 0 rgba(60,40,20,0.08)",
+          }}
+        />
+        <span
+          style={{
+            fontFamily: "var(--mono)",
+            fontStyle: "normal",
+            fontSize: 9,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            opacity: 0.85,
+            marginBottom: 2,
           }}
         >
-          {/* Header */}
+          psst
+        </span>
+        <span style={{ fontSize: 22, lineHeight: 1, fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 1 }}>
+          Thoughts?
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--mono)",
+            fontStyle: "normal",
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            opacity: 0.78,
+            marginTop: 4,
+          }}
+        >
+          slip it under the door →
+        </span>
+      </button>
+
+      {/* Backdrop + modal */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(31,26,20,0.55)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+            animation: "fadeUp 0.25s ease",
+          }}
+        >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              padding: "14px 18px 10px",
-              borderBottom: "1px solid rgba(106,112,140,0.15)",
+              background: "var(--paper)",
+              border: "1.5px solid var(--ink)",
+              borderRadius: 4,
+              boxShadow: "8px 8px 0 var(--paper-edge)",
+              width: 380,
+              maxWidth: "100%",
+              padding: "28px 24px 22px",
+              position: "relative",
             }}
           >
+            {/* Tape decoration */}
             <div
-              className="typewriter"
               style={{
+                position: "absolute",
+                top: -8,
+                left: "50%",
+                transform: "translateX(-50%) rotate(-2deg)",
+                width: 60,
+                height: 16,
+                background: "rgba(220,200,160,0.55)",
+                border: "1px solid rgba(60,40,20,0.18)",
+                borderRadius: 2,
+              }}
+            />
+
+            <div
+              style={{
+                fontFamily: "var(--mono)",
                 fontSize: 10,
                 letterSpacing: "0.2em",
                 textTransform: "uppercase",
-                color: "var(--rose)",
-                marginBottom: 4,
+                color: "var(--accent)",
+                marginBottom: 6,
               }}
             >
               feedback
             </div>
-            <p
-              className="serif"
+
+            <div
               style={{
-                fontSize: 16,
+                fontFamily: "var(--serif)",
                 fontStyle: "italic",
-                margin: 0,
+                fontSize: 24,
+                fontWeight: 400,
                 color: "var(--ink)",
+                marginBottom: 20,
               }}
             >
-              {sent ? "Thank you!" : "How's the experience?"}
-            </p>
-          </div>
+              {sent ? "Thank you!" : "How’s the experience?"}
+            </div>
 
-          {!sent && (
-            <div style={{ padding: "12px 18px 16px" }}>
-              {/* Emoji row */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  marginBottom: 12,
-                }}
-              >
-                {FEEDBACK_EMOJIS.map((item) => (
-                  <button
-                    key={item.emoji}
-                    onClick={() => setEmoji(emoji === item.emoji ? null : item.emoji)}
-                    style={{
-                      padding: "6px 8px",
-                      background:
-                        emoji === item.emoji
-                          ? "rgba(42,95,214,0.12)"
-                          : "var(--paper-deep)",
-                      border:
-                        emoji === item.emoji
-                          ? "1.5px solid var(--teal)"
-                          : "1px solid rgba(106,112,140,0.2)",
-                      borderRadius: 6,
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                      display: "flex",
-                      flexDirection: "column" as const,
-                      alignItems: "center",
-                      gap: 2,
-                    }}
-                  >
-                    <span style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
-                    <span
-                      className="typewriter"
+            {!sent && (
+              <>
+                {/* Mood chips */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                  {MOODS.map((m) => (
+                    <button
+                      key={m.emoji}
+                      onClick={() => setMood(mood === m.emoji ? null : m.emoji)}
                       style={{
-                        fontSize: 7,
-                        letterSpacing: "0.05em",
-                        color: "var(--ink-faded)",
+                        padding: "8px 12px",
+                        background: mood === m.emoji ? "var(--ink)" : "var(--paper-deep)",
+                        color: mood === m.emoji ? "var(--paper)" : "var(--ink)",
+                        border: "1px solid var(--ink)",
+                        borderRadius: 999,
+                        cursor: "pointer",
+                        fontFamily: "var(--mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.12em",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        transition: "all .15s",
                       }}
                     >
-                      {item.label}
-                    </span>
+                      <span style={{ fontSize: 16 }}>{m.emoji}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="tell us what you think..."
+                  maxLength={1000}
+                  rows={3}
+                  style={{
+                    width: "100%",
+                    resize: "vertical",
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: 17,
+                    background: "transparent",
+                    border: "none",
+                    borderTop: "1px dashed var(--rule)",
+                    borderBottom: "1px dashed var(--rule)",
+                    padding: "14px 0",
+                    color: "var(--ink)",
+                    outline: "none",
+                  }}
+                />
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+                  <button
+                    onClick={() => setOpen(false)}
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-3)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    never mind
                   </button>
-                ))}
-              </div>
-
-              {/* Message */}
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us what you think..."
-                maxLength={1000}
-                rows={3}
-                style={{
-                  width: "100%",
-                  resize: "vertical",
-                  fontSize: 14,
-                  fontFamily: "inherit",
-                  background: "var(--paper)",
-                  border: "1px solid rgba(106,112,140,0.25)",
-                  borderRadius: 4,
-                  padding: "10px 12px",
-                  color: "var(--ink)",
-                  boxSizing: "border-box",
-                }}
-              />
-
-              {/* Submit */}
-              <button
-                onClick={handleSubmit}
-                disabled={sending || (!message.trim() && !emoji)}
-                className="typewriter"
-                style={{
-                  marginTop: 10,
-                  width: "100%",
-                  padding: "10px",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  background:
-                    sending || (!message.trim() && !emoji)
-                      ? "var(--ink-faded)"
-                      : "var(--ink)",
-                  color: "var(--paper-light)",
-                  border: "none",
-                  borderRadius: 3,
-                  cursor:
-                    sending || (!message.trim() && !emoji)
-                      ? "default"
-                      : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  transition: "all 0.15s",
-                }}
-              >
-                <Send size={14} />
-                {sending ? "sending..." : "send feedback"}
-              </button>
-            </div>
-          )}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={sending || (!message.trim() && !mood)}
+                    className="btn-ink"
+                    style={{
+                      opacity: sending || (!message.trim() && !mood) ? 0.4 : 1,
+                    }}
+                  >
+                    {sending ? "sending..." : "slip it under the door ↳"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes iwoFbWiggle {
+          0%, 100% { transform: rotate(-3deg); }
+          45% { transform: rotate(-3deg); }
+          50% { transform: rotate(2deg) translateY(-2px); }
+          55% { transform: rotate(-3deg); }
+          60% { transform: rotate(0deg); }
+          65% { transform: rotate(-3deg); }
+        }
+      `}</style>
     </>
   );
 }

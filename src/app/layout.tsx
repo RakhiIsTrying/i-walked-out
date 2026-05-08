@@ -21,14 +21,14 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Navbar user={user ? { email: user.email || "" } : null} />
-        <main className="flex-1">{children}</main>
+        <main style={{ flex: 1 }}>{children}</main>
         <FeedbackButton />
       </body>
     </html>

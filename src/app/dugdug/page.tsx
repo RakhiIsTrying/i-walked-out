@@ -89,44 +89,26 @@ export default function DugDugPage() {
   }
 
   return (
-    <div className="page-in" style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px 30px" }}>
+    <div className="page-in" style={{ maxWidth: 800, margin: "0 auto", padding: "72px 32px 40px" }}>
 
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <p
-          className="typewriter"
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.25em",
-            textTransform: "uppercase",
-            color: "var(--rose)",
-            marginBottom: 10,
-          }}
-        >
-          the communal soul
-        </p>
+      {/* Page intro */}
+      <div style={{ marginBottom: 32 }}>
+        <div className="eyebrow">the communal soul</div>
         <h1
-          className="serif"
           style={{
-            fontSize: "clamp(40px, 6vw, 64px)",
-            fontWeight: 300,
-            fontStyle: "italic",
-            color: "var(--ink)",
-            margin: 0,
-            lineHeight: 1,
+            fontFamily: "var(--serif)",
+            fontWeight: 400,
+            fontSize: "clamp(48px, 6.4vw, 72px)",
+            lineHeight: 0.98,
+            letterSpacing: "-0.025em",
+            margin: "18px 0 18px",
           }}
         >
-          Dug-Dug
+          <em style={{ fontStyle: "italic", fontWeight: 500, color: "var(--accent)" }}>
+            Dug-Dug
+          </em>
         </h1>
-        <p
-          style={{
-            fontSize: 16,
-            color: "var(--ink-soft)",
-            maxWidth: 480,
-            margin: "16px auto 0",
-            lineHeight: 1.55,
-          }}
-        >
+        <p style={{ maxWidth: "48ch", color: "var(--ink-2)", fontSize: 17, lineHeight: 1.55 }}>
           A personality built from abandoned dreams. Unhinged. Tone-deaf. Weirdly wise.
           Ask anything — it&apos;ll say the wrong thing in the most right way.
         </p>
@@ -135,12 +117,11 @@ export default function DugDugPage() {
       {/* Chat area */}
       <div
         style={{
+          background: "var(--ink)",
+          border: "1px solid var(--ink)",
           borderRadius: 4,
-          padding: 0,
           overflow: "hidden",
-          position: "relative",
-          background: "var(--paper-light)",
-          border: "1px solid rgba(106,112,140,0.15)",
+          boxShadow: "6px 6px 0 var(--paper-edge)",
         }}
       >
         {/* Messages */}
@@ -156,25 +137,44 @@ export default function DugDugPage() {
           {messages.length === 0 && (
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
               <p
-                className="hand"
-                style={{ fontSize: 26, color: "var(--ink-faded)", margin: 0, marginBottom: 8 }}
+                style={{
+                  fontFamily: "var(--serif)",
+                  fontStyle: "italic",
+                  fontSize: 24,
+                  color: "rgba(243,236,224,0.6)",
+                  margin: 0,
+                  marginBottom: 8,
+                }}
               >
                 say literally anything. i dare you.
               </p>
-              <p className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", opacity: 0.7, marginBottom: 24 }}>
+              <p
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 11,
+                  color: "rgba(243,236,224,0.4)",
+                  letterSpacing: "0.1em",
+                  marginBottom: 24,
+                }}
+              >
                 i&apos;m made of dead dreams and bad advice. it&apos;s a whole vibe.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
                 {starters.map((s) => (
                   <button
                     key={s}
-                    onClick={() => { setInput(s); }}
-                    className="hand"
+                    onClick={() => setInput(s)}
                     style={{
-                      padding: "8px 16px", fontSize: 17, color: "var(--ink-soft)",
-                      background: "var(--paper-deep)", border: "1px solid rgba(106,112,140,0.15)",
-                      borderRadius: 20, cursor: "pointer", transition: "all 0.15s ease",
-                      fontFamily: "'Caveat', cursive",
+                      padding: "8px 16px",
+                      fontFamily: "var(--serif)",
+                      fontStyle: "italic",
+                      fontSize: 15,
+                      color: "var(--paper)",
+                      background: "rgba(243,236,224,0.08)",
+                      border: "1px solid rgba(243,236,224,0.2)",
+                      borderRadius: 999,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
                     }}
                   >
                     {s}
@@ -197,20 +197,26 @@ export default function DugDugPage() {
                 style={{
                   maxWidth: "80%",
                   padding: "14px 18px",
-                  background: msg.role === "user" ? "var(--ink)" : "var(--paper-deep)",
-                  color: msg.role === "user" ? "var(--paper-light)" : "var(--ink)",
-                  borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                  background:
+                    msg.role === "user"
+                      ? "var(--accent)"
+                      : "rgba(243,236,224,0.08)",
+                  color: "var(--paper)",
+                  borderRadius:
+                    msg.role === "user"
+                      ? "16px 16px 4px 16px"
+                      : "16px 16px 16px 4px",
                   position: "relative",
                 }}
               >
                 {msg.role === "assistant" && (
                   <span
-                    className="typewriter"
                     style={{
+                      fontFamily: "var(--mono)",
                       fontSize: 9,
                       letterSpacing: "0.15em",
                       textTransform: "uppercase",
-                      color: "var(--rose)",
+                      color: "var(--accent)",
                       display: "block",
                       marginBottom: 6,
                     }}
@@ -219,10 +225,11 @@ export default function DugDugPage() {
                   </span>
                 )}
                 <p
-                  className={msg.role === "user" ? "" : "hand"}
                   style={{
-                    fontSize: msg.role === "user" ? 15 : 20,
-                    color: msg.role === "user" ? "var(--paper-light)" : "var(--ink-soft)",
+                    fontFamily: "var(--serif)",
+                    fontStyle: msg.role === "assistant" ? "italic" : "normal",
+                    fontSize: msg.role === "user" ? 15 : 18,
+                    color: "var(--paper)",
                     margin: 0,
                     lineHeight: 1.45,
                   }}
@@ -238,24 +245,32 @@ export default function DugDugPage() {
               <div
                 style={{
                   padding: "14px 18px",
-                  background: "var(--paper-deep)",
+                  background: "rgba(243,236,224,0.08)",
                   borderRadius: "16px 16px 16px 4px",
                 }}
               >
                 <span
-                  className="typewriter"
                   style={{
+                    fontFamily: "var(--mono)",
                     fontSize: 9,
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
-                    color: "var(--rose)",
+                    color: "var(--accent)",
                     display: "block",
                     marginBottom: 6,
                   }}
                 >
                   dug-dug
                 </span>
-                <p className="hand" style={{ fontSize: 20, color: "var(--ink-faded)", margin: 0 }}>
+                <p
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: 18,
+                    color: "rgba(243,236,224,0.5)",
+                    margin: 0,
+                  }}
+                >
                   thinking...
                 </p>
               </div>
@@ -272,8 +287,8 @@ export default function DugDugPage() {
             display: "flex",
             gap: 10,
             padding: "16px 24px 20px",
-            borderTop: "1px solid rgba(106,112,140,0.12)",
-            background: "rgba(233, 220, 192, 0.15)",
+            borderTop: "1px solid rgba(243,236,224,0.1)",
+            background: "rgba(243,236,224,0.04)",
           }}
         >
           <input
@@ -281,33 +296,49 @@ export default function DugDugPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="type something..."
-            className="hand"
             style={{
               flex: 1,
-              fontSize: 20,
+              fontSize: 17,
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
               padding: "12px 16px",
-              fontFamily: "'Caveat', cursive",
+              background: "rgba(243,236,224,0.06)",
+              border: "1px solid rgba(243,236,224,0.15)",
+              color: "var(--paper)",
+              borderRadius: 3,
             }}
             disabled={loading}
           />
           <button
             type="submit"
-            className="btn-paper"
             disabled={loading || !input.trim()}
-            style={{ padding: "10px 20px", fontSize: 14 }}
+            style={{
+              background: "var(--accent)",
+              color: "var(--paper)",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: 999,
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              cursor: loading || !input.trim() ? "default" : "pointer",
+              opacity: loading || !input.trim() ? 0.4 : 1,
+              transition: "opacity .15s",
+            }}
           >
             {loading ? "..." : "send ↳"}
           </button>
         </form>
       </div>
 
-      {/* Bottom note */}
       <p
-        className="hand"
         style={{
           textAlign: "center",
-          fontSize: 19,
-          color: "var(--ink-faded)",
+          fontFamily: "var(--serif)",
+          fontStyle: "italic",
+          fontSize: 17,
+          color: "var(--ink-3)",
           marginTop: 24,
         }}
       >

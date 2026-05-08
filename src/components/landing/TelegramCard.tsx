@@ -2,44 +2,166 @@ import Link from "next/link";
 
 export default function TelegramCard() {
   return (
-    <section style={{ padding: "60px clamp(16px, 4vw, 48px)" }}>
-      <div className="telegram-split" style={{ maxWidth: 980, margin: "0 auto", display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 50, alignItems: "center" }}>
+    <section style={{ padding: "100px 0" }}>
+      <div
+        className="wrap tg-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.1fr 0.9fr",
+          gap: 64,
+          alignItems: "center",
+        }}
+      >
         <div>
-          <div className="typewriter" style={{ fontSize: 12, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--rose)", marginBottom: 14 }}>
-            from your pocket
-          </div>
-          <h2 className="serif" style={{ fontSize: "clamp(36px, 5vw, 60px)", margin: 0, fontWeight: 400, lineHeight: 1.05, fontStyle: "italic", marginBottom: 20 }}>
-            Text us a dream. We&apos;ll bury it discreetly.
+          <div className="eyebrow">From your pocket</div>
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontWeight: 400,
+              fontSize: "clamp(40px, 4.8vw, 60px)",
+              lineHeight: 1.02,
+              letterSpacing: "-0.02em",
+              margin: "12px 0 18px",
+              maxWidth: "14ch",
+            }}
+          >
+            Text us a dream. We&apos;ll bury it{" "}
+            <em style={{ fontStyle: "italic", color: "var(--accent)", fontWeight: 500 }}>
+              discreetly.
+            </em>
           </h2>
-          <p style={{ fontSize: 18, color: "var(--ink-soft)", maxWidth: 520, lineHeight: 1.5, marginBottom: 28 }}>
-            Walk away from something on the way to the train? Tell our Telegram bot. It tucks the dream into your folder, automatically. No app. No mood to overcome.
+          <p
+            style={{
+              color: "var(--ink-2)",
+              fontSize: "17.5px",
+              maxWidth: "42ch",
+              margin: "0 0 26px",
+            }}
+          >
+            Walk away from something on the way to the train? Tell us on Telegram. It tucks the
+            dream into your folder, automatically. No app. No mood to overcome. No notifications
+            back.
           </p>
-          <Link href="/feed" className="btn-paper" style={{ textDecoration: "none" }}>connect telegram</Link>
+          <Link href="/feed" className="btn-outline">
+            Connect Telegram <span>→</span>
+          </Link>
         </div>
-        <div className="telegram-visual" style={{ position: "relative", height: 380 }}>
-          <div className="paper" style={{ position: "absolute", top: 0, right: 30, width: "min(280px, 80%)", padding: "30px 24px", background: "#faf3df" }}>
-            <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--ink-faded)", borderBottom: "1px solid rgba(106,112,140,0.2)", paddingBottom: 8, marginBottom: 14 }}>
-              i.w.o. receipt · today
-            </div>
-            <div className="hand" style={{ fontSize: 20, color: "var(--ink-soft)", lineHeight: 1.35, marginBottom: 14 }}>
-              &ldquo;today i&apos;m letting go of being the one who remembers everyone&apos;s birthday&rdquo;
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'Special Elite', monospace", fontSize: 10, color: "var(--ink-faded)" }}>
-              <span>logged · 14:22</span>
-              <span>— elena</span>
-            </div>
-            <div style={{ marginTop: 18, textAlign: "center" }}>
-              <span className="stamp" style={{ color: "var(--teal)" }}>received</span>
-            </div>
+
+        {/* Receipt mock */}
+        <div
+          style={{
+            background: "var(--paper)",
+            border: "1px solid var(--ink)",
+            boxShadow: "6px 6px 0 var(--paper-edge)",
+            padding: 22,
+            fontFamily: "var(--mono)",
+            fontSize: 12,
+            color: "var(--ink-2)",
+            position: "relative",
+            maxWidth: 420,
+            marginLeft: "auto",
+          }}
+        >
+          {/* Torn edge top */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: -6,
+              height: 12,
+              background:
+                "radial-gradient(circle at 6px 6px, var(--paper-deep) 0 5px, transparent 6px) 0 0/12px 12px repeat-x",
+            }}
+          />
+          {/* Torn edge bottom */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: -6,
+              height: 12,
+              background:
+                "radial-gradient(circle at 6px 6px, var(--paper-deep) 0 5px, transparent 6px) 0 0/12px 12px repeat-x",
+              transform: "rotate(180deg)",
+            }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderBottom: "1px dashed var(--rule)",
+              paddingBottom: 10,
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.14em",
+              fontSize: "10.5px",
+              color: "var(--ink-3)",
+            }}
+          >
+            <span>i.w.o. receipt</span>
+            <span>today &middot; 14:22</span>
           </div>
-          <div className="paper" style={{ position: "absolute", bottom: 30, left: 20, padding: "14px 18px" }}>
-            <div style={{ fontFamily: "'Special Elite', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--teal)", textAlign: "center", lineHeight: 1.4 }}>
-              <div style={{ fontSize: 16, fontFamily: "'Fraunces', serif", fontStyle: "italic", letterSpacing: 0, textTransform: "none" }}>i.w.o.</div>
-              <div>released</div>
-            </div>
+
+          <div
+            style={{
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
+              fontSize: 19,
+              color: "var(--ink)",
+              lineHeight: 1.4,
+              padding: "6px 0 12px",
+            }}
+          >
+            &ldquo;today i&apos;m letting go of being the one who remembers everyone&apos;s birthday.&rdquo;
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              borderTop: "1px dashed var(--rule)",
+              paddingTop: 10,
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+            }}
+          >
+            <span>logged</span>
+            <span>— elena</span>
+          </div>
+
+          {/* Stamp */}
+          <div
+            style={{
+              position: "absolute",
+              right: -10,
+              bottom: 30,
+              transform: "rotate(-12deg)",
+              border: "2px solid var(--accent)",
+              color: "var(--accent)",
+              padding: "5px 10px",
+              borderRadius: 4,
+              fontFamily: "var(--mono)",
+              fontSize: 12,
+              letterSpacing: "0.18em",
+              background: "var(--paper)",
+              opacity: 0.92,
+              textTransform: "uppercase",
+            }}
+          >
+            RELEASED
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 980px) {
+          .tg-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </section>
   );
 }

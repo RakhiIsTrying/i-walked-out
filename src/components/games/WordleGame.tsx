@@ -250,10 +250,10 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   if (playCount >= DAILY_PLAY_LIMIT && guesses.length === 0) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "60px 20px", textAlign: "center" }}>
-        <p className="serif" style={{ fontSize: 28, fontStyle: "italic", color: "var(--ink)", margin: 0 }}>
+        <p style={{ fontFamily: "var(--serif)", fontSize: 28, fontStyle: "italic", color: "var(--ink)", margin: 0 }}>
           You've played today's word.
         </p>
-        <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
+        <p style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--ink-3)", letterSpacing: "0.12em" }}>
           Come back tomorrow for a new word.
         </p>
       </div>
@@ -288,12 +288,12 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
           input.value = "";
         }}
       />
-      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-faded)" }}>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-3)" }}>
         one word per day
       </div>
 
       {(message || checking) && (
-        <div className="typewriter" style={{ fontSize: 13, letterSpacing: "0.1em", color: checking ? "var(--ink-faded)" : "var(--rose)", textTransform: "uppercase" }}>
+        <div style={{ fontFamily: "var(--mono)", fontSize: 13, letterSpacing: "0.1em", color: checking ? "var(--ink-3)" : "var(--accent-deep)", textTransform: "uppercase" }}>
           {checking ? "checking..." : message}
         </div>
       )}
@@ -315,14 +315,14 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
 
       {gameOver && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
-          <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: won ? "var(--teal)" : "var(--rose)" }}>
+          <p style={{ fontFamily: "var(--serif)", fontSize: 22, fontStyle: "italic", color: won ? "var(--accent)" : "var(--accent-deep)" }}>
             {won ? `Got it in ${guesses.length}!` : `The word was ${answer}`}
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 8, flexWrap: "wrap" }}>
-            <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13 }}>
+            <button onClick={handleShare} className="btn-ink" style={{ fontSize: 13 }}>
               {shareMsg || "share result"}
             </button>
-            <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", padding: "8px 0" }}>
+            <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink-3)", letterSpacing: "0.1em", padding: "8px 0" }}>
               come back tomorrow
             </span>
           </div>

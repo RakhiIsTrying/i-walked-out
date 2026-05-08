@@ -108,28 +108,28 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: "100%", overflow: "hidden" }}>
-      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-faded)", textAlign: "center", maxWidth: 340, lineHeight: 1.6 }}>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-3)", textAlign: "center", maxWidth: 340, lineHeight: 1.6 }}>
         Fill each cell with ☀️ or 🌙. No 3 in a row. Each row/col needs exactly 3 of each.
       </div>
 
-      <div className="typewriter" style={{ fontSize: 14, letterSpacing: "0.12em", color: gameOver ? "var(--teal)" : "var(--ink)" }}>
+      <div style={{ fontFamily: "var(--mono)", fontSize: 14, letterSpacing: "0.12em", color: gameOver ? "var(--accent)" : "var(--ink)" }}>
         {formatTime(timer)}
       </div>
 
       <TangoGrid grid={grid} given={given} violations={violations} gameOver={gameOver} size={SIZE} onToggle={toggleCell} />
 
       <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-        <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", letterSpacing: "0.1em" }}>
+        <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--ink-3)", letterSpacing: "0.1em" }}>
           TAP TO CYCLE: empty → ☀️ → 🌙 → empty
         </span>
       </div>
 
       {gameOver && won && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
-          <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: "var(--teal)" }}>
+          <p style={{ fontFamily: "var(--serif)", fontSize: 22, fontStyle: "italic", color: "var(--accent)" }}>
             Solved in {formatTime(timer)}!
           </p>
-          <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13, marginTop: 8 }}>
+          <button onClick={handleShare} className="btn-ink" style={{ fontSize: 13, marginTop: 8 }}>
             {shareMsg || "share result"}
           </button>
         </div>
