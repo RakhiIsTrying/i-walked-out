@@ -55,17 +55,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [theme, wordle, spelling] = await Promise.all([
+    const [theme, wordle, spelling, sudoku, tango] = await Promise.all([
       generateDailyTheme(isToday ? undefined : targetDate),
       generateWordle(),
       generateSpellingBee(),
-    ]);
-
-    const [crossword, sudoku, tango] = await Promise.all([
-      generateCrosswordVariant("normal", theme),
       generateSudoku(),
       generateTango(),
     ]);
+
+    const crossword = await generateCrosswordVariant("normal", theme);
 
     const puzzles: DailyPuzzles = { date: targetDate, wordle, crossword, spelling, sudoku, tango };
 
