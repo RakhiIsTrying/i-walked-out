@@ -44,6 +44,7 @@ export default function DreamCard({ dream, index = 0 }: { dream: Dream; index?: 
   const timeAgo = getTimeAgo(dream.created_at);
   const noteColor = noteColors[index % noteColors.length];
   const tilt = tiltAngles[index % tiltAngles.length];
+  const [flipped, setFlipped] = useState(false);
 
   const [reactions, setReactions] = useState<Record<string, number>>(
     dream.reactions || {}
@@ -88,140 +89,238 @@ export default function DreamCard({ dream, index = 0 }: { dream: Dream; index?: 
   );
 
   const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
-  const isLong = dream.description.length > 120;
+
+  const sharedCard = {
+    backgroundColor: noteColor,
+    border: "1px solid var(--ink)",
+    boxShadow: "4px 5px 0 var(--paper-edge)",
+    padding: "22px 20px 16px",
+    borderRadius: 3,
+    backfaceVisibility: "hidden" as const,
+    boxSizing: "border-box" as const,
+  };
 
   return (
     <div
+      className="dream-card-wrapper"
       style={{
         width: "100%",
         breakInside: "avoid" as const,
         marginBottom: 24,
-        backgroundColor: noteColor,
-        border: "1px solid var(--ink)",
-        boxShadow: "4px 5px 0 var(--paper-edge)",
-        padding: "22px 20px 16px",
-        borderRadius: 3,
-        position: "relative",
+        perspective: 800,
+        cursor: "pointer",
         transform: `rotate(${tilt}deg)`,
         transition: "transform 0.25s ease, box-shadow 0.25s ease",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-3px) rotate(0deg)";
-        e.currentTarget.style.boxShadow = "6px 8px 0 var(--paper-edge)";
         e.currentTarget.style.zIndex = "5";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = `rotate(${tilt}deg)`;
-        e.currentTarget.style.boxShadow = "4px 5px 0 var(--paper-edge)";
         e.currentTarget.style.zIndex = "0";
       }}
     >
-      {/* Pin */}
       <div
         style={{
-          position: "absolute",
-          top: -7,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle at 35% 30%, var(--accent) 0 35%, var(--accent-deep) 36% 60%, #6e2f0e 61% 100%)",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
-        }}
-      />
-
-      {/* Tag eyebrow */}
-      <div
-        style={{
-          fontFamily: "var(--mono)",
-          fontSize: 10,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase" as const,
-          color: "var(--ink-3)",
-          marginBottom: 10,
+          position: "relative",
+          width: "100%",
+          transformStyle: "preserve-3d",
+          transition: "transform 0.5s ease",
+          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
         }}
       >
-        {dream.category} · pinned {timeAgo}
-      </div>
+        {/* ── FRONT: Title side (relative = sets container height) ── */}
+        <div
+          style={{ ...sharedCard, position: "relative" as const }}
+          onClick={() => setFlipped(true)}
+        >
+          <Pin />
 
-      {/* Dream body */}
-      <p
-        style={{
-          fontFamily: "var(--serif)",
-          fontStyle: "italic",
-          fontSize: isLong ? 17 : 19,
-          lineHeight: 1.35,
-          color: "var(--ink)",
-          letterSpacing: "-0.005em",
-          margin: 0,
-          marginBottom: 0,
-        }}
-      >
-        {dream.description}
-      </p>
+          <div
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase" as const,
+              color: "var(--ink-3)",
+              marginBottom: 10,
+            }}
+          >
+            {dream.category} · pinned {timeAgo}
+          </div>
 
-      {/* Reactions */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 5,
-          marginTop: 14,
-          marginBottom: 0,
-        }}
-      >
-        {REACTIONS.map((r) => {
-          const count = reactions[r.key] || 0;
-          const isActive = picked === r.key;
-          const isAnimating = animating === r.key;
-          return (
-            <ReactionButton
-              key={r.key}
-              emoji={r.emoji}
-              label={r.label}
-              count={count}
-              isActive={isActive}
-              isAnimating={isAnimating}
-              onClick={() => handleReact(r.key)}
-            />
-          );
-        })}
-      </div>
+          <h3
+            style={{
+              fontFamily: "var(--serif)",
+              fontStyle: "italic",
+              fontSize: dream.title.length > 40 ? 22 : 26,
+              lineHeight: 1.2,
+              fontWeight: 400,
+              color: "var(--ink)",
+              letterSpacing: "-0.01em",
+              margin: "8px 0 0",
+            }}
+          >
+            {dream.title}
+          </h3>
 
-      {/* Meta row */}
-      <div
-        style={{
-          marginTop: 14,
-          paddingTop: 10,
-          borderTop: "1px dashed var(--rule)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          fontFamily: "var(--mono)",
-          fontSize: 10.5,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase" as const,
-          color: "var(--ink-3)",
-        }}
-      >
-        <span>— {dream.anonymous_alias}</span>
-        <div style={{ display: "inline-flex", gap: 10, alignItems: "center" }}>
-          {totalReactions > 0 && (
-            <span>
-              {totalReactions} react{totalReactions !== 1 ? "s" : ""}
+          <div
+            style={{
+              marginTop: 14,
+              paddingTop: 10,
+              borderTop: "1px dashed var(--rule)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontFamily: "var(--mono)",
+              fontSize: 10.5,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase" as const,
+              color: "var(--ink-3)",
+            }}
+          >
+            <span>— {dream.anonymous_alias}</span>
+            <span style={{ fontSize: 10, opacity: 0.6 }}>tap to read</span>
+          </div>
+        </div>
+
+        {/* ── BACK: Description + reactions (absolute = fills front's height) ── */}
+        <div
+          style={{
+            ...sharedCard,
+            position: "absolute" as const,
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            transform: "rotateY(180deg)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <Pin />
+
+          <div
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase" as const,
+              color: "var(--ink-3)",
+              marginBottom: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>{dream.category} · pinned {timeAgo}</span>
+            <span
+              onClick={(e) => { e.stopPropagation(); setFlipped(false); }}
+              style={{ cursor: "pointer", fontSize: 10, opacity: 0.6 }}
+            >
+              flip back
             </span>
-          )}
-          <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
-            ⌇ me too
-          </span>
-          <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
-            ❀ ribbon
-          </span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <p
+              style={{
+                fontFamily: "var(--serif)",
+                fontStyle: "italic",
+                fontSize: dream.description.length > 120 ? 16 : 18,
+                lineHeight: 1.38,
+                color: "var(--ink)",
+                letterSpacing: "-0.005em",
+                margin: 0,
+              }}
+            >
+              {dream.description}
+            </p>
+          </div>
+
+          {/* Reactions */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 5,
+              marginTop: 12,
+            }}
+          >
+            {REACTIONS.map((r) => {
+              const count = reactions[r.key] || 0;
+              const isActive = picked === r.key;
+              const isAnimating = animating === r.key;
+              return (
+                <ReactionButton
+                  key={r.key}
+                  emoji={r.emoji}
+                  label={r.label}
+                  count={count}
+                  isActive={isActive}
+                  isAnimating={isAnimating}
+                  onClick={(e) => { e.stopPropagation(); handleReact(r.key); }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Meta row */}
+          <div
+            style={{
+              marginTop: 12,
+              paddingTop: 10,
+              borderTop: "1px dashed var(--rule)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              fontFamily: "var(--mono)",
+              fontSize: 10.5,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase" as const,
+              color: "var(--ink-3)",
+            }}
+          >
+            <span>— {dream.anonymous_alias}</span>
+            <div style={{ display: "inline-flex", gap: 10, alignItems: "center" }}>
+              {totalReactions > 0 && (
+                <span>
+                  {totalReactions} react{totalReactions !== 1 ? "s" : ""}
+                </span>
+              )}
+              <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
+                ⌇ me too
+              </span>
+              <span style={{ cursor: "pointer", transition: "color 0.15s" }}>
+                ❀ ribbon
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Pin() {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: -7,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: 14,
+        height: 14,
+        borderRadius: "50%",
+        background:
+          "radial-gradient(circle at 35% 30%, var(--accent) 0 35%, var(--accent-deep) 36% 60%, #6e2f0e 61% 100%)",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+        zIndex: 2,
+      }}
+    />
   );
 }
 
@@ -238,7 +337,7 @@ function ReactionButton({
   count: number;
   isActive: boolean;
   isAnimating: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
 }) {
   return (
     <button
