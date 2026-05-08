@@ -17,8 +17,30 @@ interface WordleProps {
 
 const DAILY_PLAY_LIMIT = 5;
 
-function getRandomWord(): string {
-  return WORDLE_ANSWERS[Math.floor(Math.random() * WORDLE_ANSWERS.length)].toUpperCase();
+function getPlayedWords(): string[] {
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const stored = localStorage.getItem("iwo_wordle_played_words");
+    if (stored) {
+      const { date, words } = JSON.parse(stored);
+      if (date === today) return words;
+    }
+  } catch {}
+  return [];
+}
+
+function addPlayedWord(word: string) {
+  const today = new Date().toISOString().split("T")[0];
+  const words = getPlayedWords();
+  if (!words.includes(word.toUpperCase())) words.push(word.toUpperCase());
+  localStorage.setItem("iwo_wordle_played_words", JSON.stringify({ date: today, words }));
+}
+
+function pickNewWord(): string {
+  const played = new Set(getPlayedWords());
+  const available = WORDLE_ANSWERS.filter(w => !played.has(w.toUpperCase()));
+  if (available.length === 0) return WORDLE_ANSWERS[Math.floor(Math.random() * WORDLE_ANSWERS.length)].toUpperCase();
+  return available[Math.floor(Math.random() * available.length)].toUpperCase();
 }
 
 function getRandomPlayCount(): number {
@@ -114,6 +136,12 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   useEffect(() => {
     setStats(getStats("wordle"));
     setPlayCount(getRandomPlayCount());
+    if (!answerProp) {
+      const played = getPlayedWords();
+      if (played.includes(answer)) {
+        setAnswer(pickNewWord());
+      }
+    }
   }, []);
 
   const keyColors = useCallback(() => {
@@ -161,6 +189,7 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
     if (isWin || isLoss) {
       setGameOver(true);
       setWon(isWin);
+      addPlayedWord(answer);
       const newStats = isWin ? recordWin("wordle") : recordLoss("wordle");
       setStats(newStats);
       const newCount = incrementRandomPlayCount();
@@ -178,7 +207,7 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
 
   function playAgain() {
     if (!canPlayAgain) return;
-    setAnswer(getRandomWord());
+    setAnswer(pickNewWord());
     setGuesses([]);
     setStates([]);
     setCurrent("");
