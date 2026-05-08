@@ -165,21 +165,43 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
             </Link>
           )}
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            style={{
-              display: "none",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--ink)",
-              padding: 4,
-            }}
-            className="mobile-nav-toggle"
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          {/* Mobile: sign-in button when logged out, hamburger when logged in */}
+          {user ? (
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              style={{
+                display: "none",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--ink)",
+                padding: 4,
+              }}
+              className="mobile-nav-toggle"
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="mobile-sign-in"
+              style={{
+                display: "none",
+                border: "1px solid var(--ink)",
+                padding: "6px 14px",
+                borderRadius: 999,
+                color: "var(--ink)",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                fontFamily: "var(--mono)",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
 
@@ -285,6 +307,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
       <style>{`
         @media (max-width: 980px) {
           .mobile-nav-toggle { display: flex !important; }
+          .mobile-sign-in { display: inline-flex !important; }
           .desktop-nav { display: none !important; }
           .desktop-user-info { display: none !important; }
           header > .wrap:first-child {
