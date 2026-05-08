@@ -199,7 +199,7 @@ async function generateClues(
     },
   ];
 
-  const res = await aiCall(messages, 2000, 0.7, 1);
+  const res = await aiCall(messages, 4000, 0.7, 1);
   const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
   return extractJSON(text);
 }
