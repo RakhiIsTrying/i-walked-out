@@ -27,18 +27,25 @@ function saveSelfChat(msgs: ChatMsg[]) {
 }
 
 export default function PersonalityChat({ profile, emptyText, subtitle }: Props) {
-  const [messages, setMessages] = useState<ChatMsg[]>(() => loadSelfChat());
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = loadSelfChat();
+    if (saved.length > 0) setMessages(saved);
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   useEffect(() => {
-    if (messages.length > 0) saveSelfChat(messages);
-  }, [messages]);
+    if (hydrated && messages.length > 0) saveSelfChat(messages);
+  }, [messages, hydrated]);
 
   async function send() {
     if (!input.trim()) return;

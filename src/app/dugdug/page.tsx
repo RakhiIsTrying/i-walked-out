@@ -33,11 +33,18 @@ function saveChat(msgs: Message[]) {
 }
 
 export default function DugDugPage() {
-  const [messages, setMessages] = useState<Message[]>(() => loadChat());
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const saved = loadChat();
+    if (saved.length > 0) setMessages(saved);
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (threadRef.current) {
@@ -46,8 +53,8 @@ export default function DugDugPage() {
   }, [messages, loading]);
 
   useEffect(() => {
-    if (messages.length > 0) saveChat(messages);
-  }, [messages]);
+    if (hydrated && messages.length > 0) saveChat(messages);
+  }, [messages, hydrated]);
 
   const autoResize = useCallback(() => {
     const ta = taRef.current;
@@ -144,7 +151,7 @@ export default function DugDugPage() {
     }
   }
 
-  const hasMessages = messages.length > 0;
+  const hasMessages = messages.length > 0 || !hydrated;
 
   return (
     <div className="page-in nigel-page" style={{ maxWidth: 1200, margin: "0 auto", padding: "72px 32px 40px" }}>
