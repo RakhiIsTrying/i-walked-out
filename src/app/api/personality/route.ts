@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getAI, MODEL } from "@/lib/ai";
+import { getAI, MODEL, CHAT_MODEL } from "@/lib/ai";
 
 export const maxDuration = 60;
 
@@ -169,8 +169,8 @@ TONE RULES:
 
   try {
     const stream = await getAI().chat.completions.create({
-      model: MODEL,
-      max_tokens: 1000,
+      model: CHAT_MODEL,
+      max_tokens: 300,
       stream: true,
       messages: [
         { role: "system", content: systemPrompt },

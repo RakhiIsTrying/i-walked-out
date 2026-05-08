@@ -15,14 +15,33 @@ const starters = [
   "say something i need to hear",
 ];
 
+const NIGEL_STORAGE_KEY = "nigel_chat_history";
+
+function loadChat(): Message[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(NIGEL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveChat(msgs: Message[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(NIGEL_STORAGE_KEY, JSON.stringify(msgs.slice(-50)));
+}
+
 export default function DugDugPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => loadChat());
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0) saveChat(messages);
   }, [messages]);
 
   async function sendMessage(e: React.FormEvent) {

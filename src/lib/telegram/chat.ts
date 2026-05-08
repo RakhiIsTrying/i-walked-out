@@ -1,5 +1,5 @@
 import { getAdmin } from "@/lib/supabase/admin";
-import { getAI, MODEL } from "@/lib/ai";
+import { getAI, MODEL, CHAT_MODEL } from "@/lib/ai";
 import { sendMessage } from "@/lib/telegram";
 import { getUserLink, getActiveChatMode, setActiveChatMode, clearActiveChatMode } from "./helpers";
 export { handleDugDugMode, handleDugDugChat } from "./dugdug";
@@ -173,7 +173,7 @@ export async function handleExitChat(chatId: number) {
   if (link) await clearActiveChatMode(link.user_id);
 
   if (wasMode === "dugdug") {
-    await sendMessage(chatId, "dug-dug has left the chat. probably for the best. type /help for commands.");
+    await sendMessage(chatId, "nigel has left the chat. probably for the best. type /help for commands.");
   } else {
     await sendMessage(chatId, "Left future-self chat. Type /help to see other commands.");
   }
@@ -234,8 +234,8 @@ TONE RULES:
   }
 
   const completion = await getAI().chat.completions.create({
-    model: MODEL,
-    max_tokens: 1000,
+    model: CHAT_MODEL,
+    max_tokens: 300,
     messages: [
       { role: "system", content: systemPrompt },
       ...chatHistory,

@@ -9,8 +9,25 @@ interface Props {
   subtitle: string;
 }
 
+type ChatMsg = { role: "user" | "assistant"; content: string };
+
+const SELF_STORAGE_KEY = "self_chat_history";
+
+function loadSelfChat(): ChatMsg[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(SELF_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSelfChat(msgs: ChatMsg[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(SELF_STORAGE_KEY, JSON.stringify(msgs.slice(-50)));
+}
+
 export default function PersonalityChat({ profile, emptyText, subtitle }: Props) {
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [messages, setMessages] = useState<ChatMsg[]>(() => loadSelfChat());
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -18,6 +35,10 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (messages.length > 0) saveSelfChat(messages);
+  }, [messages]);
 
   async function send() {
     if (!input.trim()) return;
