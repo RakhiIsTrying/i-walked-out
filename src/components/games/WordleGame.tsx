@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
-import { WORDLE_ANSWERS, VALID_GUESSES } from "@/lib/words";
+import { WORDLE_ANSWERS } from "@/lib/words";
+import { FIVE_LETTER_WORDS } from "@/lib/wordlist";
 import { saveGameResult } from "@/lib/archive";
 
 type CellState = "correct" | "present" | "absent" | "empty";
@@ -72,20 +73,8 @@ const KEYBOARD_ROWS = [
   ["ENTER","Z","X","C","V","B","N","M","⌫"],
 ];
 
-const wordCache = new Map<string, boolean>();
-
-async function checkWordValid(word: string): Promise<boolean> {
-  const lower = word.toLowerCase();
-  if (VALID_GUESSES.has(lower)) return true;
-  if (wordCache.has(lower)) return wordCache.get(lower)!;
-  try {
-    const res = await fetch(`/api/games/spelling-check?word=${encodeURIComponent(lower)}`);
-    const data = await res.json();
-    wordCache.set(lower, data.valid);
-    return data.valid;
-  } catch {
-    return true;
-  }
+function isValidWord(word: string): boolean {
+  return FIVE_LETTER_WORDS.has(word.toLowerCase());
 }
 
 export default function WordleGame({ answer: answerProp, playDate }: WordleProps) {
@@ -105,7 +94,6 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   const [won, setWon] = useState(false);
   const [shake, setShake] = useState(false);
   const [message, setMessage] = useState("");
-  const [checking, setChecking] = useState(false);
   const [stats, setStats] = useState<GameStats | null>(null);
   const [shareMsg, setShareMsg] = useState("");
   const [roundNum, setRoundNum] = useState(1);
@@ -131,15 +119,11 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
     return map;
   }, [guesses, states]);
 
-  async function submit() {
+  function submit() {
     const word = currentRef.current;
-    if (word.length !== COLS || checking) return;
+    if (word.length !== COLS) return;
 
-    setChecking(true);
-    const valid = await checkWordValid(word);
-    setChecking(false);
-
-    if (!valid) {
+    if (!isValidWord(word)) {
       setShake(true);
       setMessage("Not in word list");
       setTimeout(() => { setShake(false); setMessage(""); }, 1200);
@@ -183,7 +167,6 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
     setGameOver(false);
     setWon(false);
     setMessage("");
-    setChecking(false);
     setShareMsg("");
     setRoundNum((n) => n + 1);
   }
