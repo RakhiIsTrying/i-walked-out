@@ -59,8 +59,16 @@ function formatWordleRow(guess: string, states: ("correct" | "present" | "absent
   return `${emoji}  ${guess}`;
 }
 
-function isValidWordleGuess(word: string): boolean {
-  return FIVE_LETTER_WORDS.has(word.toLowerCase());
+async function isValidWordleGuess(word: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`,
+      { signal: AbortSignal.timeout(3000) },
+    );
+    return res.ok;
+  } catch {
+    return FIVE_LETTER_WORDS.has(word.toLowerCase());
+  }
 }
 
 function scoreBeeWord(word: string, allLetters: Set<string>): number {
@@ -151,7 +159,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
     return;
   }
 
-  const valid = isValidWordleGuess(guess);
+  const valid = await isValidWordleGuess(guess);
   if (!valid) {
     await sendMessage(chatId, `"${guess}" is not a valid word. Try another.`);
     return;
@@ -247,13 +255,13 @@ export async function handleBeeGuess(chatId: number, userId: string, word: strin
   }
   if ((state.found || []).includes(word)) { await sendMessage(chatId, "Already found that one!"); return; }
 
-  const validSet = new Set(state.validWords || []);
-  let isValid = validSet.has(word);
-  if (!isValid) {
-    try {
-      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, { signal: AbortSignal.timeout(3000) });
-      isValid = res.ok;
-    } catch { /* timeout or network error — reject the word */ }
+  let isValid = false;
+  try {
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, { signal: AbortSignal.timeout(3000) });
+    isValid = res.ok;
+  } catch {
+    const validSet = new Set(state.validWords || []);
+    isValid = validSet.has(word);
   }
 
   if (!isValid) { await sendMessage(chatId, `"${word.toUpperCase()}" is not a valid word.`); return; }

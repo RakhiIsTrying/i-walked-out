@@ -163,11 +163,6 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     }
     if (found.includes(word)) { flash("Already found", "bad"); return; }
 
-    if (puzzle.validWords.has(word)) {
-      acceptWord(word, puzzle);
-      return;
-    }
-
     submitRef.current = true;
     setChecking(true);
     const valid = await checkWord(word);
