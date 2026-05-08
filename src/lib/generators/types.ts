@@ -8,7 +8,10 @@ export interface CrosswordPuzzle {
   numbers: (number | null)[][];
   acrossClues: { num: number; clue: string }[];
   downClues: { num: number; clue: string }[];
+  theme?: string;
 }
+
+export type CrosswordVariant = "mini" | "midi" | "normal";
 
 export interface SpellingPuzzle {
   center: string;
@@ -33,6 +36,8 @@ export interface DailyPuzzles {
   date: string;
   wordle: WordlePuzzle;
   crossword: CrosswordPuzzle;
+  crosswordMini?: CrosswordPuzzle;
+  crosswordMidi?: CrosswordPuzzle;
   spelling: SpellingPuzzle;
   sudoku: SudokuPuzzle;
   tango: TangoPuzzle;

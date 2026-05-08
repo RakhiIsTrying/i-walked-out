@@ -46,6 +46,7 @@ export default function GamesPage() {
   const [active, setActive] = useState<GameId>("wordle");
   const [allStats, setAllStats] = useState<Record<string, GameStats>>({});
   const [shareMsg, setShareMsg] = useState("");
+  const [crosswordVariant, setCrosswordVariant] = useState<"mini" | "midi" | "normal">("mini");
   const [playDate, setPlayDate] = useState(todayStr);
   const [puzzles, setPuzzles] = useState<Puzzles | null>(null);
   const [loading, setLoading] = useState(true);
@@ -319,7 +320,42 @@ export default function GamesPage() {
                 {active === "wordle" && <WordleGame answer={puzzles?.wordle?.answer} playDate={playDate} />}
                 {active === "sudoku" && <SudokuGame puzzle={puzzles?.sudoku} playDate={playDate} />}
                 {active === "spelling" && <SpellingBeeGame puzzle={puzzles?.spelling} playDate={playDate} />}
-                {active === "crossword" && <CrosswordGame puzzle={puzzles?.crossword} playDate={playDate} />}
+                {active === "crossword" && (
+                  <>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                      {(["mini", "midi", "normal"] as const).map((v) => (
+                        <button
+                          key={v}
+                          onClick={() => setCrosswordVariant(v)}
+                          className="typewriter"
+                          style={{
+                            fontSize: 11,
+                            letterSpacing: "0.1em",
+                            padding: "6px 16px",
+                            background: crosswordVariant === v ? "var(--ink)" : "var(--paper-deep)",
+                            color: crosswordVariant === v ? "var(--paper-light)" : "var(--ink)",
+                            border: "1px solid var(--ink)",
+                            borderRadius: 2,
+                            cursor: "pointer",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {v === "normal" ? "full" : v}
+                        </button>
+                      ))}
+                    </div>
+                    <CrosswordGame
+                      key={crosswordVariant}
+                      puzzle={
+                        crosswordVariant === "mini" ? puzzles?.crosswordMini :
+                        crosswordVariant === "midi" ? puzzles?.crosswordMidi :
+                        puzzles?.crossword
+                      }
+                      playDate={playDate}
+                      variant={crosswordVariant}
+                    />
+                  </>
+                )}
                 {active === "tango" && <TangoGame puzzle={puzzles?.tango} playDate={playDate} />}
               </>
             )}

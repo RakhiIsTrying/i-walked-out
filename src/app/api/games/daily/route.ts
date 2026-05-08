@@ -6,13 +6,16 @@ import {
   DailyPuzzles,
   generateWordle,
   generateCrossword,
+  generateCrosswordVariant,
   generateSpellingBee,
   generateSudoku,
   generateSudokuForDay,
   generateTango,
   generateTangoForDay,
   buildCrosswordFromFallback,
+  buildMiniFromFallback,
   buildSpellingResult,
+  getDailyTheme,
 } from "@/lib/generators";
 
 /* ──────────────────────────────────────────
@@ -75,10 +78,13 @@ export async function GET(request: Request) {
     const outer = seed.letters.filter((l) => l !== seed.center);
     const spelling = buildSpellingResult(seed.center, outer)!;
 
-    const crossword = buildCrosswordFromFallback(dayNum);
+    const theme = getDailyTheme(dayNum);
+    const crossword = { ...buildCrosswordFromFallback(dayNum), theme };
+    const crosswordMini = { ...buildMiniFromFallback(), theme };
+    const crosswordMidi = { ...buildMiniFromFallback(), theme };
     const tango = generateTangoForDay(dayNum);
 
-    const puzzles: DailyPuzzles = { date: targetDate, wordle, crossword, spelling, sudoku, tango };
+    const puzzles: DailyPuzzles = { date: targetDate, wordle, crossword, crosswordMini, crosswordMidi, spelling, sudoku, tango };
 
     try {
       await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles });
@@ -90,15 +96,18 @@ export async function GET(request: Request) {
   }
 
   // Generate fresh for today (with AI)
-  const [wordle, crossword, spelling] = await Promise.all([
+  const theme = getDailyTheme();
+  const [wordle, crosswordMini, crosswordMidi, crossword, spelling] = await Promise.all([
     generateWordle(),
-    generateCrossword(),
+    generateCrosswordVariant("mini", theme),
+    generateCrosswordVariant("midi", theme),
+    generateCrosswordVariant("normal", theme),
     generateSpellingBee(),
   ]);
   const sudoku = generateSudoku();
   const tango = generateTango();
 
-  const puzzles: DailyPuzzles = { date: today, wordle, crossword, spelling, sudoku, tango };
+  const puzzles: DailyPuzzles = { date: today, wordle, crossword, crosswordMini, crosswordMidi, spelling, sudoku, tango };
 
   // Cache in Supabase
   try {

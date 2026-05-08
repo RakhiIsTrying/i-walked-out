@@ -19,11 +19,13 @@ interface CrosswordPuzzle {
   numbers: (number | null)[][];
   acrossClues: { num: number; clue: string }[];
   downClues: { num: number; clue: string }[];
+  theme?: string;
 }
 
 interface CrosswordProps {
   puzzle?: CrosswordPuzzle;
   playDate?: string;
+  variant?: "mini" | "midi" | "normal";
 }
 
 const FALLBACK_PUZZLE: CrosswordPuzzle = {
@@ -58,9 +60,10 @@ const FALLBACK_PUZZLE: CrosswordPuzzle = {
   ],
 };
 
-export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
+export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: CrosswordProps) {
   const pz = puzzle ?? FALLBACK_PUZZLE;
   const { size, grid: answer, numbers, acrossClues, downClues } = pz;
+  const gameId = variant === "normal" ? "crossword" : `crossword-${variant}`;
 
   const isBlack = (r: number, c: number) => answer[r]?.[c] === null;
 
@@ -86,10 +89,10 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
   const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    if (isToday && hasPlayedToday("crossword")) {
+    if (isToday && hasPlayedToday(gameId)) {
       setGameOver(true);
       setTimerActive(false);
-      const saved = localStorage.getItem("iwo_crossword_today");
+      const saved = localStorage.getItem(`iwo_${gameId}_today`);
       if (saved) {
         try {
           const { b } = JSON.parse(saved);
@@ -99,7 +102,7 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
         } catch {}
       }
     }
-    setStats(getStats("crossword"));
+    setStats(getStats(gameId));
   }, []);
 
   useEffect(() => {
@@ -182,11 +185,11 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
       setGameOver(true);
       setTimerActive(false);
       if (isToday) {
-        markPlayedToday("crossword");
-        localStorage.setItem("iwo_crossword_today", JSON.stringify({ b: next }));
+        markPlayedToday(gameId);
+        localStorage.setItem(`iwo_${gameId}_today`, JSON.stringify({ b: next }));
       }
-      setStats(recordWin("crossword"));
-      saveGameResult("crossword", true, timer, {
+      setStats(recordWin(gameId));
+      saveGameResult(gameId, true, timer, {
         time: timer,
         size,
       }, playDate);
@@ -275,9 +278,10 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   async function handleShare() {
+    const variantLabel = variant === "mini" ? "Mini" : variant === "midi" ? "Midi" : "Crossword";
     const text = buildShareText(
-      `Crossword #${getDayNumber()}`,
-      `Solved in ${formatTime(timer)}`,
+      `${variantLabel} #${getDayNumber()}`,
+      `Solved in ${formatTime(timer)}${pz.theme ? `\nTheme: ${pz.theme}` : ""}`,
       stats?.currentStreak || 0
     );
     const r = await shareOrCopy(text);
@@ -313,6 +317,11 @@ export default function CrosswordGame({ puzzle, playDate }: CrosswordProps) {
         gap: 20,
       }}
     >
+      {pz.theme && (
+        <div className="serif" style={{ fontSize: 16, fontStyle: "italic", color: "var(--teal)", textAlign: "center" }}>
+          Theme: {pz.theme}
+        </div>
+      )}
       <div
         className="typewriter"
         style={{
