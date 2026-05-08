@@ -15,7 +15,7 @@ interface WordleProps {
   playDate?: string;
 }
 
-const DAILY_PLAY_LIMIT = 5;
+const DAILY_PLAY_LIMIT = 1;
 
 function getPlayedWords(): string[] {
   const today = new Date().toISOString().split("T")[0];
@@ -281,10 +281,10 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "60px 20px", textAlign: "center" }}>
         <p className="serif" style={{ fontSize: 28, fontStyle: "italic", color: "var(--ink)", margin: 0 }}>
-          You've played all {DAILY_PLAY_LIMIT} rounds today.
+          You've played today's word.
         </p>
         <p className="typewriter" style={{ fontSize: 12, color: "var(--ink-faded)", letterSpacing: "0.12em" }}>
-          Come back tomorrow for new words.
+          Come back tomorrow for a new word.
         </p>
       </div>
     );
@@ -319,7 +319,7 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
         }}
       />
       <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-faded)" }}>
-        {DAILY_PLAY_LIMIT - playCount} of {DAILY_PLAY_LIMIT} rounds left today
+        one word per day
       </div>
 
       {(message || checking) && (
@@ -414,15 +414,9 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
             <button onClick={handleShare} className="btn-paper" style={{ fontSize: 13 }}>
               {shareMsg || "share result"}
             </button>
-            {canPlayAgain ? (
-              <button onClick={playAgain} className="btn-ghost" style={{ fontSize: 13 }}>
-                play again ({DAILY_PLAY_LIMIT - playCount} left)
-              </button>
-            ) : (
-              <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", padding: "8px 0" }}>
-                all {DAILY_PLAY_LIMIT} rounds used today
-              </span>
-            )}
+            <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-faded)", letterSpacing: "0.1em", padding: "8px 0" }}>
+              come back tomorrow
+            </span>
           </div>
         </div>
       )}
