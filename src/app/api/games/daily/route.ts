@@ -16,34 +16,47 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
   const refresh = searchParams.get("refresh") === "true";
+  const refreshGame = searchParams.get("game");
   const today = new Date().toISOString().split("T")[0];
   const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
   const isToday = targetDate === today;
+  const cacheHeader = isToday ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=86400";
 
-  if (!refresh) {
+  let existing: DailyPuzzles | null = null;
+  try {
+    const { data } = await getAdmin()
+      .from("daily_puzzles")
+      .select("puzzles")
+      .eq("date", targetDate)
+      .single();
+    if (data?.puzzles?.crossword?.theme) existing = data.puzzles;
+  } catch {}
+
+  if (existing && !refresh && !refreshGame) {
+    return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
+  }
+
+  if (existing && refreshGame) {
     try {
-      const { data } = await getAdmin()
-        .from("daily_puzzles")
-        .select("puzzles")
-        .eq("date", targetDate)
-        .single();
-      if (data?.puzzles?.crossword?.theme) {
-        return NextResponse.json(data.puzzles, {
-          headers: { "Cache-Control": isToday ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=86400" },
-        });
+      const theme = existing.crossword?.theme || await generateDailyTheme(isToday ? undefined : targetDate);
+      if (refreshGame === "crossword") {
+        existing.crossword = await generateCrosswordVariant("normal", theme);
       }
-    } catch {}
+      await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles: existing });
+      return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return NextResponse.json({ error: "Refresh failed", detail: msg }, { status: 500 });
+    }
   }
 
   try {
-    // Round 1: theme + wordle + spelling in parallel
     const [theme, wordle, spelling] = await Promise.all([
       generateDailyTheme(isToday ? undefined : targetDate),
       generateWordle(),
       generateSpellingBee(),
     ]);
 
-    // Round 2: crossword + sudoku + tango in parallel
     const [crossword, sudoku, tango] = await Promise.all([
       generateCrosswordVariant("normal", theme),
       generateSudoku(),
@@ -56,12 +69,13 @@ export async function GET(request: Request) {
       await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles });
     } catch {}
 
-    return NextResponse.json(puzzles, {
-      headers: { "Cache-Control": isToday ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=86400" },
-    });
+    return NextResponse.json(puzzles, { headers: { "Cache-Control": cacheHeader } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[daily] generation failed:", msg);
+    if (existing) {
+      return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
+    }
     return NextResponse.json(
       { error: "Puzzle generation failed", detail: msg },
       { status: 500 }
