@@ -10,9 +10,9 @@ interface Message {
 const starters = [
   "what should i do with my life?",
   "is it too late to start over?",
-  "give me a pep talk",
+  "be honest with me",
   "roast my decisions",
-  "tell me something weird",
+  "say something i need to hear",
 ];
 
 export default function DugDugPage() {
@@ -93,7 +93,7 @@ export default function DugDugPage() {
 
       {/* Page intro */}
       <div style={{ marginBottom: 32 }}>
-        <div className="eyebrow">the communal soul</div>
+        <div className="eyebrow">the resident satirist</div>
         <h1
           style={{
             fontFamily: "var(--serif)",
@@ -109,8 +109,8 @@ export default function DugDugPage() {
           </em>
         </h1>
         <p style={{ maxWidth: "48ch", color: "var(--ink-2)", fontSize: 17, lineHeight: 1.55 }}>
-          A personality built from abandoned dreams. Unhinged. Tone-deaf. Weirdly wise.
-          Ask anything — it&apos;ll say the wrong thing in the most right way.
+          A personality built from abandoned dreams. Satirical. Deadpan. Uncomfortably honest.
+          Ask anything — he&apos;ll say what you already know but were hoping no one would point out.
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export default function DugDugPage() {
                   marginBottom: 8,
                 }}
               >
-                say literally anything. i dare you.
+                go on then. say something.
               </p>
               <p
                 style={{
@@ -157,7 +157,7 @@ export default function DugDugPage() {
                   marginBottom: 24,
                 }}
               >
-                i&apos;m made of dead dreams and bad advice. it&apos;s a whole vibe.
+                i&apos;m made of dead dreams and uncomfortable truths. you&apos;ve been warned.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
                 {starters.map((s) => (
@@ -342,7 +342,7 @@ export default function DugDugPage() {
           marginTop: 24,
         }}
       >
-        every dead dream makes me weirder. that&apos;s not a threat, it&apos;s a promise.
+        every dead dream makes me more honest. that&apos;s not a threat, it&apos;s just... what&apos;s happening.
       </p>
     </div>
   );
