@@ -415,7 +415,7 @@ export default function FeedPage() {
 
         {/* The pinboard */}
         {loading ? (
-          <div style={{ columnCount: 4, columnGap: 22, padding: "56px 0 40px" }}>
+          <div className="pin-grid-responsive" style={{ columnCount: 4, columnGap: 22, padding: "56px 0 40px" }}>
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} style={{ breakInside: "avoid", marginBottom: 24 }}>
                 <SkeletonCard />
@@ -466,6 +466,7 @@ export default function FeedPage() {
               }}
             />
             <div
+              className="pin-grid-responsive"
               style={{
                 columnCount: 4,
                 columnGap: 22,

@@ -236,8 +236,9 @@ export default function Hero() {
           <div
             style={{
               display: "flex",
-              gap: 22,
+              gap: "8px 22px",
               alignItems: "center",
+              flexWrap: "wrap",
               marginTop: 32,
               fontFamily: "var(--mono)",
               fontSize: 11,
@@ -266,7 +267,8 @@ export default function Hero() {
             style={{
               marginTop: 18,
               display: "flex",
-              gap: 22,
+              flexWrap: "wrap",
+              gap: "8px 22px",
               fontFamily: "var(--mono)",
               fontSize: 11,
               letterSpacing: "0.14em",

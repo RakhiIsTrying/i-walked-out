@@ -217,6 +217,7 @@ export default function VibePage() {
           </label>
           <form
             onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }}
+            className="vibe-input-form"
             style={{ display: "flex", gap: 10, alignItems: "stretch", marginTop: 8 }}
           >
             <input
@@ -311,6 +312,17 @@ export default function VibePage() {
           onSelect={(h) => { setResult(h); setQuery(h.query); setActivePreset(null); }}
         />
       </div>
+
+      <style>{`
+        @media (max-width: 600px) {
+          .vibe-input-form {
+            flex-direction: column !important;
+          }
+          .vibe-input-form input {
+            font-size: 18px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

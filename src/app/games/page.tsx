@@ -273,7 +273,7 @@ export default function GamesPage() {
         )}
 
         {/* Arcade layout: 320px sidebar + fluid main */}
-        <div style={{
+        <div className="games-layout" style={{
           display: "grid",
           gridTemplateColumns: "320px 1fr",
           gap: 32,
@@ -385,6 +385,22 @@ export default function GamesPage() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 980px) {
+          .games-layout { gap: 20px !important; }
+          .games-layout > div:last-child {
+            padding: 20px 14px 24px !important;
+            min-height: 320px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .games-layout > div:last-child {
+            padding: 16px 10px 20px !important;
+            box-shadow: 3px 3px 0 var(--paper-edge) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

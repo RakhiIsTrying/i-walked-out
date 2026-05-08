@@ -120,7 +120,7 @@ export default function VibeResultBoard({
 }: VibeResultBoardProps) {
   return (
     <div
-      className="page-in"
+      className="page-in vibe-board"
       style={{
         background: "var(--paper-deep)",
         border: "1px solid var(--rule)",
@@ -205,6 +205,13 @@ export default function VibeResultBoard({
           you don&apos;t have to do all of them. one is enough.
         </p>
       </div>
+
+      <style>{`
+        @media (max-width: 480px) {
+          .vibe-board { padding: 20px 14px 24px !important; }
+          .vibe-board h2 { font-size: 28px !important; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,14 +2,23 @@
 
 import { useState } from "react";
 
+const MOODS = [
+  { symbol: "♡", label: "loved it" },
+  { symbol: "?", label: "confused" },
+  { symbol: "△", label: "broken" },
+  { symbol: "●", label: "idea" },
+  { symbol: "·", label: "just hi" },
+];
+
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [mood, setMood] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   async function handleSubmit() {
-    if (!message.trim()) return;
+    if (!message.trim() && !mood) return;
     setSending(true);
     try {
       const res = await fetch("/api/feedback", {
@@ -17,12 +26,14 @@ export default function FeedbackButton() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: message.trim(),
+          emoji: mood,
           page: window.location.pathname,
         }),
       });
       if (res.ok) {
         setSent(true);
         setMessage("");
+        setMood(null);
         setTimeout(() => {
           setSent(false);
           setOpen(false);
@@ -41,6 +52,7 @@ export default function FeedbackButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Give feedback"
+        className="iwo-fb-trigger"
         style={{
           position: "fixed",
           right: 22,
@@ -93,6 +105,7 @@ export default function FeedbackButton() {
           }}
         />
         <span
+          className="iwo-fb-psst"
           style={{
             fontFamily: "var(--mono)",
             fontStyle: "normal",
@@ -105,10 +118,11 @@ export default function FeedbackButton() {
         >
           psst &mdash;
         </span>
-        <span style={{ fontSize: 20, lineHeight: 1.1, fontWeight: 500, letterSpacing: "-0.01em" }}>
+        <span className="iwo-fb-title" style={{ fontSize: 20, lineHeight: 1.1, fontWeight: 500, letterSpacing: "-0.01em" }}>
           tell us
         </span>
         <span
+          className="iwo-fb-sub"
           style={{
             fontFamily: "var(--mono)",
             fontStyle: "normal",
@@ -127,6 +141,7 @@ export default function FeedbackButton() {
       {open && (
         <div
           onClick={() => setOpen(false)}
+          className="iwo-fb-backdrop"
           style={{
             position: "fixed",
             inset: 0,
@@ -141,6 +156,7 @@ export default function FeedbackButton() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            className="iwo-fb-modal"
             style={{
               background: "var(--paper)",
               border: "1.5px solid var(--ink)",
@@ -221,12 +237,41 @@ export default function FeedbackButton() {
                     fontStyle: "italic",
                     fontSize: 15,
                     color: "var(--ink-2)",
-                    margin: "0 0 20px",
+                    margin: "0 0 16px",
                     lineHeight: 1.4,
                   }}
                 >
                   Anonymous. Unedited. Read with coffee on Sundays.
                 </p>
+
+                {/* Mood chips */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                  {MOODS.map((m) => (
+                    <button
+                      key={m.label}
+                      onClick={() => setMood(mood === m.label ? null : m.label)}
+                      style={{
+                        padding: "7px 14px",
+                        background: mood === m.label ? "var(--ink)" : "var(--paper)",
+                        color: mood === m.label ? "var(--paper)" : "var(--ink)",
+                        border: "1px solid var(--ink)",
+                        borderRadius: 999,
+                        cursor: "pointer",
+                        fontFamily: "var(--mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.08em",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        transition: "all .15s",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <span style={{ fontSize: 13, lineHeight: 1 }}>{m.symbol}</span>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
 
                 <textarea
                   value={message}
@@ -251,13 +296,14 @@ export default function FeedbackButton() {
                   }}
                 />
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+                <div className="iwo-fb-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 12 }}>
                   <span
                     style={{
                       fontFamily: "var(--mono)",
                       fontSize: 11,
                       letterSpacing: "0.1em",
                       color: "var(--ink-3)",
+                      flexShrink: 0,
                     }}
                   >
                     {message.length} / 600
@@ -265,11 +311,12 @@ export default function FeedbackButton() {
 
                   <button
                     onClick={handleSubmit}
-                    disabled={sending || !message.trim()}
+                    disabled={sending || (!message.trim() && !mood)}
                     className="btn-ink"
                     style={{
-                      opacity: sending || !message.trim() ? 0.4 : 1,
+                      opacity: sending || (!message.trim() && !mood) ? 0.4 : 1,
                       fontSize: 13,
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {sending ? "sending..." : "Slip it under the door →"}
@@ -305,6 +352,24 @@ export default function FeedbackButton() {
           55% { transform: rotate(-3deg); }
           60% { transform: rotate(0deg); }
           65% { transform: rotate(-3deg); }
+        }
+        @media (max-width: 480px) {
+          .iwo-fb-trigger {
+            right: 12px !important;
+            bottom: 12px !important;
+            padding: 8px 12px 10px !important;
+            max-width: 160px !important;
+          }
+          .iwo-fb-title { font-size: 16px !important; }
+          .iwo-fb-psst, .iwo-fb-sub { font-size: 8px !important; }
+          .iwo-fb-backdrop { padding: 12px !important; align-items: flex-end !important; }
+          .iwo-fb-modal {
+            padding: 24px 18px 20px !important;
+            border-radius: 4px 4px 0 0 !important;
+            box-shadow: none !important;
+            max-height: 90vh;
+            overflow-y: auto;
+          }
         }
       `}</style>
     </>

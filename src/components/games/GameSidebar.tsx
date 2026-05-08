@@ -25,9 +25,9 @@ export type { GameId };
 
 export default function GameSidebar({ active, allStats, onSelect, onArchiveClick }: GameSidebarProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div className="game-sidebar" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {/* Game list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="game-sidebar-list" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {GAMES.map((g) => {
           const s = allStats[g.id];
           const streak = s?.currentStreak || 0;
@@ -173,6 +173,45 @@ export default function GameSidebar({ active, allStats, onSelect, onArchiveClick
           <span>Leaderboard</span>
         </button>
       </div>
+
+      <style>{`
+        @media (max-width: 980px) {
+          .game-sidebar {
+            flex-direction: row !important;
+            gap: 8px !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+          }
+          .game-sidebar-list {
+            flex-direction: row !important;
+            gap: 8px !important;
+          }
+          .game-sidebar-list > button {
+            min-width: 140px;
+            flex-shrink: 0;
+            padding: 10px 12px !important;
+          }
+          .game-sidebar-list > button > span:first-child {
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .game-sidebar > div:last-child {
+            flex-direction: row !important;
+            border-top: none !important;
+            border-left: 1px dashed var(--rule);
+            padding-top: 0 !important;
+            padding-left: 8px;
+            margin-top: 0 !important;
+            gap: 4px !important;
+          }
+          .game-sidebar > div:last-child > button {
+            padding: 10px 12px !important;
+            font-size: 14px !important;
+            white-space: nowrap;
+          }
+        }
+      `}</style>
     </div>
   );
 }
