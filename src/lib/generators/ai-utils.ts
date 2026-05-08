@@ -44,7 +44,6 @@ export async function aiCall(
         messages,
         max_tokens: maxTokens,
         temperature,
-        chat_template_kwargs: { thinking: false },
       });
     } catch (e: unknown) {
       const status = (e as { status?: number })?.status;

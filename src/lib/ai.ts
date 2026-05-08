@@ -18,4 +18,4 @@ export function getGamesAI(): OpenAI {
 }
 
 export const MODEL = "qwen/qwen3.5-397b-a17b";
-export const GAMES_MODEL = "moonshotai/kimi-k2.6";
+export const GAMES_MODEL = "meta/llama-3.1-70b-instruct";
