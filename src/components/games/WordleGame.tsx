@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getDayNumber, getStats, recordWin, recordLoss, GameStats } from "@/lib/games";
+import { getDayNumber, getTodayStr, getStats, recordWin, recordLoss, GameStats } from "@/lib/games";
 import { WORDLE_ANSWERS } from "@/lib/words";
 import { saveGameResult } from "@/lib/archive";
 import { useShareResult } from "@/hooks/useShareResult";
@@ -19,7 +19,7 @@ interface WordleProps {
 const DAILY_PLAY_LIMIT = 1;
 
 function getPlayedWords(): string[] {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayStr();
   try {
     const stored = localStorage.getItem("iwo_wordle_played_words");
     if (stored) {
@@ -31,7 +31,7 @@ function getPlayedWords(): string[] {
 }
 
 function addPlayedWord(word: string) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayStr();
   const words = getPlayedWords();
   if (!words.includes(word.toUpperCase())) words.push(word.toUpperCase());
   localStorage.setItem("iwo_wordle_played_words", JSON.stringify({ date: today, words }));
@@ -45,7 +45,7 @@ function pickNewWord(): string {
 }
 
 function getRandomPlayCount(): number {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayStr();
   try {
     const stored = localStorage.getItem("iwo_wordle_plays");
     if (stored) {
@@ -57,7 +57,7 @@ function getRandomPlayCount(): number {
 }
 
 function incrementRandomPlayCount(): number {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayStr();
   const count = getRandomPlayCount() + 1;
   localStorage.setItem("iwo_wordle_plays", JSON.stringify({ date: today, count }));
   return count;

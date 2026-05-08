@@ -69,9 +69,11 @@ function saveStats(gameId: string, stats: GameStats) {
 }
 
 function yesterdayStr(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split("T")[0];
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const istNow = new Date(now.getTime() + istOffset);
+  istNow.setDate(istNow.getDate() - 1);
+  return istNow.toISOString().split("T")[0];
 }
 
 export function recordWin(gameId: string): GameStats {

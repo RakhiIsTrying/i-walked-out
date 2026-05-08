@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, GameStats } from "@/lib/games";
+import { getDayNumber, getTodayStr, getStats, recordWin, hasPlayedToday, markPlayedToday, GameStats } from "@/lib/games";
 import { saveGameResult } from "@/lib/archive";
 import { useGameTimer, formatTime } from "@/hooks/useGameTimer";
 import { useShareResult } from "@/hooks/useShareResult";
@@ -65,7 +65,7 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
   const [won, setWon] = useState(false);
   const [stats, setStats] = useState<GameStats | null>(null);
 
-  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+  const isToday = !playDate || playDate === getTodayStr();
   const { timer } = useGameTimer(!gameOver);
   const { shareMsg, share } = useShareResult();
 

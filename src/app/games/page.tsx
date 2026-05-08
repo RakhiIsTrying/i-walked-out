@@ -74,6 +74,19 @@ export default function GamesPage() {
     fetchPuzzles(playDate);
   }, [playDate, fetchPuzzles]);
 
+  // Auto-refresh at midnight IST: check every 30s if the date has rolled over
+  useEffect(() => {
+    let lastDate = todayStr();
+    const check = setInterval(() => {
+      const now = todayStr();
+      if (now !== lastDate) {
+        lastDate = now;
+        setPlayDate(now);
+      }
+    }, 30_000);
+    return () => clearInterval(check);
+  }, []);
+
   useEffect(() => {
     const s: Record<string, GameStats> = {};
     GAMES.forEach((g) => { s[g.id] = getStats(g.id); });

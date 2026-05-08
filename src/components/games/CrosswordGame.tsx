@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   getDayNumber,
+  getTodayStr,
   getStats,
   recordWin,
   hasPlayedToday,
@@ -56,7 +57,7 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
     Array.from({ length: size }, () => Array(size).fill(null))
   );
 
-  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+  const isToday = !playDate || playDate === getTodayStr();
 
   useEffect(() => {
     if (isToday && hasPlayedToday(gameId)) {

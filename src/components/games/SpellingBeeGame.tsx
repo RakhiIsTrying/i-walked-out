@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, GameStats } from "@/lib/games";
+import { getDayNumber, getTodayStr, getStats, recordWin, hasPlayedToday, markPlayedToday, GameStats } from "@/lib/games";
 import { saveGameResult } from "@/lib/archive";
 import { useShareResult } from "@/hooks/useShareResult";
 import HexButton from "./HexButton";
@@ -60,7 +60,7 @@ async function checkWord(word: string): Promise<boolean> {
 }
 
 function getSaveKey(playDate?: string): string {
-  const date = playDate || new Date().toISOString().split("T")[0];
+  const date = playDate || getTodayStr();
   return `iwo_spelling_${date}`;
 }
 
@@ -76,7 +76,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
   const submitRef = useRef(false);
   const mobileInputRef = useRef<HTMLInputElement>(null);
 
-  const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+  const isToday = !playDate || playDate === getTodayStr();
   const { shareMsg, share } = useShareResult();
 
   useEffect(() => {
