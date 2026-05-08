@@ -244,16 +244,11 @@ function ReactionButton({
   isAnimating: boolean;
   onClick: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="typewriter"
+      className="reaction-btn typewriter"
       style={{
-        position: "relative",
         display: "flex",
         alignItems: "center",
         gap: 3,
@@ -272,51 +267,8 @@ function ReactionButton({
     >
       <span style={{ fontSize: 14 }}>{emoji}</span>
       {count > 0 && <span>{count}</span>}
-      {hovered && !isAnimating && (
-        <span
-          className="typewriter"
-          style={{
-            position: "absolute",
-            bottom: "calc(100% + 6px)",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "var(--ink)",
-            color: "var(--paper-light)",
-            fontSize: 9,
-            letterSpacing: "0.1em",
-            padding: "4px 8px",
-            borderRadius: 3,
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            zIndex: 1000,
-          }}
-        >
-          {label}
-        </span>
-      )}
-      {isAnimating && (
-        <span
-          className="typewriter"
-          style={{
-            position: "absolute",
-            bottom: "calc(100% + 6px)",
-            left: "50%",
-            background: "var(--ink)",
-            color: "var(--paper-light)",
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: "0.08em",
-            padding: "5px 10px",
-            borderRadius: 4,
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            zIndex: 1000,
-            animation: "reactionPop 0.6s ease-out forwards",
-          }}
-        >
-          {label}
-        </span>
-      )}
+      {!isAnimating && <span className="reaction-label">{label}</span>}
+      {isAnimating && <span className="reaction-pop">{label}</span>}
     </button>
   );
 }
