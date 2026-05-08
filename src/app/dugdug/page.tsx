@@ -105,7 +105,7 @@ export default function DugDugPage() {
           }}
         >
           <em style={{ fontStyle: "italic", fontWeight: 500, color: "var(--accent)" }}>
-            Dug-Dug
+            Nigel Bottomsworth-Pemberton
           </em>
         </h1>
         <p style={{ maxWidth: "48ch", color: "var(--ink-2)", fontSize: 17, lineHeight: 1.55 }}>
@@ -221,7 +221,7 @@ export default function DugDugPage() {
                       marginBottom: 6,
                     }}
                   >
-                    dug-dug
+                    nigel
                   </span>
                 )}
                 <p
@@ -260,7 +260,7 @@ export default function DugDugPage() {
                     marginBottom: 6,
                   }}
                 >
-                  dug-dug
+                  nigel
                 </span>
                 <p
                   style={{

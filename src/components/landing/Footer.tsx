@@ -161,7 +161,7 @@ export default function Footer() {
             </li>
             <li>
               <Link href="/dugdug" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--paper)", borderBottom: "1px solid transparent" }}>
-                Dug-Dug
+                Nigel Bottomsworth-Pemberton
               </Link>
             </li>
             <li>

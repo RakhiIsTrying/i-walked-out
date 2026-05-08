@@ -4,9 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Lock, Loader2, Phone } from "lucide-react";
+import { Mail, Lock, Loader2, Phone, Calendar } from "lucide-react";
 
 type AuthMode = "email" | "phone";
+
+function getAge(dob: string): number {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
 
 const COUNTRY_CODES = [
   { code: "+91", flag: "\u{1F1EE}\u{1F1F3}", label: "India" },
@@ -38,6 +47,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
+  const [dob, setDob] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -46,6 +56,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    if (!dob || getAge(dob) < 15) { setError("You must be at least 15 years old to sign up."); setLoading(false); return; }
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) { setError(error.message); setLoading(false); return; }
@@ -57,6 +68,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    if (!dob || getAge(dob) < 15) { setError("You must be at least 15 years old to sign up."); setLoading(false); return; }
     const formatted = `${countryCode}${phone.replace(/\D/g, "")}`;
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({ phone: formatted, password });
@@ -228,6 +240,13 @@ export default function SignupPage() {
               <Mail size={16} style={{ position: "absolute", left: 12, top: 14, color: "var(--ink-3)" }} />
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: "100%", paddingLeft: 36 }} required />
             </div>
+            <div>
+              <label style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 4, display: "block" }}>Date of birth (must be 15+)</label>
+              <div style={{ position: "relative" }}>
+                <Calendar size={16} style={{ position: "absolute", left: 12, top: 14, color: "var(--ink-3)" }} />
+                <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().split("T")[0]} style={{ width: "100%", paddingLeft: 36, color: dob ? "var(--ink)" : "var(--ink-3)" }} required aria-label="Date of birth" />
+              </div>
+            </div>
             <div style={{ position: "relative" }}>
               <Lock size={16} style={{ position: "absolute", left: 12, top: 14, color: "var(--ink-3)" }} />
               <input type="password" placeholder="Password (min 6 characters)" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: "100%", paddingLeft: 36 }} minLength={6} required />
@@ -264,6 +283,13 @@ export default function SignupPage() {
               <div style={{ flex: 1, position: "relative" }}>
                 <Phone size={16} style={{ position: "absolute", left: 12, top: 14, color: "var(--ink-3)" }} />
                 <input type="tel" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%", paddingLeft: 36 }} required />
+              </div>
+            </div>
+            <div>
+              <label style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 4, display: "block" }}>Date of birth (must be 15+)</label>
+              <div style={{ position: "relative" }}>
+                <Calendar size={16} style={{ position: "absolute", left: 12, top: 14, color: "var(--ink-3)" }} />
+                <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().split("T")[0]} style={{ width: "100%", paddingLeft: 36, color: dob ? "var(--ink)" : "var(--ink-3)" }} required aria-label="Date of birth" />
               </div>
             </div>
             <div style={{ position: "relative" }}>
