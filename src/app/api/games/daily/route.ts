@@ -36,16 +36,20 @@ export async function GET(request: Request) {
     return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
   }
 
-  if (existing && refreshGame) {
+  if (refreshGame === "crossword") {
     try {
-      const theme = existing.crossword?.theme || await generateDailyTheme(isToday ? undefined : targetDate);
-      if (refreshGame === "crossword") {
-        existing.crossword = await generateCrosswordVariant("normal", theme);
+      const theme = existing?.crossword?.theme || await generateDailyTheme(isToday ? undefined : targetDate);
+      const crossword = await generateCrosswordVariant("normal", theme);
+      if (existing) {
+        existing.crossword = crossword;
+      } else {
+        existing = { date: targetDate, crossword } as DailyPuzzles;
       }
       await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles: existing });
       return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      if (existing) return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
       return NextResponse.json({ error: "Refresh failed", detail: msg }, { status: 500 });
     }
   }
