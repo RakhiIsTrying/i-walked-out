@@ -20,10 +20,6 @@ export async function GET(request: Request) {
   const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
   const isToday = targetDate === today;
 
-  if (refresh) {
-    try { await getAdmin().from("daily_puzzles").delete().eq("date", targetDate); } catch {}
-  }
-
   if (!refresh) {
     try {
       const { data } = await getAdmin()

@@ -22,7 +22,7 @@ export default function FeedbackButton() {
     if (!message.trim() && !emoji) return;
     setSending(true);
     try {
-      await fetch("/api/feedback", {
+      const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -31,15 +31,17 @@ export default function FeedbackButton() {
           page: window.location.pathname,
         }),
       });
-      setSent(true);
-      setMessage("");
-      setEmoji(null);
-      setTimeout(() => {
-        setSent(false);
-        setOpen(false);
-      }, 1500);
+      if (res.ok) {
+        setSent(true);
+        setMessage("");
+        setEmoji(null);
+        setTimeout(() => {
+          setSent(false);
+          setOpen(false);
+        }, 1500);
+      }
     } catch {
-      // silent fail
+      // network error
     } finally {
       setSending(false);
     }

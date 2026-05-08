@@ -199,7 +199,7 @@ async function generateClues(
     },
   ];
 
-  const res = await aiCall(messages, 2000, 0.7);
+  const res = await aiCall(messages, 2000, 0.7, 1);
   const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
   return extractJSON(text);
 }
@@ -212,7 +212,7 @@ export async function generateCrosswordVariant(
   const size = template.length;
   const templateStr = template.join("\n");
 
-  const maxAttempts = variant === "normal" ? 3 : 2;
+  const maxAttempts = 2;
   let lastError = "";
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
@@ -227,7 +227,7 @@ export async function generateCrosswordVariant(
           content: buildGridPrompt(variant, templateStr, size, theme),
         },
       ];
-      const res = await aiCall(messages, maxTokens, 0.7 + attempt * 0.15);
+      const res = await aiCall(messages, maxTokens, 0.7 + attempt * 0.15, 1);
       const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
 
