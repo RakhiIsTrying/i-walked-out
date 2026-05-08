@@ -6,8 +6,9 @@ const ADMIN_EMAIL = "rakhisinha100896@gmail.com";
 
 export async function POST(request: Request) {
   const { message, page, emoji } = await request.json();
-  if (!message || typeof message !== "string" || message.trim().length === 0) {
-    return NextResponse.json({ error: "Message required" }, { status: 400 });
+  const trimmedMsg = typeof message === "string" ? message.trim().slice(0, 1000) : "";
+  if (!trimmedMsg && !emoji) {
+    return NextResponse.json({ error: "Message or emoji required" }, { status: 400 });
   }
 
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
 
   const db = getAdmin();
   const { error } = await db.from("feedback").insert({
-    message: message.trim().slice(0, 1000),
+    message: trimmedMsg || null,
     page: page || null,
     emoji: emoji || null,
     user_id: user?.id || null,

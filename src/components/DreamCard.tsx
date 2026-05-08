@@ -179,43 +179,15 @@ export default function DreamCard({ dream }: { dream: Dream }) {
           const isActive = picked === r.key;
           const isAnimating = animating === r.key;
           return (
-            <button
+            <ReactionButton
               key={r.key}
+              emoji={r.emoji}
+              label={r.label}
+              count={count}
+              isActive={isActive}
+              isAnimating={isAnimating}
               onClick={() => handleReact(r.key)}
-              title={r.label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "4px 10px",
-                fontSize: 13,
-                background: isActive
-                  ? "rgba(0,0,0,0.09)"
-                  : "rgba(0,0,0,0.03)",
-                border: isActive
-                  ? "1.5px solid var(--ink-faded)"
-                  : "1.5px solid rgba(0,0,0,0.06)",
-                borderRadius: 20,
-                cursor: "pointer",
-                opacity: isActive ? 1 : 0.85,
-                transition: "all 0.2s ease",
-                transform: isAnimating ? "scale(1.2)" : "scale(1)",
-              }}
-            >
-              <span style={{ fontSize: 16, lineHeight: 1 }}>{r.emoji}</span>
-              {(count > 0 || isActive) && (
-                <span
-                  className="typewriter"
-                  style={{
-                    fontSize: 10,
-                    color: isActive ? "var(--ink-soft)" : "var(--ink-faded)",
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
-                  {count || ""}
-                </span>
-              )}
-            </button>
+            />
           );
         })}
       </div>
@@ -254,6 +226,75 @@ export default function DreamCard({ dream }: { dream: Dream }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ReactionButton({
+  emoji,
+  label,
+  count,
+  isActive,
+  isAnimating,
+  onClick,
+}: {
+  emoji: string;
+  label: string;
+  count: number;
+  isActive: boolean;
+  isAnimating: boolean;
+  onClick: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="typewriter"
+      style={{
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        gap: 3,
+        padding: "4px 8px",
+        fontSize: 11,
+        background: isActive ? "var(--ink)" : "transparent",
+        color: isActive ? "var(--paper-light)" : "var(--ink-soft)",
+        border: isActive
+          ? "1.5px solid var(--ink)"
+          : "1px solid rgba(106,112,140,0.2)",
+        borderRadius: 14,
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        transform: isAnimating ? "scale(1.2)" : "scale(1)",
+      }}
+    >
+      <span style={{ fontSize: 14 }}>{emoji}</span>
+      {count > 0 && <span>{count}</span>}
+      {hovered && (
+        <span
+          className="typewriter"
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "var(--ink)",
+            color: "var(--paper-light)",
+            fontSize: 9,
+            letterSpacing: "0.1em",
+            padding: "4px 8px",
+            borderRadius: 3,
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          {label}
+        </span>
+      )}
+    </button>
   );
 }
 
