@@ -267,12 +267,12 @@ function ReactionButton({
         borderRadius: 14,
         cursor: "pointer",
         transition: "all 0.2s ease",
-        transform: isAnimating ? "scale(1.2)" : "scale(1)",
+        transform: isAnimating ? "scale(1.35)" : "scale(1)",
       }}
     >
       <span style={{ fontSize: 14 }}>{emoji}</span>
       {count > 0 && <span>{count}</span>}
-      {hovered && (
+      {hovered && !isAnimating && (
         <span
           className="typewriter"
           style={{
@@ -288,7 +288,30 @@ function ReactionButton({
             borderRadius: 3,
             whiteSpace: "nowrap",
             pointerEvents: "none",
-            zIndex: 10,
+            zIndex: 1000,
+          }}
+        >
+          {label}
+        </span>
+      )}
+      {isAnimating && (
+        <span
+          className="typewriter"
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            left: "50%",
+            background: "var(--ink)",
+            color: "var(--paper-light)",
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            padding: "5px 10px",
+            borderRadius: 4,
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            zIndex: 1000,
+            animation: "reactionPop 0.6s ease-out forwards",
           }}
         >
           {label}

@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 
-const EMOJIS = ["😍", "👍", "🤔", "👎", "🐛"];
+const FEEDBACK_EMOJIS = [
+  { emoji: "😍", label: "love it" },
+  { emoji: "👍", label: "good" },
+  { emoji: "🤔", label: "hmm" },
+  { emoji: "👎", label: "nope" },
+  { emoji: "🐛", label: "bug" },
+];
 
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
@@ -126,27 +132,40 @@ export default function FeedbackButton() {
                   marginBottom: 12,
                 }}
               >
-                {EMOJIS.map((e) => (
+                {FEEDBACK_EMOJIS.map((item) => (
                   <button
-                    key={e}
-                    onClick={() => setEmoji(emoji === e ? null : e)}
+                    key={item.emoji}
+                    onClick={() => setEmoji(emoji === item.emoji ? null : item.emoji)}
                     style={{
-                      fontSize: 22,
                       padding: "6px 8px",
                       background:
-                        emoji === e
+                        emoji === item.emoji
                           ? "rgba(42,95,214,0.12)"
                           : "var(--paper-deep)",
                       border:
-                        emoji === e
+                        emoji === item.emoji
                           ? "1.5px solid var(--teal)"
                           : "1px solid rgba(106,112,140,0.2)",
                       borderRadius: 6,
                       cursor: "pointer",
                       transition: "all 0.15s",
+                      display: "flex",
+                      flexDirection: "column" as const,
+                      alignItems: "center",
+                      gap: 2,
                     }}
                   >
-                    {e}
+                    <span style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
+                    <span
+                      className="typewriter"
+                      style={{
+                        fontSize: 7,
+                        letterSpacing: "0.05em",
+                        color: "var(--ink-faded)",
+                      }}
+                    >
+                      {item.label}
+                    </span>
                   </button>
                 ))}
               </div>

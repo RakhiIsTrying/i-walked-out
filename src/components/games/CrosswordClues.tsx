@@ -23,31 +23,35 @@ export default function CrosswordClues({
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        gap: 14,
+        flexDirection: isMobileView ? "column" : "row",
+        gap: isMobileView ? 14 : 20,
         minWidth: 0,
-        maxWidth: isMobileView ? "100%" : 280,
+        maxWidth: isMobileView ? "100%" : 480,
         width: isMobileView ? "100%" : undefined,
-        maxHeight,
+        maxHeight: isMobileView ? undefined : maxHeight,
         overflowY: "auto",
       }}
     >
-      <ClueSection
-        title="Across"
-        clues={acrossClues}
-        dir="across"
-        activeDir={direction}
-        activeNum={activeClueNum}
-        onClueClick={onClueClick}
-      />
-      <ClueSection
-        title="Down"
-        clues={downClues}
-        dir="down"
-        activeDir={direction}
-        activeNum={activeClueNum}
-        onClueClick={onClueClick}
-      />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <ClueSection
+          title="Across"
+          clues={acrossClues}
+          dir="across"
+          activeDir={direction}
+          activeNum={activeClueNum}
+          onClueClick={onClueClick}
+        />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <ClueSection
+          title="Down"
+          clues={downClues}
+          dir="down"
+          activeDir={direction}
+          activeNum={activeClueNum}
+          onClueClick={onClueClick}
+        />
+      </div>
     </div>
   );
 }
