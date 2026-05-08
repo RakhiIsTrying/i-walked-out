@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/supabase/admin";
-import { getAI, CHAT_MODEL } from "@/lib/ai";
+import { getAI, MODEL } from "@/lib/ai";
 
 export const maxDuration = 60;
 
@@ -85,7 +85,7 @@ Keep responses short (2-4 sentences max). Use lowercase. Never be warm. Never be
 
   try {
     const stream = await getAI().chat.completions.create({
-      model: CHAT_MODEL,
+      model: MODEL,
       max_tokens: 300,
       stream: true,
       messages: [

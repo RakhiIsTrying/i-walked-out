@@ -1,5 +1,5 @@
 import { getAdmin } from "@/lib/supabase/admin";
-import { getAI, MODEL, CHAT_MODEL } from "@/lib/ai";
+import { getAI, MODEL } from "@/lib/ai";
 import { sendMessage } from "@/lib/telegram";
 import { getUserLink, getActiveChatMode, setActiveChatMode, clearActiveChatMode } from "./helpers";
 export { handleDugDugMode, handleDugDugChat } from "./dugdug";
@@ -234,7 +234,7 @@ TONE RULES:
   }
 
   const completion = await getAI().chat.completions.create({
-    model: CHAT_MODEL,
+    model: MODEL,
     max_tokens: 300,
     messages: [
       { role: "system", content: systemPrompt },

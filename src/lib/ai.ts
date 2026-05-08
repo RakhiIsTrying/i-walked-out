@@ -18,5 +18,4 @@ export function getGamesAI(): OpenAI {
 }
 
 export const MODEL = "qwen/qwen3.5-397b-a17b";
-export const CHAT_MODEL = "meta/llama-3.1-70b-instruct";
 export const GAMES_MODEL = "meta/llama-3.1-70b-instruct";
