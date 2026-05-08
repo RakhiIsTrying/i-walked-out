@@ -104,7 +104,7 @@ export async function generateDailyTheme(dateStr?: string): Promise<string> {
   themeRaw = themeRaw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
   const theme = themeRaw.replace(/^["']|["']$/g, "");
   if (theme && theme.length > 1 && theme.length < 40) return theme;
-  return "Hidden Wonders";
+  throw new Error("AI failed to generate a valid theme");
 }
 
 export function numberGrid(rawGrid: (string | null)[][]): {

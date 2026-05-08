@@ -1,65 +1,127 @@
-import { getDailyRng, seededShuffle } from "@/lib/games";
+import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
 import { SudokuPuzzle } from "./types";
+import { getDailyRng, seededShuffle } from "@/lib/games";
 
-const BASE_GRID = [
-  [5, 3, 4, 6, 7, 8, 9, 1, 2],
-  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-  [1, 9, 8, 3, 4, 2, 5, 6, 7],
-  [8, 5, 9, 7, 6, 1, 4, 2, 3],
-  [4, 2, 6, 8, 5, 3, 7, 9, 1],
-  [7, 1, 3, 9, 2, 4, 8, 5, 6],
-  [9, 6, 1, 5, 3, 7, 2, 8, 4],
-  [2, 8, 7, 4, 1, 9, 6, 3, 5],
-  [3, 4, 5, 2, 8, 6, 1, 7, 9],
-];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractJSON(text: string): any {
+  const start = text.indexOf("{");
+  if (start < 0) throw new Error("no JSON found");
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (esc) { esc = false; continue; }
+    if (ch === "\\") { esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === "{") depth++;
+    else if (ch === "}") { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
+  }
+  throw new Error("unbalanced JSON");
+}
 
-function buildSudoku(rng: () => number): SudokuPuzzle {
-  const perm = seededShuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], rng);
-  let grid = BASE_GRID.map((row) => row.map((v) => perm[v - 1]));
-
-  for (let band = 0; band < 3; band++) {
-    const rows = [band * 3, band * 3 + 1, band * 3 + 2];
-    for (let i = 2; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [grid[rows[i]], grid[rows[j]]] = [grid[rows[j]], grid[rows[i]]];
+function isValidSudoku(grid: number[][]): boolean {
+  if (grid.length !== 9) return false;
+  for (let r = 0; r < 9; r++) {
+    if (grid[r].length !== 9) return false;
+    const rowSet = new Set<number>();
+    const colSet = new Set<number>();
+    for (let c = 0; c < 9; c++) {
+      if (grid[r][c] < 1 || grid[r][c] > 9) return false;
+      rowSet.add(grid[r][c]);
+      colSet.add(grid[c][r]);
+    }
+    if (rowSet.size !== 9 || colSet.size !== 9) return false;
+  }
+  for (let br = 0; br < 3; br++) {
+    for (let bc = 0; bc < 3; bc++) {
+      const boxSet = new Set<number>();
+      for (let r = br * 3; r < br * 3 + 3; r++) {
+        for (let c = bc * 3; c < bc * 3 + 3; c++) {
+          boxSet.add(grid[r][c]);
+        }
+      }
+      if (boxSet.size !== 9) return false;
     }
   }
+  return true;
+}
 
-  const transposed = grid[0].map((_, c) => grid.map((r) => r[c]));
-  for (let stack = 0; stack < 3; stack++) {
-    const cols = [stack * 3, stack * 3 + 1, stack * 3 + 2];
-    for (let i = 2; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [transposed[cols[i]], transposed[cols[j]]] = [
-        transposed[cols[j]],
-        transposed[cols[i]],
-      ];
+async function aiGenerateSudoku(): Promise<number[][]> {
+  const ai = getGamesAI();
+  for (let retry = 0; retry < 3; retry++) {
+    try {
+      const res = await (ai.chat.completions.create as Function)({
+        model: GAMES_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: "You are a Sudoku puzzle generator. Reply with ONLY valid JSON. No markdown fences, no explanation.",
+          },
+          {
+            role: "user",
+            content: `Generate a complete, valid 9x9 Sudoku solution. Every row, column, and 3x3 box must contain the digits 1-9 exactly once.
+
+Return ONLY this JSON (no markdown fences):
+{"grid":[[r1c1,r1c2,...,r1c9],[r2c1,...,r2c9],...,[r9c1,...,r9c9]]}
+
+Each row must have exactly 9 digits. 9 rows total.`,
+          },
+        ],
+        max_tokens: 500,
+        temperature: 0.8 + retry * 0.2,
+        chat_template_kwargs: { thinking: false },
+      });
+
+      let text = res.choices[0]?.message?.content?.trim() ?? "";
+      text = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+      text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+      const parsed = extractJSON(text);
+
+      if (!Array.isArray(parsed.grid) || parsed.grid.length !== 9) throw new Error("bad grid size");
+      const grid: number[][] = parsed.grid.map((row: number[]) =>
+        row.map((v: number) => Math.max(1, Math.min(9, Math.round(Number(v)))))
+      );
+
+      if (isValidSudoku(grid)) return grid;
+      console.error("[sudoku] AI grid failed validation, retrying");
+    } catch (e: unknown) {
+      const status = (e as { status?: number })?.status;
+      if (status === 429) {
+        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
+        continue;
+      }
+      console.error("[sudoku] attempt failed:", e instanceof Error ? e.message : String(e));
     }
   }
-  grid = transposed[0].map((_, c) => transposed.map((r) => r[c]));
+  throw new Error("Failed to generate valid sudoku after retries");
+}
 
-  const solution = grid.map((r) => [...r]);
-  const given: boolean[][] = grid.map(() => Array(9).fill(true));
-  const cells = Array.from({ length: 81 }, (_, i) => i);
-  const shuffled = seededShuffle(cells, rng);
+function removeCells(solution: number[][], rng: () => number): SudokuPuzzle {
+  const puzzle = solution.map((r) => [...r]);
+  const given: boolean[][] = solution.map(() => Array(9).fill(true));
+  const cells = seededShuffle(Array.from({ length: 81 }, (_, i) => i), rng);
   const toRemove = 45 + Math.floor(rng() * 6);
 
-  for (let k = 0; k < toRemove && k < shuffled.length; k++) {
-    const r = Math.floor(shuffled[k] / 9);
-    const c = shuffled[k] % 9;
-    grid[r][c] = 0;
+  for (let k = 0; k < toRemove && k < cells.length; k++) {
+    const r = Math.floor(cells[k] / 9);
+    const c = cells[k] % 9;
+    puzzle[r][c] = 0;
     given[r][c] = false;
   }
 
-  return { solution, puzzle: grid, given };
+  return { solution, puzzle, given };
 }
 
-export function generateSudoku(): SudokuPuzzle {
+export async function generateSudoku(): Promise<SudokuPuzzle> {
+  const solution = await aiGenerateSudoku();
   const rng = getDailyRng(7);
-  return buildSudoku(rng);
+  return removeCells(solution, rng);
 }
 
-export function generateSudokuForDay(dayNum: number): SudokuPuzzle {
+export async function generateSudokuForDay(dayNum: number): Promise<SudokuPuzzle> {
+  const solution = await aiGenerateSudoku();
   let seed = (dayNum + 7) * 2654435761;
   const rng = () => {
     seed |= 0;
@@ -68,5 +130,5 @@ export function generateSudokuForDay(dayNum: number): SudokuPuzzle {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-  return buildSudoku(rng);
+  return removeCells(solution, rng);
 }

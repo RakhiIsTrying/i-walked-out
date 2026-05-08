@@ -17,85 +17,6 @@ const SIZE = 6;
 const SUN = 1;
 const MOON = 2;
 
-function generateTangoSolution(rng: () => number): number[][] {
-  const grid: number[][] = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
-
-  function isValidPlacement(row: number, col: number, val: number): boolean {
-    // Check no 3 consecutive in row
-    if (col >= 2 && grid[row][col - 1] === val && grid[row][col - 2] === val) return false;
-    // Check no 3 consecutive in column
-    if (row >= 2 && grid[row - 1][col] === val && grid[row - 2][col] === val) return false;
-    // Check row count
-    const rowCount = grid[row].filter((c) => c === val).length;
-    if (rowCount >= 3) return false;
-    // Check column count
-    let colCount = 0;
-    for (let r = 0; r < SIZE; r++) {
-      if (grid[r][col] === val) colCount++;
-    }
-    if (colCount >= 3) return false;
-    return true;
-  }
-
-  function solve(pos: number): boolean {
-    if (pos === SIZE * SIZE) return true;
-    const row = Math.floor(pos / SIZE);
-    const col = pos % SIZE;
-    const values = rng() > 0.5 ? [SUN, MOON] : [MOON, SUN];
-    for (const val of values) {
-      if (isValidPlacement(row, col, val)) {
-        grid[row][col] = val;
-        if (solve(pos + 1)) return true;
-        grid[row][col] = 0;
-      }
-    }
-    return false;
-  }
-
-  solve(0);
-  return grid;
-}
-
-function createTangoPuzzle(solution: number[][], rng: () => number): { puzzle: number[][]; given: boolean[][] } {
-  const puzzle = solution.map((r) => [...r]);
-  const given: boolean[][] = Array.from({ length: SIZE }, () => Array(SIZE).fill(true));
-  const cells = Array.from({ length: SIZE * SIZE }, (_, i) => i);
-
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [cells[i], cells[j]] = [cells[j], cells[i]];
-  }
-
-  let removed = 0;
-  const target = 20 + Math.floor(rng() * 4);
-  for (const idx of cells) {
-    if (removed >= target) break;
-    const row = Math.floor(idx / SIZE);
-    const col = idx % SIZE;
-    puzzle[row][col] = 0;
-    given[row][col] = false;
-    removed++;
-  }
-
-  return { puzzle, given };
-}
-
-function generateFallbackTango() {
-  const day = getDayNumber();
-  let seed = (day + 99) * 2654435761;
-  const rng = () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-
-  const solution = generateTangoSolution(rng);
-  const { puzzle, given } = createTangoPuzzle(solution, rng);
-  return { grid: puzzle, solution, given };
-}
-
 function checkViolations(grid: number[][]): boolean[][] {
   const violations: boolean[][] = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
   if (grid.length === 0) return violations;
@@ -150,7 +71,8 @@ export default function TangoGame({ puzzle: puzzleProp, playDate }: TangoProps) 
   const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const data = puzzleProp || generateFallbackTango();
+    if (!puzzleProp) return;
+    const data = puzzleProp;
     setGrid(data.grid.map((r) => [...r]));
     setSolution(data.solution);
     setGiven(data.given);
