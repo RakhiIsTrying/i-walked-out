@@ -15,7 +15,8 @@ import {
   buildCrosswordFromFallback,
   buildMiniFromFallback,
   buildSpellingResult,
-  getDailyTheme,
+  getFallbackTheme,
+  generateDailyTheme,
 } from "@/lib/generators";
 
 /* ──────────────────────────────────────────
@@ -78,7 +79,7 @@ export async function GET(request: Request) {
     const outer = seed.letters.filter((l) => l !== seed.center);
     const spelling = buildSpellingResult(seed.center, outer)!;
 
-    const theme = getDailyTheme(dayNum);
+    const theme = getFallbackTheme(dayNum);
     const crossword = { ...buildCrosswordFromFallback(dayNum), theme };
     const crosswordMini = { ...buildMiniFromFallback(), theme };
     const crosswordMidi = { ...buildMiniFromFallback(), theme };
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
   }
 
   // Generate fresh for today (with AI)
-  const theme = getDailyTheme();
+  const theme = await generateDailyTheme();
   const [wordle, crosswordMini, crosswordMidi, crossword, spelling] = await Promise.all([
     generateWordle(),
     generateCrosswordVariant("mini", theme),

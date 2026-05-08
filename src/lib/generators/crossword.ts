@@ -39,7 +39,7 @@ const MIDI_TEMPLATE = [
   "...#...",
 ];
 
-const DAILY_THEMES = [
+const FALLBACK_THEMES = [
   "Animals & Pets", "Food & Cooking", "Travel & Places", "Music & Sound",
   "Science & Nature", "Sports & Fitness", "Movies & TV", "Technology",
   "Weather & Seasons", "History & Legends", "Fashion & Style", "Space & Astronomy",
@@ -50,9 +50,34 @@ const DAILY_THEMES = [
   "Rivers & Water", "School & Learning",
 ];
 
-export function getDailyTheme(dayNum?: number): string {
+export function getFallbackTheme(dayNum?: number): string {
   const d = dayNum ?? getDayNumber();
-  return DAILY_THEMES[d % DAILY_THEMES.length];
+  return FALLBACK_THEMES[d % FALLBACK_THEMES.length];
+}
+
+export async function generateDailyTheme(): Promise<string> {
+  try {
+    const ai = getGamesAI();
+    const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const res = await ai.chat.completions.create({
+      model: GAMES_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: "Reply with ONLY a short crossword theme. No quotes, no explanation. 2-4 words max.",
+        },
+        {
+          role: "user",
+          content: `Generate a creative, specific crossword puzzle theme for ${today}. Be inventive — don't just say "Food" or "Animals." Think of things like "Midnight Snacks", "Forgotten Inventions", "Carnival Rides", "Underwater Caves", "90s Nostalgia", "Kitchen Disasters", "Secret Passages". Make it fun and specific.`,
+        },
+      ],
+      max_tokens: 30,
+      temperature: 1.1,
+    });
+    const theme = res.choices[0]?.message?.content?.trim().replace(/^["']|["']$/g, "");
+    if (theme && theme.length > 1 && theme.length < 40) return theme;
+  } catch {}
+  return getFallbackTheme();
 }
 
 const VARIANT_CONFIG: Record<CrosswordVariant, { template: string[]; maxTokens: number }> = {
@@ -245,6 +270,6 @@ export async function generateCrosswordVariant(
 }
 
 export async function generateCrossword(): Promise<CrosswordPuzzle> {
-  const theme = getDailyTheme();
+  const theme = await generateDailyTheme();
   return generateCrosswordVariant("normal", theme);
 }
