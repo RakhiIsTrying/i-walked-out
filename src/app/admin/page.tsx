@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { SectionLabel, StatCard, ActivityCard, ActivityRow, Pill, EmptyMsg, thStyle, tdStyle } from "@/components/admin/AdminWidgets";
 
 interface Stats {
   users: number;
@@ -59,7 +60,16 @@ interface RecentGame {
   created_at: string;
 }
 
-type Tab = "overview" | "users" | "dreams" | "decisions" | "vibes" | "games";
+interface FeedbackEntry {
+  id: string;
+  message: string;
+  emoji: string | null;
+  page: string | null;
+  user_email: string | null;
+  created_at: string;
+}
+
+type Tab = "overview" | "users" | "dreams" | "decisions" | "vibes" | "games" | "feedback";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -72,6 +82,8 @@ export default function AdminDashboard() {
   const [recentSticky, setRecentSticky] = useState<RecentSticky[]>([]);
   const [recentVibes, setRecentVibes] = useState<RecentVibe[]>([]);
   const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
+  const [feedbackTotal, setFeedbackTotal] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -99,6 +111,12 @@ export default function AdminDashboard() {
       setRecentVibes(data.recentVibes);
       setRecentGames(data.recentGames);
     }
+    const fbRes = await fetch("/api/feedback");
+    if (fbRes.ok) {
+      const fbData = await fbRes.json();
+      setFeedback(fbData.feedback);
+      setFeedbackTotal(fbData.total);
+    }
     setLoading(false);
   }
 
@@ -119,6 +137,7 @@ export default function AdminDashboard() {
     { key: "decisions", label: "Decisions" },
     { key: "vibes", label: "Vibes" },
     { key: "games", label: "Games" },
+    { key: "feedback", label: `Feedback${feedbackTotal ? ` (${feedbackTotal})` : ""}` },
   ];
 
   function formatDate(d: string) {
@@ -347,6 +366,32 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
+
+            {/* Feedback */}
+            {tab === "feedback" && (
+              <div>
+                <SectionLabel text={`${feedbackTotal} feedback entries`} />
+                {feedback.length === 0 ? <EmptyMsg /> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {feedback.map((f) => (
+                      <div key={f.id} className="paper" style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            {f.emoji && <span style={{ fontSize: 22 }}>{f.emoji}</span>}
+                            <span style={{ fontSize: 15, color: "var(--ink)" }}>{f.message || <em style={{ color: "var(--ink-faded)" }}>emoji only</em>}</span>
+                          </div>
+                          <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", flexShrink: 0 }}>{formatDate(f.created_at)}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                          {f.page && <Pill text={f.page} color="var(--teal)" />}
+                          <Pill text={f.user_email || "anonymous"} color="var(--ink-faded)" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -354,70 +399,3 @@ export default function AdminDashboard() {
   );
 }
 
-const thStyle: React.CSSProperties = { padding: "10px 12px" };
-const tdStyle: React.CSSProperties = { padding: "10px 12px" };
-
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-      <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", whiteSpace: "nowrap" }}>
-        {text}
-      </span>
-      <div style={{ flex: 1, height: 1, borderTop: "1.5px dashed var(--ink-faded)" }} />
-    </div>
-  );
-}
-
-function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
-  return (
-    <div style={{
-      background: "var(--paper-light)",
-      border: "1px solid rgba(106,112,140,0.12)",
-      borderRadius: 4,
-      padding: "20px 18px",
-      textAlign: "center",
-    }}>
-      <div className="serif" style={{ fontSize: 36, fontWeight: 500, color, lineHeight: 1 }}>{value}</div>
-      <div className="typewriter" style={{ fontSize: 9, letterSpacing: "0.15em", color: "var(--ink-faded)", marginTop: 6, textTransform: "uppercase" }}>{label}</div>
-    </div>
-  );
-}
-
-function ActivityCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: "var(--paper-light)", border: "1px solid rgba(106,112,140,0.12)", borderRadius: 4, padding: "18px 20px" }}>
-      <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 14 }}>
-        {title}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
-    </div>
-  );
-}
-
-function ActivityRow({ primary, secondary, time }: { primary: string; secondary?: string; time: string }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 14, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{primary}</div>
-        {secondary && <div style={{ fontSize: 11, color: "var(--ink-faded)", marginTop: 2 }}>{secondary}</div>}
-      </div>
-      <span className="typewriter" style={{ fontSize: 9, color: "var(--ink-faded)", flexShrink: 0 }}>{time}</span>
-    </div>
-  );
-}
-
-function Pill({ text, color }: { text: string; color: string }) {
-  return (
-    <span className="typewriter" style={{
-      fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase",
-      padding: "3px 10px", borderRadius: 12,
-      border: `1.5px solid ${color}`, color,
-    }}>
-      {text}
-    </span>
-  );
-}
-
-function EmptyMsg() {
-  return <p className="hand" style={{ fontSize: 18, color: "var(--ink-faded)", textAlign: "center", padding: "20px 0" }}>nothing yet</p>;
-}

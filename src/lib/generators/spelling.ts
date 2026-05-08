@@ -1,26 +1,6 @@
-import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
 import { DICTIONARY } from "@/lib/words";
 import { SpellingPuzzle } from "./types";
-import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractBalanced(text: string, open: string, close: string): any {
-  const start = text.indexOf(open);
-  if (start < 0) throw new Error(`no ${open} found`);
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
-    if (inStr) continue;
-    if (ch === open) depth++;
-    else if (ch === close) { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
-  }
-  throw new Error("unbalanced JSON");
-}
+import { extractJSON, cleanAIResponse, aiCall } from "./ai-utils";
 
 export function scoreSpellingWord(word: string, allLetters: Set<string>): number {
   if (word.length === 4) return 1;
@@ -61,31 +41,20 @@ export function buildSpellingResult(
   return { center, outer, validWords, maxScore };
 }
 
-async function aiCallSpelling(messages: ChatCompletionMessageParam[], maxTokens: number, temperature: number) {
-  const ai = getGamesAI();
-  for (let retry = 0; retry < 3; retry++) {
-    try {
-      return await (ai.chat.completions.create as Function)({
-        model: GAMES_MODEL,
-        messages,
-        max_tokens: maxTokens,
-        temperature,
-        chat_template_kwargs: { thinking: false },
-      });
-    } catch (e: unknown) {
-      const status = (e as { status?: number })?.status;
-      if (status === 429) {
-        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
-        continue;
-      }
-      throw e;
+function findValidWords(center: string, outer: string[]): string[] {
+  const allLetters = new Set([center, ...outer]);
+  return DICTIONARY.filter((word) => {
+    if (word.length < 4) return false;
+    if (!word.includes(center)) return false;
+    for (const ch of word) {
+      if (!allLetters.has(ch)) return false;
     }
-  }
-  throw new Error("Rate limited after retries");
+    return true;
+  }).sort();
 }
 
 export async function generateSpellingBee(): Promise<SpellingPuzzle> {
-  const lettersRes = await aiCallSpelling([
+  const res = await aiCall([
     {
       role: "system",
       content:
@@ -97,11 +66,10 @@ export async function generateSpellingBee(): Promise<SpellingPuzzle> {
 
 Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
     },
-  ], 100, 1.2);
+  ], 100, 1.2, 3);
 
-  let text = lettersRes.choices[0]?.message?.content?.trim() ?? "";
-  text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-  const parsed = extractBalanced(text, "{", "}");
+  const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
+  const parsed = extractJSON(text);
 
   const center = parsed.center?.toLowerCase();
   const outer: string[] = parsed.outer?.map((l: string) => l.toLowerCase());
@@ -110,16 +78,7 @@ Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
   const allLetters = new Set([center, ...outer]);
   if (allLetters.size !== 7) throw new Error("duplicate letters");
 
-  // Use dictionary to find valid words (fast, no extra AI call needed)
-  const validWords = DICTIONARY.filter((word) => {
-    if (word.length < 4) return false;
-    if (!word.includes(center)) return false;
-    for (const ch of word) {
-      if (!allLetters.has(ch)) return false;
-    }
-    return true;
-  }).sort();
-
+  const validWords = findValidWords(center, outer);
   if (validWords.length < 12) throw new Error("too few words");
 
   const maxScore = validWords.reduce(

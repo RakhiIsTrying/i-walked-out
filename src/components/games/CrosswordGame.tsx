@@ -7,11 +7,13 @@ import {
   recordWin,
   hasPlayedToday,
   markPlayedToday,
-  buildShareText,
-  shareOrCopy,
   GameStats,
 } from "@/lib/games";
 import { saveGameResult } from "@/lib/archive";
+import { useGameTimer, formatTime } from "@/hooks/useGameTimer";
+import { useShareResult } from "@/hooks/useShareResult";
+import CrosswordGrid from "./CrosswordGrid";
+import CrosswordClues from "./CrosswordClues";
 
 interface CrosswordPuzzle {
   size: number;
@@ -28,40 +30,9 @@ interface CrosswordProps {
   variant?: "mini" | "midi" | "normal";
 }
 
-const FALLBACK_PUZZLE: CrosswordPuzzle = {
-  size: 5,
-  grid: [
-    ["H", "E", "A", "R", "T"],
-    ["E", "M", "B", "E", "R"],
-    ["A", "B", "U", "S", "E"],
-    ["R", "E", "S", "I", "N"],
-    ["T", "R", "E", "N", "D"],
-  ],
-  numbers: [
-    [1, 2, 3, 4, 5],
-    [6, null, null, null, null],
-    [7, null, null, null, null],
-    [8, null, null, null, null],
-    [9, null, null, null, null],
-  ],
-  acrossClues: [
-    { num: 1, clue: "Organ that pumps blood" },
-    { num: 6, clue: "Glowing remains of a fire" },
-    { num: 7, clue: "To misuse or maltreat" },
-    { num: 8, clue: "Sticky substance from trees" },
-    { num: 9, clue: "General direction of change" },
-  ],
-  downClues: [
-    { num: 1, clue: "Core of one's feelings" },
-    { num: 2, clue: "Still-hot coal after flames die" },
-    { num: 3, clue: "Cruel or violent treatment" },
-    { num: 4, clue: "Used to make varnish" },
-    { num: 5, clue: "What's currently popular" },
-  ],
-};
-
 export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: CrosswordProps) {
-  const pz = puzzle ?? FALLBACK_PUZZLE;
+  if (!puzzle) return null;
+  const pz = puzzle;
   const { size, grid: answer, numbers, acrossClues, downClues } = pz;
   const gameId = variant === "normal" ? "crossword" : `crossword-${variant}`;
 
@@ -78,10 +49,9 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
   });
   const [direction, setDirection] = useState<"across" | "down">("across");
   const [gameOver, setGameOver] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const [timerActive, setTimerActive] = useState(true);
   const [stats, setStats] = useState<GameStats | null>(null);
-  const [shareMsg, setShareMsg] = useState("");
+  const { timer } = useGameTimer(!gameOver);
+  const { shareMsg, share } = useShareResult();
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: size }, () => Array(size).fill(null))
   );
@@ -91,7 +61,6 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
   useEffect(() => {
     if (isToday && hasPlayedToday(gameId)) {
       setGameOver(true);
-      setTimerActive(false);
       const saved = localStorage.getItem(`iwo_${gameId}_today`);
       if (saved) {
         try {
@@ -104,12 +73,6 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
     }
     setStats(getStats(gameId));
   }, []);
-
-  useEffect(() => {
-    if (!timerActive || gameOver) return;
-    const id = setInterval(() => setTimer((t) => t + 1), 1000);
-    return () => clearInterval(id);
-  }, [timerActive, gameOver]);
 
   function checkWin(b: (string | null)[][]) {
     for (let r = 0; r < size; r++)
@@ -183,7 +146,6 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
 
     if (ch && checkWin(next)) {
       setGameOver(true);
-      setTimerActive(false);
       if (isToday) {
         markPlayedToday(gameId);
         localStorage.setItem(`iwo_${gameId}_today`, JSON.stringify({ b: next }));
@@ -274,21 +236,13 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
     }
   }
 
-  const formatTime = (s: number) =>
-    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-
   async function handleShare() {
     const variantLabel = variant === "mini" ? "Mini" : variant === "midi" ? "Midi" : "Crossword";
-    const text = buildShareText(
+    await share(
       `${variantLabel} #${getDayNumber()}`,
       `Solved in ${formatTime(timer)}${pz.theme ? `\nTheme: ${pz.theme}` : ""}`,
-      stats?.currentStreak || 0
+      stats?.currentStreak || 0,
     );
-    const r = await shareOrCopy(text);
-    setShareMsg(
-      r === "copied" ? "Copied!" : r === "shared" ? "Shared!" : ""
-    );
-    if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
 
   const highlightedCells = new Set<string>();
@@ -317,11 +271,6 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
         gap: 20,
       }}
     >
-      {pz.theme && (
-        <div className="serif" style={{ fontSize: 16, fontStyle: "italic", color: "var(--teal)", textAlign: "center" }}>
-          Theme: {pz.theme}
-        </div>
-      )}
       <div
         className="typewriter"
         style={{
@@ -342,211 +291,32 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
           alignItems: "flex-start",
         }}
       >
-        {/* Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${size}, ${cellSize}px)`,
-            gridTemplateRows: `repeat(${size}, ${cellSize}px)`,
-            gap: 0,
-            border: "3px solid var(--ink)",
-          }}
-        >
-          {Array.from({ length: size }).map((_, r) =>
-            Array.from({ length: size }).map((_, c) => {
-              if (isBlack(r, c)) {
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    style={{
-                      width: cellSize,
-                      height: cellSize,
-                      background: "var(--ink)",
-                      border: "1px solid var(--ink)",
-                    }}
-                  />
-                );
-              }
+        <CrosswordGrid
+          size={size}
+          answer={answer}
+          board={board}
+          numbers={numbers}
+          selected={selected}
+          highlightedCells={highlightedCells}
+          gameOver={gameOver}
+          cellSize={cellSize}
+          letterSize={letterSize}
+          numSize={numSize}
+          inputRefs={inputRefs}
+          onCellClick={handleCellClick}
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+        />
 
-              const isSel = selected[0] === r && selected[1] === c;
-              const isHL = highlightedCells.has(`${r},${c}`);
-              const isCorrect =
-                gameOver &&
-                board[r][c]?.toUpperCase() === answer[r][c];
-              const cellNum = numbers[r][c];
-
-              return (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => handleCellClick(r, c)}
-                  style={{
-                    width: cellSize,
-                    height: cellSize,
-                    position: "relative",
-                    background: isSel
-                      ? "rgba(42, 95, 214, 0.2)"
-                      : isHL
-                        ? "rgba(42, 95, 214, 0.08)"
-                        : isCorrect
-                          ? "rgba(42, 95, 214, 0.06)"
-                          : "var(--paper-light)",
-                    border: "1px solid var(--ink-faded)",
-                    cursor: "pointer",
-                  }}
-                >
-                  {cellNum && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 1,
-                        left: 2,
-                        fontSize: numSize,
-                        fontWeight: 700,
-                        color: "var(--ink-faded)",
-                        fontFamily: "'Inter', system-ui",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {cellNum}
-                    </span>
-                  )}
-                  <input
-                    ref={(el) => {
-                      inputRefs.current[r][c] = el;
-                    }}
-                    value={board[r][c] || ""}
-                    onChange={(e) =>
-                      handleInput(r, c, e.target.value)
-                    }
-                    onKeyDown={(e) => handleKeyDown(e, r, c)}
-                    maxLength={2}
-                    disabled={gameOver}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      textAlign: "center",
-                      fontSize: letterSize,
-                      fontWeight: 700,
-                      fontFamily: "'Bungee', system-ui",
-                      color: "var(--ink)",
-                      background: "transparent",
-                      border: "none",
-                      outline: "none",
-                      textTransform: "uppercase",
-                      cursor: "pointer",
-                      padding: 0,
-                    }}
-                  />
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Clues */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            minWidth: 0,
-            maxWidth: isMobileView ? "100%" : 280,
-            width: isMobileView ? "100%" : undefined,
-            maxHeight: size * cellSize + 6,
-            overflowY: "auto",
-          }}
-        >
-          <div>
-            <div
-              className="typewriter"
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.2em",
-                color: "var(--ink-faded)",
-                marginBottom: 6,
-                textTransform: "uppercase",
-              }}
-            >
-              Across
-            </div>
-            {acrossClues.map(({ num, clue }) => (
-              <div
-                key={`a${num}`}
-                onClick={() => handleClueClick(num, "across")}
-                style={{
-                  fontSize: 12,
-                  padding: "2px 0",
-                  cursor: "pointer",
-                  color:
-                    direction === "across" && activeClueNum === num
-                      ? "var(--teal)"
-                      : "var(--ink-soft)",
-                  fontWeight:
-                    direction === "across" && activeClueNum === num
-                      ? 600
-                      : 400,
-                  lineHeight: 1.4,
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 700,
-                    marginRight: 4,
-                    fontSize: 10,
-                  }}
-                >
-                  {num}.
-                </span>
-                {clue}
-              </div>
-            ))}
-          </div>
-          <div>
-            <div
-              className="typewriter"
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.2em",
-                color: "var(--ink-faded)",
-                marginBottom: 6,
-                textTransform: "uppercase",
-              }}
-            >
-              Down
-            </div>
-            {downClues.map(({ num, clue }) => (
-              <div
-                key={`d${num}`}
-                onClick={() => handleClueClick(num, "down")}
-                style={{
-                  fontSize: 12,
-                  padding: "2px 0",
-                  cursor: "pointer",
-                  color:
-                    direction === "down" && activeClueNum === num
-                      ? "var(--teal)"
-                      : "var(--ink-soft)",
-                  fontWeight:
-                    direction === "down" && activeClueNum === num
-                      ? 600
-                      : 400,
-                  lineHeight: 1.4,
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 700,
-                    marginRight: 4,
-                    fontSize: 10,
-                  }}
-                >
-                  {num}.
-                </span>
-                {clue}
-              </div>
-            ))}
-          </div>
-        </div>
+        <CrosswordClues
+          acrossClues={acrossClues}
+          downClues={downClues}
+          direction={direction}
+          activeClueNum={activeClueNum}
+          maxHeight={size * cellSize + 6}
+          isMobileView={isMobileView}
+          onClueClick={handleClueClick}
+        />
       </div>
 
       {gameOver && (

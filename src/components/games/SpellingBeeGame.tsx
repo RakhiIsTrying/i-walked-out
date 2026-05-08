@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
-import { PANGRAM_SEEDS, DICTIONARY } from "@/lib/words";
+import { getDayNumber, getStats, recordWin, hasPlayedToday, markPlayedToday, GameStats } from "@/lib/games";
 import { saveGameResult } from "@/lib/archive";
+import { useShareResult } from "@/hooks/useShareResult";
+import HexButton from "./HexButton";
+import FoundWords from "./FoundWords";
 
 interface SpellingBeeProps {
   puzzle?: {
@@ -15,28 +17,12 @@ interface SpellingBeeProps {
   playDate?: string;
 }
 
-function getFallbackPuzzle() {
-  const day = getDayNumber();
-  for (let i = 0; i < PANGRAM_SEEDS.length; i++) {
-    const seed = PANGRAM_SEEDS[(day + i) % PANGRAM_SEEDS.length];
-    const letterSet = new Set(seed.letters);
-
-    const validWords = DICTIONARY.filter((word) => {
-      if (word.length < 4) return false;
-      if (!word.includes(seed.center)) return false;
-      for (const ch of word) {
-        if (!letterSet.has(ch)) return false;
-      }
-      return true;
-    });
-
-    if (validWords.length < 12 && i < PANGRAM_SEEDS.length - 1) continue;
-
-    const outer = seed.letters.filter((l) => l !== seed.center);
-    const maxScore = validWords.reduce((sum, w) => sum + scoreWord(w, letterSet), 0);
-    return { center: seed.center, outer, validWords: new Set(validWords), maxScore, letterSet };
-  }
-  throw new Error("unreachable");
+interface ParsedPuzzle {
+  center: string;
+  outer: string[];
+  validWords: Set<string>;
+  maxScore: number;
+  letterSet: Set<string>;
 }
 
 function scoreWord(word: string, allLetters: Set<string>): number {
@@ -79,44 +65,36 @@ function getSaveKey(playDate?: string): string {
 }
 
 export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: SpellingBeeProps) {
-  const [puzzle, setPuzzle] = useState<ReturnType<typeof getFallbackPuzzle> | null>(null);
+  const [puzzle, setPuzzle] = useState<ParsedPuzzle | null>(null);
   const [found, setFound] = useState<string[]>([]);
   const [current, setCurrent] = useState("");
   const [score, setScore] = useState(0);
   const [message, setMessage] = useState("");
   const [msgType, setMsgType] = useState<"good" | "bad" | "">("");
   const [stats, setStats] = useState<GameStats | null>(null);
-  const [shareMsg, setShareMsg] = useState("");
   const [checking, setChecking] = useState(false);
   const submitRef = useRef(false);
   const mobileInputRef = useRef<HTMLInputElement>(null);
 
   const isToday = !playDate || playDate === new Date().toISOString().split("T")[0];
+  const { shareMsg, share } = useShareResult();
 
   useEffect(() => {
-    let p: ReturnType<typeof getFallbackPuzzle>;
-    if (puzzleProp) {
-      const letterSet = new Set([puzzleProp.center, ...puzzleProp.outer]);
-      p = {
-        center: puzzleProp.center,
-        outer: puzzleProp.outer,
-        validWords: new Set(puzzleProp.validWords),
-        maxScore: puzzleProp.maxScore,
-        letterSet,
-      };
-    } else {
-      p = getFallbackPuzzle();
-    }
-    setPuzzle(p);
+    if (!puzzleProp) return;
+    const letterSet = new Set([puzzleProp.center, ...puzzleProp.outer]);
+    setPuzzle({
+      center: puzzleProp.center,
+      outer: puzzleProp.outer,
+      validWords: new Set(puzzleProp.validWords),
+      maxScore: puzzleProp.maxScore,
+      letterSet,
+    });
 
     const saved = localStorage.getItem(getSaveKey(playDate));
     if (saved) {
       try {
         const { f, s } = JSON.parse(saved);
-        if (Array.isArray(f)) {
-          setFound(f);
-          setScore(s || 0);
-        }
+        if (Array.isArray(f)) { setFound(f); setScore(s || 0); }
       } catch {}
     }
     setStats(getStats("spelling"));
@@ -128,7 +106,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     setTimeout(() => { setMessage(""); setMsgType(""); }, 1500);
   }
 
-  function acceptWord(word: string, pz: NonNullable<typeof puzzle>) {
+  function acceptWord(word: string, pz: ParsedPuzzle) {
     const pts = scoreWord(word, pz.letterSet);
     const isPangram = new Set(word).size === pz.letterSet.size && [...pz.letterSet].every((l) => word.includes(l));
     const newFound = [...found, word];
@@ -137,16 +115,13 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     setScore(newScore);
 
     flash(isPangram ? `PANGRAM! +${pts}` : `+${pts}`, "good");
-
     localStorage.setItem(getSaveKey(playDate), JSON.stringify({ f: newFound, s: newScore }));
 
     if (getRank(newScore, pz.maxScore) === "Genius" && (!isToday || !hasPlayedToday("spelling"))) {
       if (isToday) markPlayedToday("spelling");
       setStats(recordWin("spelling"));
       saveGameResult("spelling", true, newScore, {
-        words: newFound,
-        rank: "Genius",
-        maxScore: pz.maxScore,
+        words: newFound, rank: "Genius", maxScore: pz.maxScore,
       }, playDate);
     }
   }
@@ -182,8 +157,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
 
   function shuffle() {
     if (!puzzle) return;
-    const shuffled = [...puzzle.outer].sort(() => Math.random() - 0.5);
-    setPuzzle({ ...puzzle, outer: shuffled });
+    setPuzzle({ ...puzzle, outer: [...puzzle.outer].sort(() => Math.random() - 0.5) });
   }
 
   const submitRefFn = useRef(submit);
@@ -202,14 +176,11 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
 
   async function handleShare() {
     if (!puzzle) return;
-    const text = buildShareText(
+    await share(
       `Spelling Bee #${getDayNumber()}`,
       `${score} pts · ${found.length} words · ${getRank(score, puzzle.maxScore)}`,
-      stats?.currentStreak || 0
+      stats?.currentStreak || 0,
     );
-    const r = await shareOrCopy(text);
-    setShareMsg(r === "copied" ? "Copied!" : r === "shared" ? "Shared!" : "");
-    if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
 
   function focusMobileInput() {
@@ -224,12 +195,7 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
       <input
         ref={mobileInputRef}
-        type="text"
-        inputMode="none"
-        autoComplete="off"
-        autoCapitalize="none"
-        autoCorrect="off"
-        spellCheck={false}
+        type="text" inputMode="none" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
         aria-label="Type letters"
         style={{ position: "absolute", opacity: 0, height: 1, width: 1, pointerEvents: "none" }}
         onKeyDown={(e) => {
@@ -246,7 +212,6 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         }}
       />
 
-      {/* Score / Rank */}
       <div style={{ textAlign: "center" }}>
         <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)", textTransform: "uppercase" }}>
           {rank} · {score} pts · {found.length} words
@@ -256,21 +221,16 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         </div>
       </div>
 
-      {/* Message */}
       {message && (
-        <div
-          className="typewriter pop-in"
-          style={{
-            fontSize: 13, letterSpacing: "0.1em",
-            color: msgType === "good" ? "var(--teal)" : "var(--rose)",
-            textTransform: "uppercase",
-          }}
-        >
+        <div className="typewriter pop-in" style={{
+          fontSize: 13, letterSpacing: "0.1em",
+          color: msgType === "good" ? "var(--teal)" : "var(--rose)",
+          textTransform: "uppercase",
+        }}>
           {message}
         </div>
       )}
 
-      {/* Current word */}
       <div
         onClick={focusMobileInput}
         style={{
@@ -287,7 +247,6 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         )}
       </div>
 
-      {/* Hexagon layout */}
       <div onClick={focusMobileInput} style={{ position: "relative", width: 200, height: 200, margin: "8px 0" }}>
         <HexButton letter={puzzle.center} isCenter onClick={() => addLetter(puzzle.center)} x={75} y={75} />
         {puzzle.outer.map((l, i) => {
@@ -298,82 +257,21 @@ export default function SpellingBeeGame({ puzzle: puzzleProp, playDate }: Spelli
         })}
       </div>
 
-      {/* Controls */}
       <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => setCurrent((p) => p.slice(0, -1))} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>
-          ⌫
-        </button>
-        <button onClick={shuffle} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>
-          ↻
-        </button>
+        <button onClick={() => setCurrent((p) => p.slice(0, -1))} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>⌫</button>
+        <button onClick={shuffle} className="btn-ghost" style={{ fontSize: 13, padding: "8px 14px" }}>↻</button>
         <button onClick={() => submitRefFn.current()} disabled={checking} className="btn-paper" style={{ fontSize: 13, padding: "8px 18px" }}>
           {checking ? "..." : "enter"}
         </button>
       </div>
 
-      {/* Found words */}
-      {found.length > 0 && (
-        <div style={{
-          maxWidth: 360, width: "100%",
-          borderTop: "1.5px dashed var(--ink-faded)", paddingTop: 12, marginTop: 4,
-        }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-            {found.map((w) => {
-              const isPangram = new Set(w).size === puzzle.letterSet.size;
-              return (
-                <span
-                  key={w}
-                  className="typewriter"
-                  style={{
-                    fontSize: 12, padding: "4px 10px",
-                    background: isPangram ? "var(--butter)" : "var(--paper-deep)",
-                    border: isPangram ? "2px solid var(--ink)" : "1px solid var(--ink-faded)",
-                    borderRadius: 2, fontWeight: isPangram ? 700 : 400,
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  {w.toUpperCase()}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <FoundWords words={found} allLetters={puzzle.letterSet} />
 
-      {/* Share */}
       {found.length > 0 && (
         <button onClick={handleShare} className="btn-ghost" style={{ fontSize: 12, padding: "6px 14px", marginTop: 4 }}>
           {shareMsg || "share progress"}
         </button>
       )}
     </div>
-  );
-}
-
-function HexButton({ letter, isCenter, onClick, x, y }: { letter: string; isCenter: boolean; onClick: () => void; x: number; y: number }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        position: "absolute",
-        left: x, top: y,
-        width: 50, height: 50,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 22, fontWeight: 700,
-        fontFamily: "'Bungee', system-ui",
-        color: isCenter ? "#fff" : "var(--ink)",
-        background: isCenter ? "var(--rose)" : "var(--paper-deep)",
-        border: `3px solid ${isCenter ? "var(--rose)" : "var(--ink)"}`,
-        borderRadius: "50%",
-        cursor: "pointer",
-        transition: "transform 0.15s",
-        textTransform: "uppercase",
-        zIndex: isCenter ? 2 : 1,
-      }}
-      onMouseEnter={(e) => { (e.target as HTMLElement).style.transform = "scale(1.1)"; }}
-      onMouseLeave={(e) => { (e.target as HTMLElement).style.transform = "scale(1)"; }}
-    >
-      {letter.toUpperCase()}
-    </button>
   );
 }

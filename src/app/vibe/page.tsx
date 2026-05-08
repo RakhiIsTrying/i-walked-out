@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { VibeResult } from "@/lib/types";
 import BucketListView from "@/components/vibe/BucketListView";
+import VibeResultBoard from "@/components/vibe/VibeResultBoard";
+import VibeHistory from "@/components/vibe/VibeHistory";
 
 interface BucketItem {
   id: string;
@@ -24,19 +26,6 @@ const vibeStarters = [
   "dancing alone in the kitchen",
   "the calm before quitting your job",
 ];
-
-const cardKinds: Record<string, { label: string; emoji: string; accent: string }> = {
-  place: { label: "go to", emoji: "📍", accent: "var(--rose)" },
-  movie: { label: "watch", emoji: "🎬", accent: "var(--teal)" },
-  tv_show: { label: "binge", emoji: "📺", accent: "var(--plum)" },
-  food: { label: "eat", emoji: "🍜", accent: "var(--butter)" },
-  game: { label: "play", emoji: "🎮", accent: "var(--rose)" },
-  song: { label: "listen", emoji: "🎵", accent: "var(--teal)" },
-  music_album: { label: "album", emoji: "💿", accent: "var(--plum)" },
-  youtube: { label: "youtube", emoji: "▶️", accent: "var(--butter)" },
-};
-
-const resultKeys = ["place", "movie", "tv_show", "food", "game", "song", "music_album", "youtube"] as const;
 
 export default function VibePage() {
   const [query, setQuery] = useState("");
@@ -61,22 +50,18 @@ export default function VibePage() {
     }
   }, []);
 
-  useEffect(() => {
-    loadBucket();
-  }, [loadBucket]);
+  useEffect(() => { loadBucket(); }, [loadBucket]);
 
   async function search(vibeQuery?: string) {
     const q = vibeQuery || query;
     if (!q.trim()) return;
     setLoading(true);
     setResult(null);
-
     const res = await fetch("/api/vibe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: q }),
     });
-
     if (res.ok) {
       const data = await res.json();
       setResult(data);
@@ -101,17 +86,11 @@ export default function VibePage() {
   async function addToBucket(key: string) {
     if (!result || !isLoggedIn) return;
     setAddingKey(key);
-
     const res = await fetch("/api/vibe/bucketlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        vibe_query: result.query,
-        category: key,
-        item_text: result[key as keyof VibeResult],
-      }),
+      body: JSON.stringify({ vibe_query: result.query, category: key, item_text: result[key as keyof VibeResult] }),
     });
-
     if (res.ok) {
       const item = await res.json();
       setBucket((prev) => [item, ...prev]);
@@ -126,13 +105,10 @@ export default function VibePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, completed: !completed }),
     });
-
     if (res.ok) {
       setBucket((prev) =>
         prev.map((item) =>
-          item.id === id
-            ? { ...item, completed: !completed, completed_at: !completed ? new Date().toISOString() : null }
-            : item
+          item.id === id ? { ...item, completed: !completed, completed_at: !completed ? new Date().toISOString() : null } : item
         )
       );
     }
@@ -145,10 +121,7 @@ export default function VibePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-
-    if (res.ok) {
-      setBucket((prev) => prev.filter((item) => item.id !== id));
-    }
+    if (res.ok) setBucket((prev) => prev.filter((item) => item.id !== id));
   }
 
   function isInBucket(key: string, text: string) {
@@ -181,15 +154,11 @@ export default function VibePage() {
               onClick={() => setShowBucket(!showBucket)}
               className="typewriter"
               style={{
-                fontSize: 12,
-                letterSpacing: "0.15em",
+                fontSize: 12, letterSpacing: "0.15em",
                 color: showBucket ? "var(--paper-light)" : "var(--teal)",
                 background: showBucket ? "var(--teal)" : "transparent",
-                border: "1.5px solid var(--teal)",
-                borderRadius: 20,
-                padding: "8px 20px",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
+                border: "1.5px solid var(--teal)", borderRadius: 20,
+                padding: "8px 20px", cursor: "pointer", transition: "all 0.2s ease",
               }}
             >
               {showBucket ? "close bucket list" : `my bucket list (${pendingCount} pending · ${doneCount} done)`}
@@ -197,48 +166,23 @@ export default function VibePage() {
           </div>
         )}
 
-        {showBucket && (
-          <BucketListView
-            bucket={bucket}
-            onToggle={toggleComplete}
-            onRemove={removeFromBucket}
-            disabled={bucketLoading}
-          />
-        )}
+        {showBucket && <BucketListView bucket={bucket} onToggle={toggleComplete} onRemove={removeFromBucket} disabled={bucketLoading} />}
 
         {/* Input area */}
-        <div
-          className="paper"
-          style={{
-            padding: "26px 28px",
-            background: "#faf3df",
-            margin: "0 auto 30px",
-            maxWidth: 760,
-            position: "relative",
-          }}
-        >
+        <div className="paper" style={{ padding: "26px 28px", background: "#faf3df", margin: "0 auto 30px", maxWidth: 760, position: "relative" }}>
           <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-faded)", marginBottom: 12 }}>
             how are you, really?
           </div>
-          <form
-            onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }}
-            style={{ display: "flex", gap: 10, alignItems: "stretch" }}
-          >
+          <form onSubmit={(e) => { e.preventDefault(); setActivePreset(null); search(); }} style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="like a sunday afternoon that won't end..."
               className="hand"
               style={{
-                flex: 1,
-                background: "var(--paper-light)",
-                border: "1px dashed var(--ink-faded)",
-                padding: "14px 16px",
-                fontSize: 24,
-                color: "var(--ink-soft)",
-                fontFamily: "'Caveat', cursive",
-                outline: "none",
-                borderRadius: 2,
+                flex: 1, background: "var(--paper-light)", border: "1px dashed var(--ink-faded)",
+                padding: "14px 16px", fontSize: 24, color: "var(--ink-soft)",
+                fontFamily: "'Caveat', cursive", outline: "none", borderRadius: 2,
               }}
             />
             <button className="btn-paper" type="submit" disabled={loading || !query.trim()}>
@@ -248,185 +192,48 @@ export default function VibePage() {
           </form>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14, alignItems: "center" }}>
             <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.15em", color: "var(--ink-faded)" }}>or borrow a vibe →</span>
-            <button
-              type="button"
-              onClick={randomVibe}
-              disabled={loading}
-              className="typewriter"
-              style={{
-                fontSize: 11, color: "var(--teal)", background: "none",
-                border: "1px dashed var(--teal)", borderRadius: 2,
-                padding: "4px 10px", cursor: "pointer", marginRight: 4,
-              }}
-            >
+            <button type="button" onClick={randomVibe} disabled={loading} className="typewriter"
+              style={{ fontSize: 11, color: "var(--teal)", background: "none", border: "1px dashed var(--teal)", borderRadius: 2, padding: "4px 10px", cursor: "pointer", marginRight: 4 }}>
               ↻ random
             </button>
             {vibeStarters.map((p) => (
-              <button
-                key={p}
-                onClick={() => pickPreset(p)}
-                disabled={loading}
-                className="hand"
+              <button key={p} onClick={() => pickPreset(p)} disabled={loading} className="hand"
                 style={{
                   padding: "4px 12px",
                   background: activePreset === p ? "var(--ink)" : "transparent",
                   color: activePreset === p ? "var(--paper-light)" : "var(--ink)",
                   border: `1.5px solid ${activePreset === p ? "var(--ink)" : "var(--ink-faded)"}`,
-                  fontSize: 18,
-                  cursor: "pointer",
-                  borderRadius: 14,
-                  fontFamily: "'Caveat', cursive",
-                  transition: "all 0.2s ease",
+                  fontSize: 18, cursor: "pointer", borderRadius: 14,
+                  fontFamily: "'Caveat', cursive", transition: "all 0.2s ease",
                   opacity: loading ? 0.5 : 1,
-                }}
-              >
+                }}>
                 {p}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Loading */}
         {loading && (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
             <p className="hand" style={{ fontSize: 26, color: "var(--ink-faded)" }}>feeling...</p>
           </div>
         )}
 
-        {/* Results */}
         {result && !loading && (
-          <div
-            className="page-in"
-            style={{
-              background: "var(--paper-deep)",
-              border: "1px solid rgba(106, 112, 140, 0.15)",
-              borderRadius: 4,
-              padding: "36px 28px 40px",
-              marginBottom: 48,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-              <div>
-                <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)", display: "block", marginBottom: 4 }}>
-                  a moodboard for —
-                </span>
-                <h2 className="serif" style={{ fontSize: 38, fontStyle: "italic", margin: 0, fontWeight: 400, marginTop: 4 }}>
-                  &ldquo;{result.query}&rdquo;
-                </h2>
-              </div>
-              <button className="btn-ghost" onClick={randomVibe} style={{ padding: "10px 16px", fontSize: 14 }}>
-                ↻ another evening
-              </button>
-            </div>
-
-            {result.vibe_summary && (
-              <p className="hand" style={{ fontSize: 20, color: "var(--ink-soft)", marginBottom: 28, lineHeight: 1.4, maxWidth: 600 }}>
-                {result.vibe_summary}
-              </p>
-            )}
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24 }}>
-              {resultKeys.map((key, i) => {
-                const config = cardKinds[key];
-                const value = result[key];
-                if (!value) return null;
-
-                const alreadyAdded = isInBucket(key, value);
-
-                return (
-                  <div
-                    key={key}
-                    className="paper lift pop-in"
-                    style={{
-                      padding: "0",
-                      position: "relative",
-                      transform: "none",
-                      animationDelay: `${i * 0.08}s`,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div style={{ height: 4, background: config.accent }} />
-                    <div style={{ padding: "18px 22px 24px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                      <div className="typewriter" style={{ fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--ink-faded)", display: "flex", alignItems: "center", gap: 6 }}>
-                        <span>{config.emoji}</span> {config.label}
-                      </div>
-                      {isLoggedIn && (
-                        <button
-                          onClick={() => !alreadyAdded && addToBucket(key)}
-                          disabled={addingKey === key || alreadyAdded}
-                          title={alreadyAdded ? "Already in bucket list" : "Add to bucket list"}
-                          style={{
-                            background: "none",
-                            border: alreadyAdded ? "1.5px solid var(--teal)" : "1.5px dashed var(--ink-faded)",
-                            borderRadius: "50%",
-                            width: 28,
-                            height: 28,
-                            cursor: alreadyAdded ? "default" : "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 16,
-                            color: alreadyAdded ? "var(--teal)" : "var(--ink-faded)",
-                            transition: "all 0.2s ease",
-                            opacity: addingKey === key ? 0.5 : 1,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {alreadyAdded ? "✓" : "+"}
-                        </button>
-                      )}
-                    </div>
-                    <h4 className="serif" style={{ fontSize: 24, fontWeight: 500, margin: 0, lineHeight: 1.2 }}>
-                      {value}
-                    </h4>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ marginTop: 28, textAlign: "center" }}>
-              <p className="hand" style={{ fontSize: 22, color: "var(--ink-soft)", margin: 0 }}>
-                you don&apos;t have to do all of them. one is enough.
-              </p>
-            </div>
-          </div>
+          <VibeResultBoard
+            result={result}
+            isLoggedIn={isLoggedIn}
+            addingKey={addingKey}
+            onAddToBucket={addToBucket}
+            onAnotherEvening={randomVibe}
+            isInBucket={isInBucket}
+          />
         )}
 
-        {/* Past Vibes */}
-        {history.length > 1 && (
-          <div style={{ marginTop: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-              <span className="typewriter" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-faded)" }}>
-                past vibes
-              </span>
-              <div style={{ flex: 1, height: 1, borderTop: "1.5px dashed var(--ink-faded)" }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {history.slice(1).map((h, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setResult(h); setQuery(h.query); setActivePreset(null); }}
-                  className="hand"
-                  style={{
-                    textAlign: "left", background: "none", border: "none",
-                    cursor: "pointer", padding: "8px 12px",
-                    borderRadius: 3, fontSize: 19, color: "var(--ink-soft)",
-                    transition: "background 0.2s ease",
-                  }}
-                >
-                  &ldquo;{h.query}&rdquo;
-                  {h.vibe_summary && (
-                    <span style={{ marginLeft: 10, fontSize: 14, color: "var(--ink-faded)", fontFamily: "'Inter', system-ui, sans-serif" }}>
-                      {h.vibe_summary.slice(0, 60)}{h.vibe_summary.length > 60 ? "..." : ""}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <VibeHistory
+          history={history}
+          onSelect={(h) => { setResult(h); setQuery(h.query); setActivePreset(null); }}
+        />
       </div>
     </div>
   );

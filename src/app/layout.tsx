@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
+import FeedbackButton from "@/components/FeedbackButton";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <Navbar user={user ? { email: user.email || "" } : null} />
         <main className="flex-1">{children}</main>
+        <FeedbackButton />
       </body>
     </html>
   );

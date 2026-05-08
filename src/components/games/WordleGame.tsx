@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getDayNumber, getStats, recordWin, recordLoss, buildShareText, shareOrCopy, GameStats } from "@/lib/games";
+import { getDayNumber, getStats, recordWin, recordLoss, GameStats } from "@/lib/games";
 import { WORDLE_ANSWERS } from "@/lib/words";
 import { saveGameResult } from "@/lib/archive";
-
-type CellState = "correct" | "present" | "absent" | "empty";
+import { useShareResult } from "@/hooks/useShareResult";
+import WordleKeyboard from "./WordleKeyboard";
+import WordleGrid, { CellState } from "./WordleGrid";
 
 const ROWS = 6;
 const COLS = 5;
@@ -88,12 +89,6 @@ function evalGuess(guess: string, answer: string): CellState[] {
   return result;
 }
 
-const KEYBOARD_ROWS = [
-  ["Q","W","E","R","T","Y","U","I","O","P"],
-  ["A","S","D","F","G","H","J","K","L"],
-  ["ENTER","Z","X","C","V","B","N","M","⌫"],
-];
-
 const wordCache = new Map<string, boolean>();
 
 async function checkWord(word: string): Promise<boolean> {
@@ -129,9 +124,10 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   const [shake, setShake] = useState(false);
   const [message, setMessage] = useState("");
   const [stats, setStats] = useState<GameStats | null>(null);
-  const [shareMsg, setShareMsg] = useState("");
   const [roundNum, setRoundNum] = useState(1);
   const [playCount, setPlayCount] = useState(0);
+
+  const { shareMsg, share } = useShareResult();
 
   useEffect(() => {
     setStats(getStats("wordle"));
@@ -192,30 +188,12 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       addPlayedWord(answer);
       const newStats = isWin ? recordWin("wordle") : recordLoss("wordle");
       setStats(newStats);
-      const newCount = incrementRandomPlayCount();
-      setPlayCount(newCount);
+      incrementRandomPlayCount();
+      setPlayCount(getRandomPlayCount());
       saveGameResult("wordle", isWin, isWin ? newGuesses.length : 0, {
-        answer,
-        guesses: newGuesses,
-        attempts: newGuesses.length,
+        answer, guesses: newGuesses, attempts: newGuesses.length,
       }, playDate);
     }
-  }
-
-  const canPlayAgain = playCount < DAILY_PLAY_LIMIT;
-  const limitReached = playCount >= DAILY_PLAY_LIMIT && gameOver;
-
-  function playAgain() {
-    if (!canPlayAgain) return;
-    setAnswer(pickNewWord());
-    setGuesses([]);
-    setStates([]);
-    setCurrent("");
-    setGameOver(false);
-    setWon(false);
-    setMessage("");
-    setShareMsg("");
-    setRoundNum((n) => n + 1);
   }
 
   function onKey(key: string) {
@@ -247,20 +225,12 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
 
   async function handleShare() {
     const emoji = buildEmoji();
-    const text = buildShareText(
+    await share(
       `Wordle #${getDayNumber()}`,
       `${won ? guesses.length : "X"}/${ROWS}\n${emoji}`,
-      stats?.currentStreak || 0
+      stats?.currentStreak || 0,
     );
-    const r = await shareOrCopy(text);
-    setShareMsg(r === "copied" ? "Copied!" : r === "shared" ? "Shared!" : "");
-    if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
-
-  const cellBg = (s: CellState) =>
-    s === "correct" ? "var(--teal)" : s === "present" ? "var(--butter)" : s === "absent" ? "var(--ink-faded)" : "transparent";
-
-  const cellColor = (s: CellState) => (s === "empty" ? "var(--ink)" : "#fff");
 
   const kc = keyColors();
   const mobileInputRef = useRef<HTMLInputElement>(null);
@@ -328,83 +298,21 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
         </div>
       )}
 
-      {/* Grid */}
-      <div key={roundNum} onClick={focusMobileInput} style={{ display: "flex", flexDirection: "column", gap: isMobile ? 4 : 6, cursor: "pointer", maxWidth: "100%" }}>
-        {Array.from({ length: ROWS }).map((_, ri) => {
-          const g = guesses[ri];
-          const s = states[ri];
-          const isCurrent = ri === guesses.length && !gameOver;
-          const cellPx = isMobile ? 44 : 52;
-          return (
-            <div
-              key={ri}
-              style={{ display: "flex", gap: isMobile ? 4 : 6, justifyContent: "center", animation: isCurrent && shake ? "wiggle 0.3s" : undefined }}
-            >
-              {Array.from({ length: COLS }).map((_, ci) => {
-                const letter = g ? g[ci] : isCurrent ? current[ci] || "" : "";
-                const state: CellState = s ? s[ci] : "empty";
-                return (
-                  <div
-                    key={ci}
-                    className="pop-in"
-                    style={{
-                      width: cellPx, height: cellPx,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      background: cellBg(state),
-                      border: state === "empty" ? "2px solid var(--ink-faded)" : "2px solid transparent",
-                      fontSize: isMobile ? 20 : 24, fontWeight: 700,
-                      fontFamily: "'Bungee', system-ui",
-                      color: cellColor(state),
-                      transition: "all 0.3s",
-                      animationDelay: s ? `${ci * 0.1}s` : "0s",
-                    }}
-                  >
-                    {letter}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
+      <WordleGrid
+        guesses={guesses}
+        states={states}
+        current={current}
+        shake={shake}
+        gameOver={gameOver}
+        isMobile={isMobile}
+        rows={ROWS}
+        cols={COLS}
+        onClick={focusMobileInput}
+        roundNum={roundNum}
+      />
 
-      {/* Keyboard */}
-      <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 4 : 6, marginTop: 8, width: "100%", maxWidth: 484 }}>
-        {KEYBOARD_ROWS.map((row, ri) => (
-          <div key={ri} style={{ display: "flex", gap: isMobile ? 3 : 4, justifyContent: "center", width: "100%" }}>
-            {row.map((key) => {
-              const state = kc[key];
-              const isWide = key === "ENTER" || key === "⌫";
-              return (
-                <button
-                  key={key}
-                  onClick={() => onKey(key)}
-                  className="typewriter"
-                  style={{
-                    flex: isWide ? 1.5 : 1,
-                    minWidth: 0,
-                    height: isMobile ? 40 : 44,
-                    padding: "0 2px",
-                    fontSize: isWide ? (isMobile ? 10 : 11) : (isMobile ? 13 : 14),
-                    fontWeight: 700,
-                    background: state === "correct" ? "var(--teal)" : state === "present" ? "var(--butter)" : state === "absent" ? "var(--ink-faded)" : "var(--paper-deep)",
-                    color: state && state !== "empty" ? "#fff" : "var(--ink)",
-                    border: isMobile ? "1.5px solid var(--ink)" : "2px solid var(--ink)",
-                    cursor: "pointer",
-                    borderRadius: 3,
-                    transition: "all 0.2s",
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  {key}
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      <WordleKeyboard keyColors={kc} isMobile={isMobile} onKey={onKey} />
 
-      {/* End state */}
       {gameOver && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
           <p className="serif" style={{ fontSize: 22, fontStyle: "italic", color: won ? "var(--teal)" : "var(--rose)" }}>

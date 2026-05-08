@@ -1,25 +1,6 @@
-import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
-import { getDailyRng, seededShuffle } from "@/lib/games";
 import { TangoPuzzle } from "./types";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractJSON(text: string): any {
-  const start = text.indexOf("{");
-  if (start < 0) throw new Error("no JSON found");
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
-    if (inStr) continue;
-    if (ch === "{") depth++;
-    else if (ch === "}") { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
-  }
-  throw new Error("unbalanced JSON");
-}
+import { getDailyRng, seededShuffle } from "@/lib/games";
+import { extractJSON, cleanAIResponse, aiCall } from "./ai-utils";
 
 const SIZE = 6;
 
@@ -49,19 +30,16 @@ function isValidTango(grid: number[][]): boolean {
 }
 
 async function aiGenerateTango(): Promise<number[][]> {
-  const ai = getGamesAI();
   for (let retry = 0; retry < 3; retry++) {
     try {
-      const res = await (ai.chat.completions.create as Function)({
-        model: GAMES_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: "You are a logic puzzle generator. Reply with ONLY valid JSON. No markdown fences, no explanation.",
-          },
-          {
-            role: "user",
-            content: `Generate a valid 6x6 Tango puzzle solution grid. Rules:
+      const res = await aiCall([
+        {
+          role: "system",
+          content: "You are a logic puzzle generator. Reply with ONLY valid JSON. No markdown fences, no explanation.",
+        },
+        {
+          role: "user",
+          content: `Generate a valid 6x6 Tango puzzle solution grid. Rules:
 - Each cell is either 1 (sun) or 2 (moon)
 - Each row must have exactly 3 suns and 3 moons
 - Each column must have exactly 3 suns and 3 moons
@@ -71,16 +49,10 @@ Return ONLY this JSON (no markdown fences):
 {"grid":[[1,2,1,2,1,2],[2,1,2,1,2,1],[1,2,1,2,1,2],[2,1,2,1,2,1],[1,2,1,2,1,2],[2,1,2,1,2,1]]}
 
 Replace the example values with a valid solution. Each row must have exactly 6 values. 6 rows total.`,
-          },
-        ],
-        max_tokens: 300,
-        temperature: 0.8 + retry * 0.2,
-        chat_template_kwargs: { thinking: false },
-      });
+        },
+      ], 300, 0.8 + retry * 0.2);
 
-      let text = res.choices[0]?.message?.content?.trim() ?? "";
-      text = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-      text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+      const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
 
       if (!Array.isArray(parsed.grid) || parsed.grid.length !== SIZE) throw new Error("bad grid size");
@@ -90,12 +62,7 @@ Replace the example values with a valid solution. Each row must have exactly 6 v
 
       if (isValidTango(grid)) return grid;
       console.error("[tango] AI grid failed validation, retrying");
-    } catch (e: unknown) {
-      const status = (e as { status?: number })?.status;
-      if (status === 429) {
-        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
-        continue;
-      }
+    } catch (e) {
       console.error("[tango] attempt failed:", e instanceof Error ? e.message : String(e));
     }
   }

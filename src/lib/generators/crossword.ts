@@ -1,50 +1,7 @@
-import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
 import { CrosswordPuzzle, CrosswordVariant } from "./types";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { extractJSON, cleanAIResponse, aiCall } from "./ai-utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractJSON(text: string): any {
-  const start = text.indexOf("{");
-  if (start < 0) throw new Error("no JSON found");
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
-    if (inStr) continue;
-    if (ch === "{") depth++;
-    else if (ch === "}") { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
-  }
-  throw new Error("unbalanced JSON");
-}
-
-async function aiCall(messages: ChatCompletionMessageParam[], maxTokens: number, temperature: number) {
-  const ai = getGamesAI();
-  for (let retry = 0; retry < 2; retry++) {
-    try {
-      return await (ai.chat.completions.create as Function)({
-        model: GAMES_MODEL,
-        messages,
-        max_tokens: maxTokens,
-        temperature,
-        chat_template_kwargs: { thinking: false },
-      });
-    } catch (e: unknown) {
-      const status = (e as { status?: number })?.status;
-      if (status === 429) {
-        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
-        continue;
-      }
-      throw e;
-    }
-  }
-  throw new Error("Rate limited after retries");
-}
-
-// Standard 15x15 crossword template
 const CW_TEMPLATE = [
   "....#.....#....",
   "....#.....#....",
@@ -63,22 +20,8 @@ const CW_TEMPLATE = [
   "....#.....#....",
 ];
 
-const MINI_TEMPLATE = [
-  ".....",
-  ".....",
-  ".....",
-  ".....",
-  ".....",
-];
-
-const MIDI_TEMPLATE = [
-  "......",
-  "......",
-  "......",
-  "......",
-  "......",
-  "......",
-];
+const MINI_TEMPLATE = [".....", ".....", ".....", ".....", "....."];
+const MIDI_TEMPLATE = ["......", "......", "......", "......", "......", "......"];
 
 const VARIANT_CONFIG: Record<CrosswordVariant, { template: string[]; maxTokens: number }> = {
   mini: { template: MINI_TEMPLATE, maxTokens: 1500 },
@@ -100,9 +43,8 @@ export async function generateDailyTheme(dateStr?: string): Promise<string> {
       content: `Generate a creative, specific crossword puzzle theme for ${dateLabel}. Be inventive — don't just say "Food" or "Animals." Think of things like "Midnight Snacks", "Forgotten Inventions", "Carnival Rides", "Underwater Caves", "90s Nostalgia", "Kitchen Disasters", "Secret Passages". Make it fun and specific.`,
     },
   ], 30, 1.1);
-  let themeRaw = res.choices[0]?.message?.content?.trim() ?? "";
-  themeRaw = themeRaw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-  const theme = themeRaw.replace(/^["']|["']$/g, "");
+  const theme = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "")
+    .replace(/^["']|["']$/g, "");
   if (theme && theme.length > 1 && theme.length < 40) return theme;
   throw new Error("AI failed to generate a valid theme");
 }
@@ -180,7 +122,6 @@ Return ONLY this JSON (no markdown fences):
 Each row must be exactly 6 uppercase letters. 12 clues total.`;
   }
 
-  // Normal 15x15 crossword
   return `Fill this 15x15 crossword grid. Replace each "." with an uppercase letter. Keep all "#" as black squares. Every horizontal and vertical run of letters must be a valid common English word (min 3 letters). Theme: "${theme}" — words should relate to this theme.
 
 Template:
@@ -190,6 +131,27 @@ Return ONLY this JSON (no markdown fences):
 {"grid":["row1","row2","row3","row4","row5","row6","row7","row8","row9","row10","row11","row12","row13","row14","row15"],"acrossClues":["clue for each across word in order"],"downClues":["clue for each down word in order"]}
 
 Each row must be exactly 15 characters. Use # for black squares at the exact positions shown.`;
+}
+
+function validateAndFixGrid(parsed: { grid: string[] }, template: string[], size: number): string[] {
+  const rows: string[] = parsed.grid.map((r: string) => {
+    let s = r.toUpperCase().replace(/[^A-Z#]/g, "");
+    if (s.length > size) s = s.slice(0, size);
+    while (s.length < size) s += "X";
+    return s;
+  });
+  for (let i = 0; i < size; i++) {
+    const chars = rows[i].split("");
+    for (let j = 0; j < size; j++) {
+      if (template[i][j] === "#") {
+        chars[j] = "#";
+      } else if (!/[A-Z]/.test(chars[j])) {
+        chars[j] = "A";
+      }
+    }
+    rows[i] = chars.join("");
+  }
+  return rows;
 }
 
 export async function generateCrosswordVariant(
@@ -205,7 +167,7 @@ export async function generateCrosswordVariant(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
     try {
-      const res = await aiCall([
+      const messages: ChatCompletionMessageParam[] = [
         {
           role: "system",
           content: "You are a crossword puzzle constructor. Reply with ONLY valid JSON. No markdown fences, no explanation, no preamble.",
@@ -214,32 +176,14 @@ export async function generateCrosswordVariant(
           role: "user",
           content: buildPrompt(variant, templateStr, size, theme),
         },
-      ], maxTokens, 0.7 + attempt * 0.15);
-
-      let text = res.choices[0]?.message?.content?.trim() ?? "";
-      text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+      ];
+      const res = await aiCall(messages, maxTokens, 0.7 + attempt * 0.15);
+      const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
 
       if (!Array.isArray(parsed.grid) || parsed.grid.length !== size) throw new Error("bad grid");
 
-      const rows: string[] = parsed.grid.map((r: string) => {
-        let s = r.toUpperCase().replace(/[^A-Z#]/g, "");
-        if (s.length > size) s = s.slice(0, size);
-        while (s.length < size) s += "X";
-        return s;
-      });
-      for (let i = 0; i < size; i++) {
-        const chars = rows[i].split("");
-        for (let j = 0; j < size; j++) {
-          if (template[i][j] === "#") {
-            chars[j] = "#";
-          } else if (!/[A-Z]/.test(chars[j])) {
-            chars[j] = "A";
-          }
-        }
-        rows[i] = chars.join("");
-      }
-
+      const rows = validateAndFixGrid(parsed, template, size);
       const rawGrid = parseCrosswordGrid(rows);
       const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
 

@@ -4,25 +4,16 @@ import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { getStats, GameStats, buildShareText, shareOrCopy } from "@/lib/games";
 import { getArchive, ArchiveEntry } from "@/lib/archive";
-import { ChevronLeft, ChevronRight, Trophy, ScrollText } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ArchiveView from "@/components/games/ArchiveView";
 import LeaderboardView from "@/components/games/LeaderboardView";
+import GameSidebar, { GAMES, GameId } from "@/components/games/GameSidebar";
 
 const WordleGame = dynamic(() => import("@/components/games/WordleGame"), { ssr: false });
 const SudokuGame = dynamic(() => import("@/components/games/SudokuGame"), { ssr: false });
 const SpellingBeeGame = dynamic(() => import("@/components/games/SpellingBeeGame"), { ssr: false });
 const CrosswordGame = dynamic(() => import("@/components/games/CrosswordGame"), { ssr: false });
 const TangoGame = dynamic(() => import("@/components/games/TangoGame"), { ssr: false });
-
-const GAMES = [
-  { id: "wordle", label: "Wordle", emoji: "🟩", color: "var(--moss)" },
-  { id: "crossword", label: "Crossword", emoji: "✏️", color: "var(--butter)" },
-  { id: "sudoku", label: "Sudoku", emoji: "🔢", color: "var(--teal)" },
-  { id: "spelling", label: "Spelling Bee", emoji: "🐝", color: "var(--rose)" },
-  { id: "tango", label: "Tango", emoji: "☀️", color: "var(--plum)" },
-] as const;
-
-type GameId = (typeof GAMES)[number]["id"] | "archive" | "leaderboard";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Puzzles = Record<string, any>;
@@ -46,7 +37,7 @@ export default function GamesPage() {
   const [active, setActive] = useState<GameId>("wordle");
   const [allStats, setAllStats] = useState<Record<string, GameStats>>({});
   const [shareMsg, setShareMsg] = useState("");
-  const [crosswordVariant, setCrosswordVariant] = useState<"mini" | "midi" | "normal">("mini");
+  const crosswordVariant = "normal" as const;
   const [playDate, setPlayDate] = useState(todayStr);
   const [puzzles, setPuzzles] = useState<Puzzles | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,8 +106,6 @@ export default function GamesPage() {
     setShareMsg(r === "copied" ? "Copied!" : r === "shared" ? "Shared!" : "");
     if (r !== "failed") setTimeout(() => setShareMsg(""), 2000);
   }
-
-  const isGameActive = (id: string) => active === id;
 
   return (
     <div className="page-in" style={{ padding: "20px clamp(12px, 4vw, 48px) 40px", overflow: "hidden" }}>
@@ -188,104 +177,18 @@ export default function GamesPage() {
         {/* Two-column layout */}
         <div className="games-layout" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20, alignItems: "start" }}>
 
-          {/* Sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-
-            {/* Game cards */}
-            {GAMES.map((g) => {
-              const s = allStats[g.id];
-              const streak = s?.currentStreak || 0;
-              const won = s?.gamesWon || 0;
-              const selected = isGameActive(g.id);
-
-              return (
-                <button
-                  key={g.id}
-                  onClick={() => setActive(g.id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "14px 16px",
-                    background: selected ? "var(--ink)" : "var(--paper-light)",
-                    color: selected ? "var(--paper-light)" : "var(--ink)",
-                    border: "none",
-                    borderRadius: 3,
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.15s ease",
-                    boxShadow: selected
-                      ? "0 2px 8px rgba(26, 31, 58, 0.25)"
-                      : "0 1px 3px rgba(34, 30, 24, 0.08)",
-                  }}
-                >
-                  <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{g.emoji}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="serif" style={{ fontSize: 15, fontWeight: 500, marginBottom: 2 }}>
-                      {g.label}
-                    </div>
-                    <div className="typewriter" style={{ fontSize: 10, letterSpacing: "0.08em", opacity: 0.6 }}>
-                      {streak > 0 ? `${streak} day streak` : `${won} won`}
-                    </div>
-                  </div>
-                  {streak > 0 && (
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>🔥</span>
-                  )}
-                </button>
-              );
-            })}
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(106, 112, 140, 0.15)", margin: "4px 0" }} />
-
-            {/* Archive */}
-            <button
-              onClick={() => {
-                setActive("archive");
-                if (archive.length === 0) {
-                  setArchiveLoading(true);
-                  getArchive().then((a) => { setArchive(a); setArchiveLoading(false); });
-                }
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "12px 16px",
-                background: active === "archive" ? "var(--ink)" : "transparent",
-                color: active === "archive" ? "var(--paper-light)" : "var(--ink-soft)",
-                border: "none",
-                borderRadius: 3,
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "all 0.15s ease",
-              }}
-            >
-              <ScrollText size={18} style={{ flexShrink: 0, opacity: 0.6 }} />
-              <span className="serif" style={{ fontSize: 14 }}>Archive</span>
-            </button>
-
-            {/* Leaderboard */}
-            <button
-              onClick={() => setActive("leaderboard")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "12px 16px",
-                background: active === "leaderboard" ? "var(--ink)" : "transparent",
-                color: active === "leaderboard" ? "var(--paper-light)" : "var(--ink-soft)",
-                border: "none",
-                borderRadius: 3,
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "all 0.15s ease",
-              }}
-            >
-              <Trophy size={18} style={{ flexShrink: 0, opacity: 0.6 }} />
-              <span className="serif" style={{ fontSize: 14 }}>Leaderboard</span>
-            </button>
-          </div>
+          <GameSidebar
+            active={active}
+            allStats={allStats}
+            onSelect={setActive}
+            onArchiveClick={() => {
+              setActive("archive");
+              if (archive.length === 0) {
+                setArchiveLoading(true);
+                getArchive().then((a) => { setArchive(a); setArchiveLoading(false); });
+              }
+            }}
+          />
 
           {/* Main game area */}
           <div
@@ -322,35 +225,13 @@ export default function GamesPage() {
                 {active === "spelling" && <SpellingBeeGame puzzle={puzzles?.spelling} playDate={playDate} />}
                 {active === "crossword" && (
                   <>
-                    <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-                      {(["mini", "midi", "normal"] as const).map((v) => (
-                        <button
-                          key={v}
-                          onClick={() => setCrosswordVariant(v)}
-                          className="typewriter"
-                          style={{
-                            fontSize: 11,
-                            letterSpacing: "0.1em",
-                            padding: "6px 16px",
-                            background: crosswordVariant === v ? "var(--ink)" : "var(--paper-deep)",
-                            color: crosswordVariant === v ? "var(--paper-light)" : "var(--ink)",
-                            border: "1px solid var(--ink)",
-                            borderRadius: 2,
-                            cursor: "pointer",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          {v === "normal" ? "full" : v}
-                        </button>
-                      ))}
-                    </div>
+                    {puzzles?.crossword?.theme && (
+                      <div className="serif" style={{ fontSize: 18, fontStyle: "italic", color: "var(--teal)", textAlign: "center", marginBottom: 16 }}>
+                        Today&apos;s Theme: {puzzles.crossword.theme}
+                      </div>
+                    )}
                     <CrosswordGame
-                      key={crosswordVariant}
-                      puzzle={
-                        crosswordVariant === "mini" ? puzzles?.crosswordMini :
-                        crosswordVariant === "midi" ? puzzles?.crosswordMidi :
-                        puzzles?.crossword
-                      }
+                      puzzle={puzzles?.crossword}
                       playDate={playDate}
                       variant={crosswordVariant}
                     />

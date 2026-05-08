@@ -1,25 +1,6 @@
-import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
 import { SudokuPuzzle } from "./types";
 import { getDailyRng, seededShuffle } from "@/lib/games";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractJSON(text: string): any {
-  const start = text.indexOf("{");
-  if (start < 0) throw new Error("no JSON found");
-  let depth = 0;
-  let inStr = false;
-  let esc = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (esc) { esc = false; continue; }
-    if (ch === "\\") { esc = true; continue; }
-    if (ch === '"') { inStr = !inStr; continue; }
-    if (inStr) continue;
-    if (ch === "{") depth++;
-    else if (ch === "}") { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
-  }
-  throw new Error("unbalanced JSON");
-}
+import { extractJSON, cleanAIResponse, aiCall } from "./ai-utils";
 
 function isValidSudoku(grid: number[][]): boolean {
   if (grid.length !== 9) return false;
@@ -49,34 +30,25 @@ function isValidSudoku(grid: number[][]): boolean {
 }
 
 async function aiGenerateSudoku(): Promise<number[][]> {
-  const ai = getGamesAI();
   for (let retry = 0; retry < 3; retry++) {
     try {
-      const res = await (ai.chat.completions.create as Function)({
-        model: GAMES_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: "You are a Sudoku puzzle generator. Reply with ONLY valid JSON. No markdown fences, no explanation.",
-          },
-          {
-            role: "user",
-            content: `Generate a complete, valid 9x9 Sudoku solution. Every row, column, and 3x3 box must contain the digits 1-9 exactly once.
+      const res = await aiCall([
+        {
+          role: "system",
+          content: "You are a Sudoku puzzle generator. Reply with ONLY valid JSON. No markdown fences, no explanation.",
+        },
+        {
+          role: "user",
+          content: `Generate a complete, valid 9x9 Sudoku solution. Every row, column, and 3x3 box must contain the digits 1-9 exactly once.
 
 Return ONLY this JSON (no markdown fences):
 {"grid":[[r1c1,r1c2,...,r1c9],[r2c1,...,r2c9],...,[r9c1,...,r9c9]]}
 
 Each row must have exactly 9 digits. 9 rows total.`,
-          },
-        ],
-        max_tokens: 500,
-        temperature: 0.8 + retry * 0.2,
-        chat_template_kwargs: { thinking: false },
-      });
+        },
+      ], 500, 0.8 + retry * 0.2);
 
-      let text = res.choices[0]?.message?.content?.trim() ?? "";
-      text = text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-      text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+      const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
 
       if (!Array.isArray(parsed.grid) || parsed.grid.length !== 9) throw new Error("bad grid size");
@@ -86,12 +58,7 @@ Each row must have exactly 9 digits. 9 rows total.`,
 
       if (isValidSudoku(grid)) return grid;
       console.error("[sudoku] AI grid failed validation, retrying");
-    } catch (e: unknown) {
-      const status = (e as { status?: number })?.status;
-      if (status === 429) {
-        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
-        continue;
-      }
+    } catch (e) {
       console.error("[sudoku] attempt failed:", e instanceof Error ? e.message : String(e));
     }
   }
