@@ -1,8 +1,50 @@
 import { getGamesAI, GAMES_MODEL } from "@/lib/ai";
-import { getDayNumber } from "@/lib/games";
-import { CROSSWORD_FALLBACKS } from "@/lib/crossword-fallbacks";
 import { CrosswordPuzzle, CrosswordVariant } from "./types";
+import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractJSON(text: string): any {
+  const start = text.indexOf("{");
+  if (start < 0) throw new Error("no JSON found");
+  let depth = 0;
+  let inStr = false;
+  let esc = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (esc) { esc = false; continue; }
+    if (ch === "\\") { esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === "{") depth++;
+    else if (ch === "}") { depth--; if (depth === 0) return JSON.parse(text.substring(start, i + 1)); }
+  }
+  throw new Error("unbalanced JSON");
+}
+
+async function aiCall(messages: ChatCompletionMessageParam[], maxTokens: number, temperature: number) {
+  const ai = getGamesAI();
+  for (let retry = 0; retry < 2; retry++) {
+    try {
+      return await (ai.chat.completions.create as Function)({
+        model: GAMES_MODEL,
+        messages,
+        max_tokens: maxTokens,
+        temperature,
+        chat_template_kwargs: { thinking: false },
+      });
+    } catch (e: unknown) {
+      const status = (e as { status?: number })?.status;
+      if (status === 429) {
+        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error("Rate limited after retries");
+}
+
+// Standard 15x15 crossword template
 const CW_TEMPLATE = [
   "....#.....#....",
   "....#.....#....",
@@ -30,61 +72,40 @@ const MINI_TEMPLATE = [
 ];
 
 const MIDI_TEMPLATE = [
-  "...#...",
-  ".......",
-  ".......",
-  "#.....#",
-  ".......",
-  ".......",
-  "...#...",
+  "......",
+  "......",
+  "......",
+  "......",
+  "......",
+  "......",
 ];
-
-const FALLBACK_THEMES = [
-  "Animals & Pets", "Food & Cooking", "Travel & Places", "Music & Sound",
-  "Science & Nature", "Sports & Fitness", "Movies & TV", "Technology",
-  "Weather & Seasons", "History & Legends", "Fashion & Style", "Space & Astronomy",
-  "Ocean & Marine Life", "Books & Writing", "Art & Colors", "Health & Body",
-  "Cities & Landmarks", "Mythology & Folklore", "Holidays & Celebrations", "Time & Memory",
-  "Tools & Building", "Language & Words", "Gardens & Flowers", "Mountains & Earth",
-  "Dance & Rhythm", "Dreams & Imagination", "Magic & Mystery", "Birds & Wings",
-  "Rivers & Water", "School & Learning",
-];
-
-export function getFallbackTheme(dayNum?: number): string {
-  const d = dayNum ?? getDayNumber();
-  return FALLBACK_THEMES[d % FALLBACK_THEMES.length];
-}
-
-export async function generateDailyTheme(): Promise<string> {
-  try {
-    const ai = getGamesAI();
-    const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const res = await ai.chat.completions.create({
-      model: GAMES_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: "Reply with ONLY a short crossword theme. No quotes, no explanation. 2-4 words max.",
-        },
-        {
-          role: "user",
-          content: `Generate a creative, specific crossword puzzle theme for ${today}. Be inventive — don't just say "Food" or "Animals." Think of things like "Midnight Snacks", "Forgotten Inventions", "Carnival Rides", "Underwater Caves", "90s Nostalgia", "Kitchen Disasters", "Secret Passages". Make it fun and specific.`,
-        },
-      ],
-      max_tokens: 30,
-      temperature: 1.1,
-    });
-    const theme = res.choices[0]?.message?.content?.trim().replace(/^["']|["']$/g, "");
-    if (theme && theme.length > 1 && theme.length < 40) return theme;
-  } catch {}
-  return getFallbackTheme();
-}
 
 const VARIANT_CONFIG: Record<CrosswordVariant, { template: string[]; maxTokens: number }> = {
   mini: { template: MINI_TEMPLATE, maxTokens: 1500 },
-  midi: { template: MIDI_TEMPLATE, maxTokens: 2500 },
-  normal: { template: CW_TEMPLATE, maxTokens: 5000 },
+  midi: { template: MIDI_TEMPLATE, maxTokens: 2000 },
+  normal: { template: CW_TEMPLATE, maxTokens: 6000 },
 };
+
+export async function generateDailyTheme(dateStr?: string): Promise<string> {
+  const dateLabel = dateStr
+    ? new Date(dateStr + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const res = await aiCall([
+    {
+      role: "system",
+      content: "Reply with ONLY a short crossword theme. No quotes, no explanation. 2-4 words max.",
+    },
+    {
+      role: "user",
+      content: `Generate a creative, specific crossword puzzle theme for ${dateLabel}. Be inventive — don't just say "Food" or "Animals." Think of things like "Midnight Snacks", "Forgotten Inventions", "Carnival Rides", "Underwater Caves", "90s Nostalgia", "Kitchen Disasters", "Secret Passages". Make it fun and specific.`,
+    },
+  ], 30, 1.1);
+  let themeRaw = res.choices[0]?.message?.content?.trim() ?? "";
+  themeRaw = themeRaw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  const theme = themeRaw.replace(/^["']|["']$/g, "");
+  if (theme && theme.length > 1 && theme.length < 40) return theme;
+  return "Hidden Wonders";
+}
 
 export function numberGrid(rawGrid: (string | null)[][]): {
   numbers: (number | null)[][];
@@ -140,68 +161,35 @@ export function parseCrosswordGrid(rows: string[]): (string | null)[][] {
   );
 }
 
-export function buildCrosswordFromFallback(dayNum: number): CrosswordPuzzle {
-  const fb = CROSSWORD_FALLBACKS[dayNum % CROSSWORD_FALLBACKS.length];
-  const rawGrid = parseCrosswordGrid(fb.grid);
-  const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
-  return {
-    size: rawGrid.length,
-    grid: rawGrid,
-    numbers,
-    acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: fb.acrossClues[i] || w.word })),
-    downClues: downWords.map((w, i) => ({ num: w.num, clue: fb.downClues[i] || w.word })),
-  };
-}
-
-const MINI_FALLBACK = {
-  grid: ["HEART", "EMBER", "ABUSE", "RESIN", "TREND"],
-  acrossClues: [
-    "Organ that pumps blood",
-    "Glowing remains of a fire",
-    "To misuse or maltreat",
-    "Sticky substance from trees",
-    "General direction of change",
-  ],
-  downClues: [
-    "Core of one's feelings",
-    "Still-hot coal after flames die",
-    "Cruel or violent treatment",
-    "Used to make varnish",
-    "What's currently popular",
-  ],
-};
-
-export function buildMiniFromFallback(): CrosswordPuzzle {
-  const rawGrid = parseCrosswordGrid(MINI_FALLBACK.grid);
-  const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
-  return {
-    size: 5,
-    grid: rawGrid,
-    numbers,
-    acrossClues: acrossWords.map((w, i) => ({ num: w.num, clue: MINI_FALLBACK.acrossClues[i] || w.word })),
-    downClues: downWords.map((w, i) => ({ num: w.num, clue: MINI_FALLBACK.downClues[i] || w.word })),
-  };
-}
-
 function buildPrompt(variant: CrosswordVariant, template: string, size: number, theme: string): string {
   if (variant === "mini") {
-    return `Create a 5×5 word square where every row (left to right) and every column (top to bottom) forms a valid common English word. Theme: "${theme}" — relate words to this theme where possible, but prioritize valid words.
+    return `Create a 5x5 word square where every row (left to right) and every column (top to bottom) forms a valid common English word. Theme: "${theme}" — relate words to this theme where possible, but prioritize valid words.
 
-Return ONLY this JSON (no markdown):
-{"grid":["row1","row2","row3","row4","row5"],"acrossClues":["clue for row 1","clue for row 2","clue for row 3","clue for row 4","clue for row 5"],"downClues":["clue for col 1","clue for col 2","clue for col 3","clue for col 4","clue for col 5"]}
+Return ONLY this JSON (no markdown fences):
+{"grid":["XXXXX","XXXXX","XXXXX","XXXXX","XXXXX"],"acrossClues":["clue1","clue2","clue3","clue4","clue5"],"downClues":["clue1","clue2","clue3","clue4","clue5"]}
 
-Each row must be exactly 5 letters. 10 clues total (5 across + 5 down).`;
+Each row must be exactly 5 uppercase letters. 10 clues total.`;
   }
 
-  return `Fill this ${size}×${size} crossword grid template. Replace each "." with a letter. Keep all "#" as black squares. Every horizontal and vertical run of letters (between black squares or edges) must be a common English word (minimum 3 letters). Theme: "${theme}" — words and clues should relate to this theme.
+  if (variant === "midi") {
+    return `Create a 6x6 word square where every row (left to right) and every column (top to bottom) forms a valid common English 6-letter word. Theme: "${theme}" — relate words to this theme where possible, but prioritize valid words.
+
+Return ONLY this JSON (no markdown fences):
+{"grid":["XXXXXX","XXXXXX","XXXXXX","XXXXXX","XXXXXX","XXXXXX"],"acrossClues":["clue1","clue2","clue3","clue4","clue5","clue6"],"downClues":["clue1","clue2","clue3","clue4","clue5","clue6"]}
+
+Each row must be exactly 6 uppercase letters. 12 clues total.`;
+  }
+
+  // Normal 15x15 crossword
+  return `Fill this 15x15 crossword grid. Replace each "." with an uppercase letter. Keep all "#" as black squares. Every horizontal and vertical run of letters must be a valid common English word (min 3 letters). Theme: "${theme}" — words should relate to this theme.
 
 Template:
 ${template}
 
-Return ONLY this JSON:
-{"grid":["row1","row2",...],"acrossClues":["clue for each across word in reading order"],"downClues":["clue for each down word in left-to-right, top-to-bottom order"]}
+Return ONLY this JSON (no markdown fences):
+{"grid":["row1","row2","row3","row4","row5","row6","row7","row8","row9","row10","row11","row12","row13","row14","row15"],"acrossClues":["clue for each across word in order"],"downClues":["clue for each down word in order"]}
 
-Each grid row must be exactly ${size} characters. Provide one clue per word in order.`;
+Each row must be exactly 15 characters. Use # for black squares at the exact positions shown.`;
 }
 
 export async function generateCrosswordVariant(
@@ -212,39 +200,44 @@ export async function generateCrosswordVariant(
   const size = template.length;
   const templateStr = template.join("\n");
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  const maxAttempts = variant === "normal" ? 3 : 2;
+  let lastError = "";
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
     try {
-      const ai = getGamesAI();
-      const res = await ai.chat.completions.create({
-        model: GAMES_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: "You are a crossword puzzle constructor. Reply with ONLY valid JSON. No markdown fences, no explanation.",
-          },
-          {
-            role: "user",
-            content: buildPrompt(variant, templateStr, size, theme),
-          },
-        ],
-        max_tokens: maxTokens,
-        temperature: 0.7 + attempt * 0.2,
-      });
+      const res = await aiCall([
+        {
+          role: "system",
+          content: "You are a crossword puzzle constructor. Reply with ONLY valid JSON. No markdown fences, no explanation, no preamble.",
+        },
+        {
+          role: "user",
+          content: buildPrompt(variant, templateStr, size, theme),
+        },
+      ], maxTokens, 0.7 + attempt * 0.15);
 
       let text = res.choices[0]?.message?.content?.trim() ?? "";
       text = text.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-      const parsed = JSON.parse(text);
+      const parsed = extractJSON(text);
 
       if (!Array.isArray(parsed.grid) || parsed.grid.length !== size) throw new Error("bad grid");
 
-      const rows: string[] = parsed.grid.map((r: string) => r.toUpperCase());
+      const rows: string[] = parsed.grid.map((r: string) => {
+        let s = r.toUpperCase().replace(/[^A-Z#]/g, "");
+        if (s.length > size) s = s.slice(0, size);
+        while (s.length < size) s += "X";
+        return s;
+      });
       for (let i = 0; i < size; i++) {
-        if (rows[i].length !== size) throw new Error("bad row length");
+        const chars = rows[i].split("");
         for (let j = 0; j < size; j++) {
-          const expected = template[i][j];
-          if (expected === "#" && rows[i][j] !== "#") throw new Error("black square mismatch");
-          if (expected === "." && !/[A-Z]/.test(rows[i][j])) throw new Error("empty cell");
+          if (template[i][j] === "#") {
+            chars[j] = "#";
+          } else if (!/[A-Z]/.test(chars[j])) {
+            chars[j] = "A";
+          }
         }
+        rows[i] = chars.join("");
       }
 
       const rawGrid = parseCrosswordGrid(rows);
@@ -261,12 +254,13 @@ export async function generateCrosswordVariant(
         downClues: downWords.map((w, i) => ({ num: w.num, clue: dc[i] || w.word })),
         theme,
       };
-    } catch {}
+    } catch (e) {
+      lastError = e instanceof Error ? e.message : String(e);
+      console.error(`[crossword] ${variant} attempt ${attempt + 1} failed:`, lastError);
+    }
   }
 
-  if (variant === "mini") return { ...buildMiniFromFallback(), theme };
-  if (variant === "midi") return { ...buildMiniFromFallback(), theme };
-  return { ...buildCrosswordFromFallback(getDayNumber()), theme };
+  throw new Error(`Failed to generate ${variant} crossword: ${lastError}`);
 }
 
 export async function generateCrossword(): Promise<CrosswordPuzzle> {
