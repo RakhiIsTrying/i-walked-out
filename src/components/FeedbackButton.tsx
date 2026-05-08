@@ -2,23 +2,14 @@
 
 import { useState } from "react";
 
-const MOODS = [
-  { emoji: "😍", label: "love it" },
-  { emoji: "👍", label: "good" },
-  { emoji: "🤔", label: "hmm" },
-  { emoji: "👎", label: "nope" },
-  { emoji: "🐛", label: "bug" },
-];
-
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [mood, setMood] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
   async function handleSubmit() {
-    if (!message.trim() && !mood) return;
+    if (!message.trim()) return;
     setSending(true);
     try {
       const res = await fetch("/api/feedback", {
@@ -26,14 +17,12 @@ export default function FeedbackButton() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: message.trim(),
-          emoji: mood,
           page: window.location.pathname,
         }),
       });
       if (res.ok) {
         setSent(true);
         setMessage("");
-        setMood(null);
         setTimeout(() => {
           setSent(false);
           setOpen(false);
@@ -114,23 +103,23 @@ export default function FeedbackButton() {
             marginBottom: 2,
           }}
         >
-          psst
+          psst &mdash;
         </span>
-        <span style={{ fontSize: 22, lineHeight: 1, fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 1 }}>
-          Thoughts?
+        <span style={{ fontSize: 20, lineHeight: 1.1, fontWeight: 500, letterSpacing: "-0.01em" }}>
+          tell us
         </span>
         <span
           style={{
             fontFamily: "var(--mono)",
             fontStyle: "normal",
-            fontSize: 10,
+            fontSize: 9,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             opacity: 0.78,
-            marginTop: 4,
+            marginTop: 3,
           }}
         >
-          slip it under the door →
+          a sticky note &rarr;
         </span>
       </button>
 
@@ -157,131 +146,150 @@ export default function FeedbackButton() {
               border: "1.5px solid var(--ink)",
               borderRadius: 4,
               boxShadow: "8px 8px 0 var(--paper-edge)",
-              width: 380,
+              width: 420,
               maxWidth: "100%",
-              padding: "28px 24px 22px",
+              padding: "32px 28px 24px",
               position: "relative",
             }}
           >
-            {/* Tape decoration */}
+            {/* Stamp label */}
             <div
               style={{
                 position: "absolute",
-                top: -8,
-                left: "50%",
-                transform: "translateX(-50%) rotate(-2deg)",
-                width: 60,
-                height: 16,
-                background: "rgba(220,200,160,0.55)",
-                border: "1px solid rgba(60,40,20,0.18)",
-                borderRadius: 2,
-              }}
-            />
-
-            <div
-              style={{
+                top: -14,
+                right: 24,
+                background: "var(--accent)",
+                color: "var(--paper)",
                 fontFamily: "var(--mono)",
-                fontSize: 10,
-                letterSpacing: "0.2em",
+                fontSize: 9,
+                letterSpacing: "0.18em",
                 textTransform: "uppercase",
-                color: "var(--accent)",
-                marginBottom: 6,
+                padding: "5px 12px",
+                borderRadius: 3,
+                border: "1.5px solid var(--ink)",
               }}
             >
-              feedback
+              unsigned mail &middot; ok
             </div>
 
-            <div
+            {/* Close button */}
+            <button
+              onClick={() => setOpen(false)}
               style={{
-                fontFamily: "var(--serif)",
-                fontStyle: "italic",
-                fontSize: 24,
-                fontWeight: 400,
-                color: "var(--ink)",
-                marginBottom: 20,
+                position: "absolute",
+                top: 12,
+                right: 14,
+                background: "none",
+                border: "none",
+                fontSize: 20,
+                color: "var(--ink-3)",
+                cursor: "pointer",
+                lineHeight: 1,
+                padding: 4,
               }}
             >
-              {sent ? "Thank you!" : "How’s the experience?"}
-            </div>
+              &times;
+            </button>
 
-            {!sent && (
-              <>
-                {/* Mood chips */}
-                <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-                  {MOODS.map((m) => (
-                    <button
-                      key={m.emoji}
-                      onClick={() => setMood(mood === m.emoji ? null : m.emoji)}
-                      style={{
-                        padding: "8px 12px",
-                        background: mood === m.emoji ? "var(--ink)" : "var(--paper-deep)",
-                        color: mood === m.emoji ? "var(--paper)" : "var(--ink)",
-                        border: "1px solid var(--ink)",
-                        borderRadius: 999,
-                        cursor: "pointer",
-                        fontFamily: "var(--mono)",
-                        fontSize: 11,
-                        letterSpacing: "0.12em",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        transition: "all .15s",
-                      }}
-                    >
-                      <span style={{ fontSize: 16 }}>{m.emoji}</span>
-                      {m.label}
-                    </button>
-                  ))}
+            {sent ? (
+              <div style={{ textAlign: "center", padding: "20px 0" }}>
+                <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 28, color: "var(--accent)", marginBottom: 8 }}>
+                  Noted.
                 </div>
+                <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 16, color: "var(--ink-2)" }}>
+                  We read every one. Promise.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h2
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontSize: 28,
+                    fontWeight: 400,
+                    color: "var(--ink)",
+                    margin: "0 0 6px",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Slip us a <em style={{ fontStyle: "italic", color: "var(--accent)" }}>note.</em>
+                </h2>
+
+                <p
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: 15,
+                    color: "var(--ink-2)",
+                    margin: "0 0 20px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Anonymous. Unedited. Read with coffee on Sundays.
+                </p>
 
                 <textarea
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="tell us what you think..."
-                  maxLength={1000}
-                  rows={3}
+                  onChange={(e) => setMessage(e.target.value.slice(0, 600))}
+                  placeholder={"What do you wish were different? What made you smile?\nAnything, really."}
+                  maxLength={600}
+                  rows={4}
                   style={{
                     width: "100%",
                     resize: "vertical",
                     fontFamily: "var(--serif)",
                     fontStyle: "italic",
-                    fontSize: 17,
-                    background: "transparent",
-                    border: "none",
-                    borderTop: "1px dashed var(--rule)",
-                    borderBottom: "1px dashed var(--rule)",
-                    padding: "14px 0",
+                    fontSize: 16,
+                    lineHeight: 1.5,
+                    background: "var(--note-1)",
+                    border: "1.5px solid var(--rule)",
+                    borderRadius: 3,
+                    padding: "14px 16px",
                     color: "var(--ink)",
                     outline: "none",
+                    boxSizing: "border-box",
                   }}
                 />
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
-                  <button
-                    onClick={() => setOpen(false)}
+                  <span
                     style={{
                       fontFamily: "var(--mono)",
                       fontSize: 11,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
                       color: "var(--ink-3)",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
                     }}
                   >
-                    never mind
-                  </button>
+                    {message.length} / 600
+                  </span>
+
                   <button
                     onClick={handleSubmit}
-                    disabled={sending || (!message.trim() && !mood)}
+                    disabled={sending || !message.trim()}
                     className="btn-ink"
                     style={{
-                      opacity: sending || (!message.trim() && !mood) ? 0.4 : 1,
+                      opacity: sending || !message.trim() ? 0.4 : 1,
+                      fontSize: 13,
                     }}
                   >
-                    {sending ? "sending..." : "slip it under the door ↳"}
+                    {sending ? "sending..." : "Slip it under the door →"}
                   </button>
+                </div>
+
+                <div
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: 9,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--ink-3)",
+                    textAlign: "center",
+                    marginTop: 18,
+                    paddingTop: 14,
+                    borderTop: "1px dashed var(--rule)",
+                  }}
+                >
+                  no email collected &middot; we read every one &middot; promise
                 </div>
               </>
             )}
