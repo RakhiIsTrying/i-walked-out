@@ -65,12 +65,20 @@ export interface StickyVote {
 export interface VibeResult {
   query: string;
   place: string;
+  place_location?: string;
   movie: string;
+  movie_platform?: string;
   tv_show: string;
+  tv_show_platform?: string;
   food: string;
+  food_location?: string;
   game: string;
+  game_platform?: string;
   song: string;
+  song_artist?: string;
+  song_album?: string;
   music_album: string;
+  music_album_artist?: string;
   youtube: string;
   vibe_summary: string;
 }

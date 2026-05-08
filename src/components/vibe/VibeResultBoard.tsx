@@ -13,6 +13,98 @@ const cardKinds: Record<string, { label: string; emoji: string; accent: string }
 
 const resultKeys = ["place", "movie", "tv_show", "food", "game", "song", "music_album", "youtube"] as const;
 
+function mapsUrl(q: string) {
+  return `https://www.google.com/maps/search/${encodeURIComponent(q)}`;
+}
+function ytUrl(q: string) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
+}
+function ytMusicUrl(q: string) {
+  return `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
+}
+
+const linkStyle: React.CSSProperties = {
+  fontFamily: "var(--mono)",
+  fontSize: 10,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  color: "var(--accent)",
+  textDecoration: "none",
+  borderBottom: "1px dashed var(--accent)",
+  paddingBottom: 1,
+};
+
+function CardLinks({ keyName, result }: { keyName: string; result: VibeResult }) {
+  const links: React.ReactNode[] = [];
+
+  if (keyName === "place" && result.place_location) {
+    links.push(
+      <a key="map" href={mapsUrl(result.place_location)} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+        Google Maps →
+      </a>
+    );
+  }
+
+  if (keyName === "movie") {
+    if (result.movie_platform) {
+      links.push(<span key="plat" style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-3)", textTransform: "uppercase" }}>on {result.movie_platform}</span>);
+    }
+  }
+
+  if (keyName === "tv_show") {
+    if (result.tv_show_platform) {
+      links.push(<span key="plat" style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-3)", textTransform: "uppercase" }}>on {result.tv_show_platform}</span>);
+    }
+  }
+
+  if (keyName === "food" && result.food_location) {
+    links.push(
+      <a key="map" href={mapsUrl(result.food_location)} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+        Google Maps →
+      </a>
+    );
+  }
+
+  if (keyName === "game" && result.game_platform) {
+    links.push(<span key="plat" style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-3)", textTransform: "uppercase" }}>{result.game_platform}</span>);
+  }
+
+  if (keyName === "song") {
+    const artist = result.song_artist || "";
+    const album = result.song_album;
+    if (album) {
+      links.push(<span key="alb" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 12, color: "var(--ink-3)" }}>from {album}</span>);
+    }
+    const searchQ = `${result.song} ${artist}`;
+    links.push(
+      <a key="yt" href={ytUrl(searchQ)} target="_blank" rel="noopener noreferrer" style={linkStyle}>YouTube</a>,
+      <a key="ytm" href={ytMusicUrl(searchQ)} target="_blank" rel="noopener noreferrer" style={linkStyle}>YT Music</a>,
+    );
+  }
+
+  if (keyName === "music_album") {
+    const artist = result.music_album_artist || "";
+    const searchQ = `${result.music_album} ${artist}`;
+    links.push(
+      <a key="yt" href={ytUrl(searchQ + " full album")} target="_blank" rel="noopener noreferrer" style={linkStyle}>YouTube</a>,
+      <a key="ytm" href={ytMusicUrl(searchQ)} target="_blank" rel="noopener noreferrer" style={linkStyle}>YT Music</a>,
+    );
+  }
+
+  if (keyName === "youtube") {
+    links.push(
+      <a key="yt" href={ytUrl(result.youtube)} target="_blank" rel="noopener noreferrer" style={linkStyle}>Watch on YouTube →</a>
+    );
+  }
+
+  if (links.length === 0) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10, alignItems: "center" }}>
+      {links}
+    </div>
+  );
+}
+
 interface VibeResultBoardProps {
   result: VibeResult;
   isLoggedIn: boolean;
@@ -101,6 +193,7 @@ export default function VibeResultBoard({
                 <h4 style={{ fontFamily: "var(--serif)", fontSize: 24, fontWeight: 500, margin: 0, lineHeight: 1.2 }}>
                   {value}
                 </h4>
+                <CardLinks keyName={key} result={result} />
               </div>
             </div>
           );

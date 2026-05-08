@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
   const completion = await getAI().chat.completions.create({
     model: MODEL,
-    max_tokens: 1000,
+    max_tokens: 1500,
     messages: [
       {
         role: "user",
@@ -22,14 +22,22 @@ The user's vibe: "${query.trim()}"
 
 Return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
-  "place": "<A specific real place to visit that matches this vibe — be creative and specific, include city/country>",
+  "place": "<A specific real place to visit — be creative and specific>",
+  "place_location": "<City, Country or full address for Google Maps>",
   "movie": "<A specific movie to watch that captures this vibe>",
+  "movie_platform": "<Where to watch: Netflix, Prime Video, Hulu, Apple TV+, HBO Max, Disney+, Mubi, Criterion, etc.>",
   "tv_show": "<A specific TV show to binge that lives in this vibe>",
-  "food": "<A specific dish or food experience to try>",
+  "tv_show_platform": "<Where to watch: Netflix, Prime Video, Hulu, Apple TV+, HBO Max, Disney+, etc.>",
+  "food": "<A specific dish AND a specific restaurant or food spot to try it at>",
+  "food_location": "<Restaurant name, City, Country for Google Maps>",
   "game": "<A specific game (video game, board game, sport, or activity) to play>",
-  "song": "<A specific song that IS this vibe — include artist>",
-  "music_album": "<A specific album to listen front-to-back for this vibe — include artist>",
-  "youtube": "<A specific YouTube video title + channel to search for that captures this vibe — be specific enough to find it>",
+  "game_platform": "<Platform: PC, PlayStation, Xbox, Nintendo Switch, Mobile, Board Game, etc.>",
+  "song": "<A specific song that IS this vibe>",
+  "song_artist": "<The artist name>",
+  "song_album": "<The album this song is from>",
+  "music_album": "<A specific album to listen front-to-back for this vibe>",
+  "music_album_artist": "<The artist name>",
+  "youtube": "<A specific YouTube video title + channel to search for>",
   "vibe_summary": "<A 1-2 sentence poetic interpretation of their vibe and why these recommendations fit>"
 }
 
