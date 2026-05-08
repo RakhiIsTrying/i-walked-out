@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { DICTIONARY, VALID_GUESSES } from "@/lib/words";
+import { DICTIONARY } from "@/lib/words";
+import { FIVE_LETTER_WORDS } from "@/lib/wordlist";
 
 const DICT_SET = new Set(DICTIONARY);
 
@@ -11,26 +12,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ valid: false });
   }
 
-  if (DICT_SET.has(word) || VALID_GUESSES.has(word)) {
+  if (DICT_SET.has(word) || FIVE_LETTER_WORDS.has(word)) {
     return NextResponse.json(
       { valid: true },
       { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } },
     );
   }
 
-  try {
-    const res = await fetch(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
-      { signal: AbortSignal.timeout(3000) },
-    );
-    return NextResponse.json(
-      { valid: res.ok },
-      { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } },
-    );
-  } catch {
-    return NextResponse.json(
-      { valid: true },
-      { headers: { "Cache-Control": "public, s-maxage=3600" } },
-    );
-  }
+  return NextResponse.json(
+    { valid: false },
+    { headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" } },
+  );
 }

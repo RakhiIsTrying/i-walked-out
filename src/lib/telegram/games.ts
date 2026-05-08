@@ -1,7 +1,8 @@
 import { getAdmin } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { getDayNumber, getDailyRng, seededPick } from "@/lib/games";
-import { WORDLE_ANSWERS, VALID_GUESSES, DICTIONARY, PANGRAM_SEEDS } from "@/lib/words";
+import { WORDLE_ANSWERS, DICTIONARY, PANGRAM_SEEDS } from "@/lib/words";
+import { FIVE_LETTER_WORDS } from "@/lib/wordlist";
 import { getUserLink, getGameState, setGameState } from "./helpers";
 
 async function getTodayWordleAnswer(): Promise<string> {
@@ -58,12 +59,8 @@ function formatWordleRow(guess: string, states: ("correct" | "present" | "absent
   return `${emoji}  ${guess}`;
 }
 
-async function isValidWordleGuess(word: string): Promise<boolean> {
-  if (VALID_GUESSES.has(word.toLowerCase())) return true;
-  try {
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`, { signal: AbortSignal.timeout(3000) });
-    return res.ok;
-  } catch { return false; }
+function isValidWordleGuess(word: string): boolean {
+  return FIVE_LETTER_WORDS.has(word.toLowerCase());
 }
 
 function scoreBeeWord(word: string, allLetters: Set<string>): number {
@@ -154,7 +151,7 @@ export async function handleWordleGuess(chatId: number, userId: string, guess: s
     return;
   }
 
-  const valid = await isValidWordleGuess(guess);
+  const valid = isValidWordleGuess(guess);
   if (!valid) {
     await sendMessage(chatId, `"${guess}" is not a valid word. Try another.`);
     return;
