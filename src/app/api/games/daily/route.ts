@@ -19,7 +19,10 @@ export async function GET(request: Request) {
   const dateParam = searchParams.get("date");
   const refresh = searchParams.get("refresh") === "true";
   const refreshGame = searchParams.get("game");
-  const today = new Date().toISOString().split("T")[0];
+  // Use IST (UTC+5:30) so puzzles refresh at midnight India time
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const today = new Date(now.getTime() + istOffset).toISOString().split("T")[0];
   const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
   const isToday = targetDate === today;
 
@@ -73,7 +76,7 @@ export async function GET(request: Request) {
       generateWordle(dateLabel),
       generateSpellingBee(dateLabel),
       generateSudoku(),
-      generateTango(),
+      generateTango(dateLabel),
     ]);
 
     const crossword = await generateCrosswordVariant("normal", theme);

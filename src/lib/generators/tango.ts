@@ -29,7 +29,8 @@ function isValidTango(grid: number[][]): boolean {
   return true;
 }
 
-async function aiGenerateTango(): Promise<number[][]> {
+async function aiGenerateTango(dateLabel?: string): Promise<number[][]> {
+  const dateHint = dateLabel ? ` This is for ${dateLabel} — generate a UNIQUE grid different from any other day.` : "";
   for (let retry = 0; retry < 3; retry++) {
     try {
       const res = await aiCall([
@@ -39,7 +40,7 @@ async function aiGenerateTango(): Promise<number[][]> {
         },
         {
           role: "user",
-          content: `Generate a valid 6x6 Tango puzzle solution grid. Rules:
+          content: `Generate a valid 6x6 Tango puzzle solution grid.${dateHint} Rules:
 - Each cell is either 1 (sun) or 2 (moon)
 - Each row must have exactly 3 suns and 3 moons
 - Each column must have exactly 3 suns and 3 moons
@@ -50,7 +51,7 @@ Return ONLY this JSON (no markdown fences):
 
 Replace the example values with a valid solution. Each row must have exactly 6 values. 6 rows total.`,
         },
-      ], 300, 0.8 + retry * 0.2);
+      ], 300, 0.8 + retry * 0.3);
 
       const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
@@ -85,8 +86,8 @@ function removeCells(solution: number[][], rng: () => number): TangoPuzzle {
   return { grid: puzzle, solution, given };
 }
 
-export async function generateTango(): Promise<TangoPuzzle> {
-  const solution = await aiGenerateTango();
+export async function generateTango(dateLabel?: string): Promise<TangoPuzzle> {
+  const solution = await aiGenerateTango(dateLabel);
   const rng = getDailyRng(99);
   return removeCells(solution, rng);
 }

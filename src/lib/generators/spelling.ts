@@ -55,19 +55,22 @@ function findValidWords(center: string, outer: string[]): string[] {
 
 export async function generateSpellingBee(dateLabel?: string): Promise<SpellingPuzzle> {
   const dateHint = dateLabel ? ` for ${dateLabel}` : "";
+  const dateSeed = dateLabel ? ` Use the date "${dateLabel}" as inspiration — pick letters that feel thematically connected to that specific day. Do NOT reuse letter sets from other days.` : "";
   const res = await aiCall([
     {
       role: "system",
       content:
-        "You generate Spelling Bee puzzles. Reply with ONLY valid JSON. No markdown, no explanation.",
+        "You generate Spelling Bee puzzles. Each day MUST have completely different letters. Reply with ONLY valid JSON. No markdown, no explanation.",
     },
     {
       role: "user",
-      content: `Generate a Spelling Bee puzzle${dateHint}. Choose 7 UNIQUE lowercase letters. One is the "center" letter that MUST appear in every valid word. Pick letters that allow MANY common 4+ letter English words. Include at least 2 vowels. Choose a DIFFERENT set of letters than you would for any other day.
+      content: `Generate a Spelling Bee puzzle${dateHint}. Choose 7 UNIQUE lowercase letters. One is the "center" letter that MUST appear in every valid word. Pick letters that allow MANY common 4+ letter English words. Include at least 2 vowels.${dateSeed}
+
+IMPORTANT: The center letter and outer letters must be COMPLETELY DIFFERENT from any other day's puzzle. Be creative with your letter selection.
 
 Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
     },
-  ], 100, 1.2, 3);
+  ], 100, 1.4, 3);
 
   const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
   const parsed = extractJSON(text);

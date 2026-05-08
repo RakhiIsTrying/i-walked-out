@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 const MOODS = [
-  { symbol: "♡", label: "loved it" },
-  { symbol: "?", label: "confused" },
-  { symbol: "△", label: "broken" },
-  { symbol: "●", label: "idea" },
-  { symbol: "·", label: "just hi" },
+  { symbol: "\u{1F60D}", label: "loved it" },
+  { symbol: "\u{1F914}", label: "confused" },
+  { symbol: "\u{1F41B}", label: "broken" },
+  { symbol: "\u{1F4A1}", label: "idea" },
+  { symbol: "\u{1F44B}", label: "just hi" },
 ];
 
 export default function FeedbackButton() {

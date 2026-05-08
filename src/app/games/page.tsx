@@ -21,7 +21,10 @@ type Puzzles = Record<string, any>;
 const MIN_DATE = "2026-05-05";
 
 function todayStr() {
-  return new Date().toISOString().split("T")[0];
+  // IST (UTC+5:30) so puzzles refresh at midnight India time
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  return new Date(now.getTime() + istOffset).toISOString().split("T")[0];
 }
 
 function shiftDate(dateStr: string, days: number): string {

@@ -10,7 +10,10 @@ function mulberry32(seed: number) {
 }
 
 export function getTodayStr(): string {
-  return new Date().toISOString().split("T")[0];
+  // IST (UTC+5:30) so puzzles refresh at midnight India time
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  return new Date(now.getTime() + istOffset).toISOString().split("T")[0];
 }
 
 export function getDayNumber(): number {

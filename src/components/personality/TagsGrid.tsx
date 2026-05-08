@@ -20,7 +20,7 @@ export default function TagsGrid({ profile }: { profile: PersonalityProfile }) {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
       <TagCard title="Core Values" tags={profile.traits.core_values} color="var(--accent)" />
       <TagCard title="Fear Patterns" tags={profile.traits.fear_patterns} color="var(--accent)" />
-      <TagCard title="Aspiration Themes" tags={profile.traits.aspiration_themes} color="var(--note-1)" />
+      <TagCard title="Aspiration Themes" tags={profile.traits.aspiration_themes} color="var(--ink-2)" />
     </div>
   );
 }

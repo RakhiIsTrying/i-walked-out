@@ -105,7 +105,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
           }}
         >
           {user ? (
-            <>
+            <span className="desktop-user-info" style={{ display: "flex", alignItems: "center", gap: 22 }}>
               <span
                 style={{
                   color: "var(--ink-3)",
@@ -136,10 +136,11 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
               >
                 <LogOut size={14} />
               </button>
-            </>
+            </span>
           ) : (
             <Link
               href="/auth/login"
+              className="desktop-user-info"
               style={{
                 border: "1px solid var(--ink)",
                 padding: "7px 12px",
@@ -285,6 +286,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
         @media (max-width: 980px) {
           .mobile-nav-toggle { display: flex !important; }
           .desktop-nav { display: none !important; }
+          .desktop-user-info { display: none !important; }
           header > .wrap:first-child {
             grid-template-columns: 1fr auto auto !important;
           }
