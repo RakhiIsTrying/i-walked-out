@@ -50,7 +50,7 @@ export default function GamesPage() {
     setLoading(true);
     setPuzzles(null);
     const url = date === todayStr() ? "/api/games/daily" : `/api/games/daily?date=${date}`;
-    fetch(url)
+    fetch(url, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         setPuzzles(data);
