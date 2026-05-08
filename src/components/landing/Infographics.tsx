@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 
-function StatBlock({ num, label, sub, color, rotate = 0 }: { num: string; label: string; sub: string; color: string; rotate?: number }) {
+interface LiveStats {
+  dreams: number;
+  users: number;
+  categories: Record<string, number>;
+  emotions: Record<string, number>;
+}
+
+function StatBlock({ num, label, sub, color }: { num: string; label: string; sub: string; color: string }) {
   return (
     <div
       className="paper lift"
@@ -47,8 +54,38 @@ function ChunkyBar({ label, pct, color, emoji, animated }: { label: string; pct:
   );
 }
 
+const CATEGORY_META: Record<string, { emoji: string; label: string }> = {
+  career: { emoji: "💼", label: "Career dreams" },
+  relationship: { emoji: "💔", label: "Relationships" },
+  creative: { emoji: "🎨", label: "Creative pursuits" },
+  health: { emoji: "🏃", label: "Health & fitness" },
+  travel: { emoji: "✈️", label: "Travel plans" },
+  education: { emoji: "📖", label: "Education" },
+  financial: { emoji: "💰", label: "Financial goals" },
+  lifestyle: { emoji: "☕", label: "Lifestyle changes" },
+  other: { emoji: "💭", label: "Other dreams" },
+};
+
+const EMOTION_META: Record<string, { label: string; color: string }> = {
+  relieved: { label: "relieved", color: "var(--teal)" },
+  reflective: { label: "reflective", color: "var(--plum)" },
+  sad: { label: "sad", color: "var(--rose)" },
+  free: { label: "freed", color: "var(--butter)" },
+  angry: { label: "angry", color: "var(--rose)" },
+  hopeful: { label: "hopeful", color: "var(--teal)" },
+  neutral: { label: "honestly fine", color: "var(--ink)" },
+};
+
+const BAR_COLORS = ["var(--rose)", "var(--teal)", "var(--butter)", "var(--plum)", "var(--rose)", "var(--teal)"];
+
+function formatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+  return n.toLocaleString();
+}
+
 export default function Infographics() {
   const [animated, setAnimated] = useState(false);
+  const [stats, setStats] = useState<LiveStats | null>(null);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -62,22 +99,37 @@ export default function Infographics() {
     return () => obs.disconnect();
   }, []);
 
-  const dreams = [
-    { label: "Morning person", pct: 87, color: "var(--rose)", emoji: "☀️" },
-    { label: "Learn a language", pct: 73, color: "var(--teal)", emoji: "🗣️" },
-    { label: "Start a café", pct: 64, color: "var(--butter)", emoji: "☕" },
-    { label: "Finish the novel", pct: 58, color: "var(--plum)", emoji: "📖" },
-    { label: "Run a marathon", pct: 41, color: "var(--rose)", emoji: "🏃" },
-    { label: "Get back w/ them", pct: 29, color: "var(--teal)", emoji: "💔" },
-  ];
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then((d) => setStats(d))
+      .catch(() => {});
+  }, []);
 
-  const moods = [
-    { label: "lighter", pct: 0.42, color: "var(--rose)" },
-    { label: "weird", pct: 0.21, color: "var(--teal)" },
-    { label: "freed", pct: 0.18, color: "var(--butter)" },
-    { label: "weepy", pct: 0.11, color: "var(--plum)" },
-    { label: "honestly fine", pct: 0.08, color: "var(--ink)" },
-  ];
+  const dreamCount = stats?.dreams ?? 0;
+  const userCount = stats?.users ?? 0;
+
+  const catEntries = stats?.categories
+    ? Object.entries(stats.categories)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+    : [];
+  const catTotal = catEntries.reduce((s, [, v]) => s + v, 0) || 1;
+  const dreamBars = catEntries.map(([cat, count], i) => {
+    const meta = CATEGORY_META[cat] || { emoji: "💭", label: cat };
+    return { label: meta.label, pct: Math.round((count / catTotal) * 100), color: BAR_COLORS[i % BAR_COLORS.length], emoji: meta.emoji };
+  });
+
+  const emotionEntries = stats?.emotions
+    ? Object.entries(stats.emotions)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+    : [];
+  const emotionTotal = emotionEntries.reduce((s, [, v]) => s + v, 0) || 1;
+  const moods = emotionEntries.map(([emo, count]) => {
+    const meta = EMOTION_META[emo] || { label: emo, color: "var(--ink)" };
+    return { label: meta.label, pct: count / emotionTotal, color: meta.color };
+  });
 
   let pieAcc = 0;
   const pieSegs = moods.map((m) => {
@@ -115,10 +167,10 @@ export default function Infographics() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 60 }}>
-          <StatBlock num="12,847" label="Dreams released" sub="and counting" color="var(--rose)" rotate={-1} />
-          <StatBlock num="3.2s" label="Avg time to let go" sub="faster than a tweet" color="var(--teal)" rotate={0.8} />
-          <StatBlock num="89%" label="Felt lighter after" sub="science? vibes?" color="var(--butter)" rotate={-0.5} />
-          <StatBlock num="0" label="Judgement" sub="not even a little" color="var(--plum)" rotate={1} />
+          <StatBlock num={formatCount(dreamCount)} label="Dreams released" sub="and counting" color="var(--rose)" />
+          <StatBlock num={formatCount(userCount)} label="Dreamers" sub="and growing" color="var(--teal)" />
+          <StatBlock num={dreamCount && userCount ? (dreamCount / userCount).toFixed(1) : "—"} label="Dreams per person" sub="avg" color="var(--butter)" />
+          <StatBlock num="0" label="Judgement" sub="not even a little" color="var(--plum)" />
         </div>
 
         <div className="infographic-split" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 40, alignItems: "start" }}>
@@ -129,11 +181,17 @@ export default function Infographics() {
             <h3 className="serif" style={{ fontSize: 22, margin: "0 0 24px", fontWeight: 400, fontStyle: "italic", color: "var(--ink)" }}>
               What y&apos;all are letting go of
             </h3>
-            {dreams.map((d) => (
-              <ChunkyBar key={d.label} {...d} animated={animated} />
-            ))}
+            {dreamBars.length > 0 ? (
+              dreamBars.map((d) => (
+                <ChunkyBar key={d.label} {...d} animated={animated} />
+              ))
+            ) : (
+              <p className="hand" style={{ fontSize: 18, color: "var(--ink-faded)", textAlign: "center", padding: "20px 0" }}>
+                loading...
+              </p>
+            )}
             <p className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)", borderTop: "1px solid rgba(106,112,140,0.2)", paddingTop: 14, marginTop: 18, letterSpacing: "0.08em" }}>
-              sample: 12,847 dreams · rolling 30 days
+              {dreamCount > 0 ? `${formatCount(dreamCount)} dreams · live data` : "loading..."}
             </p>
           </div>
 
@@ -144,35 +202,43 @@ export default function Infographics() {
             <h3 className="serif" style={{ fontSize: 22, margin: "0 0 20px", fontWeight: 400, fontStyle: "italic", color: "var(--ink)" }}>
               After letting go, you said you felt:
             </h3>
-            <svg viewBox="-10 -10 220 220" style={{ width: "100%", maxWidth: 240, display: "block", margin: "0 auto" }}>
-              {pieSegs.map((s, i) => {
-                const [x1, y1] = polar(100, 100, 95, animated ? s.start : 0);
-                const [x2, y2] = polar(100, 100, 95, animated ? s.end : 0);
-                const large = s.end - s.start > 0.5 ? 1 : 0;
-                const ang = (s.start + s.end) / 2;
-                const [ox, oy] = polar(0, 0, 4, ang);
-                return (
-                  <path
-                    key={i}
-                    d={`M ${100 + ox} ${100 + oy} L ${x1 + ox} ${y1 + oy} A 95 95 0 ${large} 1 ${x2 + ox} ${y2 + oy} Z`}
-                    fill={s.color}
-                    stroke="var(--paper-light)"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                    style={{ transition: "all 1s ease" }}
-                  />
-                );
-              })}
-            </svg>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 18 }}>
-              {pieSegs.map((s) => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13 }}>
-                  <span style={{ width: 10, height: 10, background: s.color, borderRadius: "50%", display: "inline-block" }} />
-                  <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-soft)" }}>{s.label}</span>
-                  <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{Math.round(s.pct * 100)}%</span>
+            {pieSegs.length > 0 ? (
+              <>
+                <svg viewBox="-10 -10 220 220" style={{ width: "100%", maxWidth: 240, display: "block", margin: "0 auto" }}>
+                  {pieSegs.map((s, i) => {
+                    const [x1, y1] = polar(100, 100, 95, animated ? s.start : 0);
+                    const [x2, y2] = polar(100, 100, 95, animated ? s.end : 0);
+                    const large = s.end - s.start > 0.5 ? 1 : 0;
+                    const ang = (s.start + s.end) / 2;
+                    const [ox, oy] = polar(0, 0, 4, ang);
+                    return (
+                      <path
+                        key={i}
+                        d={`M ${100 + ox} ${100 + oy} L ${x1 + ox} ${y1 + oy} A 95 95 0 ${large} 1 ${x2 + ox} ${y2 + oy} Z`}
+                        fill={s.color}
+                        stroke="var(--paper-light)"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                        style={{ transition: "all 1s ease" }}
+                      />
+                    );
+                  })}
+                </svg>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 18 }}>
+                  {pieSegs.map((s) => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13 }}>
+                      <span style={{ width: 10, height: 10, background: s.color, borderRadius: "50%", display: "inline-block" }} />
+                      <span className="typewriter" style={{ fontSize: 11, color: "var(--ink-soft)" }}>{s.label}</span>
+                      <span className="typewriter" style={{ fontSize: 10, color: "var(--ink-faded)" }}>{Math.round(s.pct * 100)}%</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <p className="hand" style={{ fontSize: 18, color: "var(--ink-faded)", textAlign: "center", padding: "40px 0" }}>
+                loading...
+              </p>
+            )}
           </div>
         </div>
 
