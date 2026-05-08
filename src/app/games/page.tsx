@@ -18,6 +18,8 @@ const TangoGame = dynamic(() => import("@/components/games/TangoGame"), { ssr: f
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Puzzles = Record<string, any>;
 
+const MIN_DATE = "2026-05-05";
+
 function todayStr() {
   return new Date().toISOString().split("T")[0];
 }
@@ -41,22 +43,28 @@ export default function GamesPage() {
   const [playDate, setPlayDate] = useState(todayStr);
   const [puzzles, setPuzzles] = useState<Puzzles | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [archive, setArchive] = useState<ArchiveEntry[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
 
   const isToday = playDate === todayStr();
+  const isMinDate = playDate <= MIN_DATE;
 
   const fetchPuzzles = useCallback((date: string) => {
     setLoading(true);
+    setFetchError(false);
     setPuzzles(null);
-    const url = date === todayStr() ? "/api/games/daily" : `/api/games/daily?date=${date}`;
-    fetch(url, { cache: "no-store" })
-      .then((r) => r.json())
+    fetch(`/api/games/daily?date=${date}`, { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) throw new Error("fetch failed");
+        return r.json();
+      })
       .then((data) => {
+        if (data.error) throw new Error(data.error);
         setPuzzles(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => { setFetchError(true); setLoading(false); });
   }, []);
 
   useEffect(() => {
@@ -77,7 +85,10 @@ export default function GamesPage() {
   }, []);
 
   function goBack() {
-    setPlayDate((d) => shiftDate(d, -1));
+    setPlayDate((d) => {
+      const prev = shiftDate(d, -1);
+      return prev >= MIN_DATE ? prev : d;
+    });
   }
 
   function goForward() {
@@ -109,7 +120,7 @@ export default function GamesPage() {
 
   return (
     <div className="page-in" style={{ padding: "20px clamp(12px, 4vw, 48px) 40px", overflow: "hidden" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", overflow: "hidden" }}>
+      <div style={{ maxWidth: 1240, margin: "0 auto", overflow: "hidden" }}>
 
         {/* Header row - puzzle-head style */}
         <div style={{
@@ -153,6 +164,7 @@ export default function GamesPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               onClick={goBack}
+              disabled={isMinDate}
               style={{
                 appearance: "none",
                 border: "1px solid var(--ink)",
@@ -162,12 +174,13 @@ export default function GamesPage() {
                 fontSize: 14,
                 padding: "10px 0",
                 width: 38,
-                cursor: "pointer",
+                cursor: isMinDate ? "default" : "pointer",
                 borderRadius: 3,
                 transition: "background 0.15s, color 0.15s",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                opacity: isMinDate ? 0.3 : 1,
               }}
             >
               <ChevronLeft size={14} />
@@ -288,7 +301,7 @@ export default function GamesPage() {
               border: "1px solid var(--ink)",
               background: "var(--paper)",
               borderRadius: 4,
-              padding: "36px 40px 40px",
+              padding: "36px 28px 40px",
               boxShadow: "6px 6px 0 var(--paper-edge)",
               position: "relative",
               minHeight: 460,
@@ -329,6 +342,15 @@ export default function GamesPage() {
                   loading {isToday ? "today" : formatDate(playDate)}&apos;s puzzles...
                 </div>
               </div>
+            ) : fetchError ? (
+              <div style={{ textAlign: "center", padding: 60 }}>
+                <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-3)", marginBottom: 16 }}>
+                  Couldn&apos;t load puzzles for {formatDate(playDate)}.
+                </p>
+                <button onClick={() => fetchPuzzles(playDate)} className="btn-outline" style={{ fontSize: 13 }}>
+                  try again
+                </button>
+              </div>
             ) : (
               <>
                 {active === "wordle" && <WordleGame answer={puzzles?.wordle?.answer} playDate={playDate} />}
@@ -341,13 +363,13 @@ export default function GamesPage() {
                         fontFamily: "var(--serif)",
                         fontStyle: "italic",
                         fontWeight: 400,
-                        fontSize: 32,
+                        fontSize: 24,
                         lineHeight: 1.2,
                         textAlign: "center",
                         color: "var(--accent)",
-                        margin: "0 0 24px",
+                        margin: "0 0 20px",
                       }}>
-                        Today&apos;s Theme: {puzzles.crossword.theme}
+                        Theme: {puzzles.crossword.theme}
                       </h2>
                     )}
                     <CrosswordGame

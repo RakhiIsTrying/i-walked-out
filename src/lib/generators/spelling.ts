@@ -53,7 +53,8 @@ function findValidWords(center: string, outer: string[]): string[] {
   }).sort();
 }
 
-export async function generateSpellingBee(): Promise<SpellingPuzzle> {
+export async function generateSpellingBee(dateLabel?: string): Promise<SpellingPuzzle> {
+  const dateHint = dateLabel ? ` for ${dateLabel}` : "";
   const res = await aiCall([
     {
       role: "system",
@@ -62,7 +63,7 @@ export async function generateSpellingBee(): Promise<SpellingPuzzle> {
     },
     {
       role: "user",
-      content: `Generate a Spelling Bee puzzle. Choose 7 UNIQUE lowercase letters. One is the "center" letter that MUST appear in every valid word. Pick letters that allow MANY common 4+ letter English words. Include at least 2 vowels.
+      content: `Generate a Spelling Bee puzzle${dateHint}. Choose 7 UNIQUE lowercase letters. One is the "center" letter that MUST appear in every valid word. Pick letters that allow MANY common 4+ letter English words. Include at least 2 vowels. Choose a DIFFERENT set of letters than you would for any other day.
 
 Return ONLY: {"center":"x","outer":["a","b","c","d","e","f"]}`,
     },

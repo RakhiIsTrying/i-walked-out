@@ -1,9 +1,10 @@
 import { WordlePuzzle } from "./types";
 import { cleanAIResponse, aiCall } from "./ai-utils";
 
-export async function generateWordle(): Promise<WordlePuzzle> {
+export async function generateWordle(dateLabel?: string): Promise<WordlePuzzle> {
   for (let retry = 0; retry < 3; retry++) {
     try {
+      const dateHint = dateLabel ? ` for ${dateLabel}` : "";
       const res = await aiCall([
         {
           role: "system",
@@ -13,7 +14,7 @@ export async function generateWordle(): Promise<WordlePuzzle> {
         {
           role: "user",
           content:
-            "Pick ONE common English 5-letter word for today's Wordle puzzle. It should be well-known and not obscure. Output ONLY the word.",
+            `Pick ONE common English 5-letter word${dateHint}'s Wordle puzzle. It should be well-known and not obscure. Pick a DIFFERENT word than you would for any other day. Output ONLY the word.`,
         },
       ], 20, 1.2);
       const raw = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");

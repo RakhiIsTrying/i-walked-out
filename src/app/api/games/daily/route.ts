@@ -12,6 +12,8 @@ import {
   generateDailyTheme,
 } from "@/lib/generators";
 
+const MIN_DATE = "2026-05-05";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date");
@@ -20,7 +22,14 @@ export async function GET(request: Request) {
   const today = new Date().toISOString().split("T")[0];
   const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
   const isToday = targetDate === today;
-  const cacheHeader = isToday ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=86400";
+
+  if (targetDate < MIN_DATE || targetDate > today) {
+    return NextResponse.json({ error: "Date out of range" }, { status: 400 });
+  }
+
+  const cacheHeader = isToday
+    ? "public, s-maxage=60, stale-while-revalidate=300"
+    : "public, s-maxage=86400, stale-while-revalidate=604800";
 
   let existing: DailyPuzzles | null = null;
   try {
@@ -38,7 +47,7 @@ export async function GET(request: Request) {
 
   if (refreshGame === "crossword") {
     try {
-      const theme = existing?.crossword?.theme || await generateDailyTheme(isToday ? undefined : targetDate);
+      const theme = existing?.crossword?.theme || await generateDailyTheme(targetDate);
       const crossword = await generateCrosswordVariant("normal", theme);
       if (existing) {
         existing.crossword = crossword;
@@ -54,11 +63,15 @@ export async function GET(request: Request) {
     }
   }
 
+  const dateLabel = new Date(targetDate + "T12:00:00").toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric", year: "numeric",
+  });
+
   try {
     const [theme, wordle, spelling, sudoku, tango] = await Promise.all([
-      generateDailyTheme(isToday ? undefined : targetDate),
-      generateWordle(),
-      generateSpellingBee(),
+      generateDailyTheme(targetDate),
+      generateWordle(dateLabel),
+      generateSpellingBee(dateLabel),
       generateSudoku(),
       generateTango(),
     ]);

@@ -262,62 +262,86 @@ export default function CrosswordGame({ puzzle, playDate, variant = "normal" }: 
   const letterSize = cellSize >= 42 ? 22 : cellSize >= 32 ? 18 : cellSize >= 26 ? 15 : 12;
   const numSize = cellSize >= 42 ? 8 : cellSize >= 30 ? 7 : 6;
 
+  const gridPx = size * cellSize + 6;
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 20,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div
         style={{
           fontFamily: "var(--mono)",
           fontSize: 12,
           letterSpacing: "0.1em",
           color: "var(--ink-3)",
+          textAlign: "center",
         }}
       >
         {formatTime(timer)}
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 24,
-          flexWrap: "wrap",
-          justifyContent: "center",
-          alignItems: "flex-start",
-        }}
-      >
-        <CrosswordGrid
-          size={size}
-          answer={answer}
-          board={board}
-          numbers={numbers}
-          selected={selected}
-          highlightedCells={highlightedCells}
-          gameOver={gameOver}
-          cellSize={cellSize}
-          letterSize={letterSize}
-          numSize={numSize}
-          inputRefs={inputRefs}
-          onCellClick={handleCellClick}
-          onInput={handleInput}
-          onKeyDown={handleKeyDown}
-        />
-
-        <CrosswordClues
-          acrossClues={acrossClues}
-          downClues={downClues}
-          direction={direction}
-          activeClueNum={activeClueNum}
-          maxHeight={size * cellSize + 6}
-          isMobileView={isMobileView}
-          onClueClick={handleClueClick}
-        />
-      </div>
+      {isMobileView ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          <CrosswordGrid
+            size={size}
+            answer={answer}
+            board={board}
+            numbers={numbers}
+            selected={selected}
+            highlightedCells={highlightedCells}
+            gameOver={gameOver}
+            cellSize={cellSize}
+            letterSize={letterSize}
+            numSize={numSize}
+            inputRefs={inputRefs}
+            onCellClick={handleCellClick}
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+          />
+          <CrosswordClues
+            acrossClues={acrossClues}
+            downClues={downClues}
+            direction={direction}
+            activeClueNum={activeClueNum}
+            maxHeight={0}
+            isMobileView={true}
+            onClueClick={handleClueClick}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `${gridPx}px 1fr`,
+            gap: 24,
+            alignItems: "start",
+          }}
+        >
+          <CrosswordGrid
+            size={size}
+            answer={answer}
+            board={board}
+            numbers={numbers}
+            selected={selected}
+            highlightedCells={highlightedCells}
+            gameOver={gameOver}
+            cellSize={cellSize}
+            letterSize={letterSize}
+            numSize={numSize}
+            inputRefs={inputRefs}
+            onCellClick={handleCellClick}
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+          />
+          <CrosswordClues
+            acrossClues={acrossClues}
+            downClues={downClues}
+            direction={direction}
+            activeClueNum={activeClueNum}
+            maxHeight={gridPx}
+            isMobileView={false}
+            onClueClick={handleClueClick}
+          />
+        </div>
+      )}
 
       {gameOver && (
         <div style={{ textAlign: "center", marginTop: 8 }}>
