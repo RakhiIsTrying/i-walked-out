@@ -49,7 +49,7 @@ export async function aiCall(
     } catch (e: unknown) {
       const status = (e as { status?: number })?.status;
       if (status === 429) {
-        await new Promise((r) => setTimeout(r, (retry + 1) * 2000));
+        await new Promise((r) => setTimeout(r, (retry + 1) * 5000));
         continue;
       }
       throw e;
