@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       .select("puzzles")
       .eq("date", targetDate)
       .single();
-    if (data?.puzzles?.crossword?.theme) existing = data.puzzles;
+    if (data?.puzzles) existing = data.puzzles;
   } catch {}
 
   if (existing && !refresh && !refreshGame) {
