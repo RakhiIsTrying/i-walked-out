@@ -92,7 +92,15 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   const [answer, setAnswer] = useState(() => answerProp?.toUpperCase() || getFallbackWord());
   const [guesses, setGuesses] = useState<string[]>([]);
   const [states, setStates] = useState<CellState[][]>([]);
-  const [current, setCurrent] = useState("");
+  const [current, setCurrentState] = useState("");
+  const currentRef = useRef("");
+  const setCurrent = (val: string | ((p: string) => string)) => {
+    setCurrentState((prev) => {
+      const next = typeof val === "function" ? val(prev) : val;
+      currentRef.current = next;
+      return next;
+    });
+  };
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [shake, setShake] = useState(false);
@@ -124,10 +132,11 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
   }, [guesses, states]);
 
   async function submit() {
-    if (current.length !== COLS || checking) return;
+    const word = currentRef.current;
+    if (word.length !== COLS || checking) return;
 
     setChecking(true);
-    const valid = await checkWordValid(current);
+    const valid = await checkWordValid(word);
     setChecking(false);
 
     if (!valid) {
@@ -137,8 +146,8 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       return;
     }
 
-    const st = evalGuess(current, answer);
-    const newGuesses = [...guesses, current];
+    const st = evalGuess(word, answer);
+    const newGuesses = [...guesses, word];
     const newStates = [...states, st];
     setGuesses(newGuesses);
     setStates(newStates);
