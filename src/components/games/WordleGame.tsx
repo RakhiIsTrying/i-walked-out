@@ -339,9 +339,9 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
       </div>
 
       {/* Keyboard */}
-      <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 3 : 6, marginTop: 8, maxWidth: "100%" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 4 : 6, marginTop: 8, width: "100%", maxWidth: 484 }}>
         {KEYBOARD_ROWS.map((row, ri) => (
-          <div key={ri} style={{ display: "flex", gap: isMobile ? 3 : 4, justifyContent: "center" }}>
+          <div key={ri} style={{ display: "flex", gap: isMobile ? 3 : 4, justifyContent: "center", width: "100%" }}>
             {row.map((key) => {
               const state = kc[key];
               const isWide = key === "ENTER" || key === "⌫";
@@ -351,18 +351,19 @@ export default function WordleGame({ answer: answerProp, playDate }: WordleProps
                   onClick={() => onKey(key)}
                   className="typewriter"
                   style={{
-                    minWidth: isWide ? (isMobile ? 42 : 56) : (isMobile ? 26 : 34),
-                    height: isMobile ? 38 : 44,
-                    padding: "0 4px",
-                    fontSize: isWide ? (isMobile ? 9 : 11) : (isMobile ? 12 : 14),
+                    flex: isWide ? 1.5 : 1,
+                    minWidth: 0,
+                    height: isMobile ? 40 : 44,
+                    padding: "0 2px",
+                    fontSize: isWide ? (isMobile ? 10 : 11) : (isMobile ? 13 : 14),
                     fontWeight: 700,
                     background: state === "correct" ? "var(--teal)" : state === "present" ? "var(--butter)" : state === "absent" ? "var(--ink-faded)" : "var(--paper-deep)",
                     color: state && state !== "empty" ? "#fff" : "var(--ink)",
                     border: isMobile ? "1.5px solid var(--ink)" : "2px solid var(--ink)",
                     cursor: "pointer",
-                    borderRadius: 2,
+                    borderRadius: 3,
                     transition: "all 0.2s",
-                    letterSpacing: "0.05em",
+                    letterSpacing: "0.02em",
                   }}
                 >
                   {key}
