@@ -23,19 +23,52 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
     if (!input.trim()) return;
     const userMsg = input;
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    const updated = [...messages, { role: "user" as const, content: userMsg }];
+    setMessages(updated);
     setLoading(true);
 
-    const res = await fetch("/api/personality", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMsg, personality: profile, history: messages }),
-    });
+    try {
+      const res = await fetch("/api/personality", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg, personality: profile, history: messages }),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
-    }
+      if (res.ok && res.headers.get("content-type")?.includes("text/event-stream")) {
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let reply = "";
+        setMessages([...updated, { role: "assistant", content: "" }]);
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            for (const line of chunk.split("\n")) {
+              if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                try {
+                  const { text } = JSON.parse(line.slice(6));
+                  reply += text;
+                  setMessages((prev) => {
+                    const msgs = [...prev];
+                    msgs[msgs.length - 1] = { role: "assistant", content: reply };
+                    return msgs;
+                  });
+                } catch {}
+              }
+            }
+          }
+        }
+
+        if (!reply) {
+          setMessages([...updated, { role: "assistant", content: "I lost my train of thought. Try again." }]);
+        }
+      } else if (res.ok) {
+        const data = await res.json();
+        setMessages([...updated, { role: "assistant", content: data.response }]);
+      }
+    } catch {}
     setLoading(false);
   }
 
