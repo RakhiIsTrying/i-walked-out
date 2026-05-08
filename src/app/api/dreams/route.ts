@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { moderateTexts } from "@/lib/moderate";
+import { moderateTexts, stripPII } from "@/lib/moderate";
 
 export const maxDuration = 60;
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Title and description required" }, { status: 400 });
   }
 
-  const [modTitle, modDescription] = await moderateTexts([title, description]);
+  const stripped = [stripPII(title), stripPII(description)];
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -28,18 +28,33 @@ export async function POST(request: Request) {
     .eq("id", user.id)
     .single();
 
-  const { error } = await supabase.from("dreams").insert({
-    user_id: user.id,
-    title: modTitle,
-    description: modDescription,
-    category: category || "other",
-    emotion: emotion || "reflective",
-    anonymous_alias: profile?.anonymous_alias || "Ghost",
-  });
+  const { data: dream, error } = await supabase
+    .from("dreams")
+    .insert({
+      user_id: user.id,
+      title: stripped[0],
+      description: stripped[1],
+      category: category || "other",
+      emotion: emotion || "reflective",
+      anonymous_alias: profile?.anonymous_alias || "Ghost",
+    })
+    .select("id")
+    .single();
 
   if (error) {
     return NextResponse.json({ error: "Failed to save dream" }, { status: 500 });
   }
 
-  return NextResponse.json({ title: modTitle, description: modDescription });
+  moderateTexts([stripped[0], stripped[1]])
+    .then(async ([modTitle, modDesc]) => {
+      if (modTitle !== stripped[0] || modDesc !== stripped[1]) {
+        await supabase
+          .from("dreams")
+          .update({ title: modTitle, description: modDesc })
+          .eq("id", dream.id);
+      }
+    })
+    .catch(() => {});
+
+  return NextResponse.json({ title: stripped[0], description: stripped[1] });
 }

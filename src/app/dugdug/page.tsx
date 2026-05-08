@@ -45,7 +45,37 @@ export default function DugDugPage() {
         }),
       });
 
-      if (res.ok) {
+      if (res.ok && res.headers.get("content-type")?.includes("text/event-stream")) {
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let reply = "";
+        setMessages([...newMessages, { role: "assistant", content: "" }]);
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            for (const line of chunk.split("\n")) {
+              if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                try {
+                  const { text } = JSON.parse(line.slice(6));
+                  reply += text;
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = { role: "assistant", content: reply };
+                    return updated;
+                  });
+                } catch {}
+              }
+            }
+          }
+        }
+
+        if (!reply) {
+          setMessages([...newMessages, { role: "assistant", content: "i blanked out. try again?" }]);
+        }
+      } else if (res.ok) {
         const { reply } = await res.json();
         setMessages([...newMessages, { role: "assistant", content: reply }]);
       } else {

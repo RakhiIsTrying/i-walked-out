@@ -80,9 +80,10 @@ Keep responses short (2-4 sentences). Use lowercase. Be chaotic but quotable. Th
   }));
 
   try {
-    const completion = await getAI().chat.completions.create({
+    const stream = await getAI().chat.completions.create({
       model: MODEL,
       max_tokens: 500,
+      stream: true,
       messages: [
         { role: "system", content: systemPrompt },
         ...chatHistory,
@@ -90,12 +91,27 @@ Keep responses short (2-4 sentences). Use lowercase. Be chaotic but quotable. Th
       ],
     });
 
-    const reply = completion.choices[0]?.message?.content;
-    if (!reply) {
-      return NextResponse.json({ error: "No response from AI" }, { status: 500 });
-    }
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content;
+          if (text) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+          }
+        }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
 
-    return NextResponse.json({ reply });
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
   } catch (err) {
     console.error("Dug-Dug AI error:", err);
     return NextResponse.json({ error: "AI service unavailable" }, { status: 500 });
