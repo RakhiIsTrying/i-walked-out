@@ -2,6 +2,7 @@ import { getAdmin } from "@/lib/supabase/admin";
 import { getAI, MODEL } from "@/lib/ai";
 import { sendMessage } from "@/lib/telegram";
 import { getUserLink, getActiveChatMode, setActiveChatMode, clearActiveChatMode } from "./helpers";
+import { getUserInsights, buildInsightsBlock, analyzeUserIfNeeded } from "@/lib/chat-learning";
 export { handleDugDugMode, handleDugDugChat } from "./dugdug";
 
 export async function handlePersonality(chatId: number) {
@@ -232,6 +233,13 @@ TONE RULES:
 - Do NOT be holier-than-thou or preachy. You're them, not their guru.
 - Be honest and direct. Keep responses concise (2-4 sentences).`;
   }
+
+  const insights = await getUserInsights(userId);
+  if (insights) {
+    systemPrompt += "\n" + buildInsightsBlock(insights);
+  }
+
+  analyzeUserIfNeeded(userId).catch(() => {});
 
   const completion = await getAI().chat.completions.create({
     model: MODEL,

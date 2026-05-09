@@ -34,9 +34,28 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = loadSelfChat();
-    if (saved.length > 0) setMessages(saved);
-    setHydrated(true);
+    async function init() {
+      try {
+        const res = await fetch("/api/chat-history?type=self");
+        if (res.ok) {
+          const { history } = await res.json();
+          if (history && history.length > 0) {
+            const msgs = history.map((h: { role: string; content: string }) => ({
+              role: h.role as "user" | "assistant",
+              content: h.content,
+            }));
+            setMessages(msgs);
+            saveSelfChat(msgs);
+            setHydrated(true);
+            return;
+          }
+        }
+      } catch {}
+      const saved = loadSelfChat();
+      if (saved.length > 0) setMessages(saved);
+      setHydrated(true);
+    }
+    init();
   }, []);
 
   useEffect(() => {
@@ -47,6 +66,14 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
     if (hydrated && messages.length > 0) saveSelfChat(messages);
   }, [messages, hydrated]);
 
+  function persistMsg(role: "user" | "assistant", content: string) {
+    fetch("/api/chat-history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatType: "self", role, content }),
+    }).catch(() => {});
+  }
+
   async function send() {
     if (!input.trim()) return;
     const userMsg = input;
@@ -54,6 +81,7 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
     const updated = [...messages, { role: "user" as const, content: userMsg }];
     setMessages(updated);
     setLoading(true);
+    persistMsg("user", userMsg);
 
     try {
       const res = await fetch("/api/personality", {
@@ -91,10 +119,13 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
 
         if (!reply) {
           setMessages([...updated, { role: "assistant", content: "I lost my train of thought. Try again." }]);
+        } else {
+          persistMsg("assistant", reply);
         }
       } else if (res.ok) {
         const data = await res.json();
         setMessages([...updated, { role: "assistant", content: data.response }]);
+        if (data.response) persistMsg("assistant", data.response);
       }
     } catch {}
     setLoading(false);

@@ -2,6 +2,7 @@ import { getAdmin } from "@/lib/supabase/admin";
 import { getAI, MODEL } from "@/lib/ai";
 import { sendMessage } from "@/lib/telegram";
 import { getUserLink, setActiveChatMode } from "./helpers";
+import { getUserInsights, buildInsightsBlock, analyzeUserIfNeeded } from "@/lib/chat-learning";
 
 const DUGDUG_USER_ID = process.env.DUGDUG_USER_ID || "";
 
@@ -111,7 +112,14 @@ export async function handleDugDugMode(chatId: number) {
 
 export async function handleDugDugChat(chatId: number, userId: string, text: string) {
   const personality = await getDugDugPersonality();
-  const systemPrompt = buildDugDugSystemPrompt(personality);
+  let systemPrompt = buildDugDugSystemPrompt(personality);
+
+  const insights = await getUserInsights(userId);
+  if (insights) {
+    systemPrompt += "\n" + buildInsightsBlock(insights);
+  }
+
+  analyzeUserIfNeeded(userId).catch(() => {});
 
   const db = getAdmin();
 

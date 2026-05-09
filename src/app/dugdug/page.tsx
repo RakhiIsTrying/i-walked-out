@@ -41,9 +41,28 @@ export default function DugDugPage() {
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const saved = loadChat();
-    if (saved.length > 0) setMessages(saved);
-    setHydrated(true);
+    async function init() {
+      try {
+        const res = await fetch("/api/chat-history?type=nigel");
+        if (res.ok) {
+          const { history } = await res.json();
+          if (history && history.length > 0) {
+            const msgs = history.map((h: { role: string; content: string }) => ({
+              role: h.role as "user" | "assistant",
+              content: h.content,
+            }));
+            setMessages(msgs);
+            saveChat(msgs);
+            setHydrated(true);
+            return;
+          }
+        }
+      } catch {}
+      const saved = loadChat();
+      if (saved.length > 0) setMessages(saved);
+      setHydrated(true);
+    }
+    init();
   }, []);
 
   useEffect(() => {
@@ -55,6 +74,14 @@ export default function DugDugPage() {
   useEffect(() => {
     if (hydrated && messages.length > 0) saveChat(messages);
   }, [messages, hydrated]);
+
+  function persistMsg(role: "user" | "assistant", content: string) {
+    fetch("/api/chat-history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatType: "nigel", role, content }),
+    }).catch(() => {});
+  }
 
   const autoResize = useCallback(() => {
     const ta = taRef.current;
@@ -75,6 +102,7 @@ export default function DugDugPage() {
     ];
     setMessages(newMessages);
     setLoading(true);
+    persistMsg("user", msg);
 
     try {
       const res = await fetch("/api/dugdug", {
@@ -124,10 +152,13 @@ export default function DugDugPage() {
             ...newMessages,
             { role: "assistant", content: "i blanked out. try again?" },
           ]);
+        } else {
+          persistMsg("assistant", reply);
         }
       } else if (res.ok) {
         const { reply } = await res.json();
         setMessages([...newMessages, { role: "assistant", content: reply }]);
+        if (reply) persistMsg("assistant", reply);
       } else {
         setMessages([
           ...newMessages,

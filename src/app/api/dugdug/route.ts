@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { getAI, MODEL } from "@/lib/ai";
+import { getUserInsights, buildInsightsBlock } from "@/lib/chat-learning";
 
 export const maxDuration = 60;
 
@@ -94,13 +96,25 @@ Keep responses short (2-4 sentences max). Use lowercase. Every response must be 
     content: h.content as string,
   }));
 
+  let finalPrompt = systemPrompt;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const insights = await getUserInsights(user.id);
+      if (insights) {
+        finalPrompt += "\n" + buildInsightsBlock(insights);
+      }
+    }
+  } catch {}
+
   try {
     const stream = await getAI().chat.completions.create({
       model: MODEL,
       max_tokens: 300,
       stream: true,
       messages: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: finalPrompt },
         ...chatHistory,
         { role: "user", content: message.trim() },
       ],

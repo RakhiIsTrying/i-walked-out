@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAI, MODEL } from "@/lib/ai";
+import { getUserInsights, buildInsightsBlock } from "@/lib/chat-learning";
 
 export const maxDuration = 60;
 
@@ -165,6 +166,11 @@ TONE RULES:
 - Do NOT sound like a therapist, life coach, or motivational speaker.
 - Do NOT be holier-than-thou or preachy. You're them, not their guru.
 - Be honest and direct. Keep responses concise (2-4 sentences).`;
+  }
+
+  const insights = await getUserInsights(user.id);
+  if (insights) {
+    systemPrompt += "\n" + buildInsightsBlock(insights);
   }
 
   try {
