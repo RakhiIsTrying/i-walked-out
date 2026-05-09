@@ -126,11 +126,6 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/sticky-decision" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--paper)", borderBottom: "1px solid transparent" }}>
-                Sticky decision
-              </Link>
-            </li>
-            <li>
               <Link href="/vibe" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--paper)", borderBottom: "1px solid transparent" }}>
                 Vibe IRL
               </Link>

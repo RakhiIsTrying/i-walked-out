@@ -274,13 +274,6 @@ function Rooms() {
     },
     {
       num: "N° 03",
-      title: "Sticky Decision",
-      desc: "Stuck? Post it. Let kind strangers vote on what you should do next. You're not alone in this.",
-      href: "/sticky-decision",
-      visualClass: "vote",
-    },
-    {
-      num: "N° 04",
       title: "Vibe IRL",
       desc: "Type a feeling. Get a place to visit, a movie to watch, food to try. Let mood guide you, not a roadmap.",
       href: "/vibe",

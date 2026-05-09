@@ -8,29 +8,29 @@ interface Message {
 }
 
 const starters = [
-  { label: "a small one", q: "i'm tired of pretending i still want to be a morning person." },
-  { label: "a heavy one", q: "i think i need to stop wanting to be a founder." },
-  { label: "something silly", q: "show me something silly someone buried." },
-  { label: "wait, how does this work", q: "how does this work, exactly?" },
-  { label: "show me the oldest", q: "what's the oldest dream you have down there?" },
-  { label: "what're you doing rn", q: "what are you doing right now?" },
+  { label: "roast my life choices", q: "roast my life choices" },
+  { label: "be brutally honest", q: "be brutally honest with me about something" },
+  { label: "say what i already know", q: "say the thing i already know but won't admit" },
+  { label: "is it too late?", q: "is it too late to start over?" },
+  { label: "what's wrong with me", q: "what's actually wrong with me?" },
+  { label: "motivate me (don't)", q: "give me a motivational speech" },
 ];
 
 const NIGEL_DOINGS = [
-  "reorganising the dream-jar shelf · alphabetising worms",
-  "trying to remember where the kettle is · feeling its absence",
-  "rereading a buried dream from 2025 · nodding slowly",
-  "watering one stubborn root · waiting",
-  "patching the burrow ceiling · with what, unclear",
-  "writing labels in tiny handwriting · running out of pencil",
+  "reviewing your abandoned ambitions · alphabetically",
+  "writing rejection letters to people's new year's resolutions",
+  "composing a eulogy for someone's guitar-learning phase",
+  "cataloguing excuses · the collection is extensive",
+  "polishing the trophy cabinet of unfulfilled potential",
+  "reading your dream journal · out loud · to no one",
 ];
 
 const NIGEL_STATUSES = [
-  "putting the kettle on",
-  "listening",
-  "tidying up a worm",
-  "thinking about your message",
-  "stretching · just woke up",
+  "judging silently",
+  "already unimpressed",
+  "preparing material",
+  "thinking of something devastating",
+  "warming up · this won't take long",
 ];
 
 const NIGEL_STORAGE_KEY = "nigel_chat_history";
@@ -197,7 +197,7 @@ export default function NigelPage() {
     <div className="page-in nigel-page" style={{ maxWidth: 1200, margin: "0 auto", padding: "72px 32px 40px" }}>
       <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-      <div className="eyebrow">A small visit · 2 minutes · tea optional</div>
+      <div className="eyebrow">Nigel Bottomsworth-Pemberton · satirist-in-residence</div>
       <h1
         style={{
           fontFamily: "var(--serif)",
@@ -209,18 +209,18 @@ export default function NigelPage() {
           maxWidth: "16ch",
         }}
       >
-        Come in.{" "}
+        Tell Nigel{" "}
         <em style={{ fontStyle: "italic", fontWeight: 500, color: "var(--accent)", whiteSpace: "nowrap" }}>
-          Sit down.
-        </em>{" "}
-        Tell Nigel what you&apos;ve been carrying.
+          what you already know.
+        </em>
       </h1>
       <p style={{ maxWidth: "56ch", color: "var(--ink-2)", fontSize: 19, lineHeight: 1.55, marginBottom: 0 }}>
-        Nigel lives just under the floorboards of this site. They&apos;re not a chatbot — they&apos;re a
-        small creature with a name longer than they are. They listen, slowly. They write you a note back.
+        A personality assembled from abandoned dreams. Satirical. Deadpan.
+        Uncomfortably honest. He&apos;ll say what you already know but were
+        hoping no one would point out.
       </p>
 
-      <span className="scribble-r-deco">&#8600; pull up a chair</span>
+      <span className="scribble-r-deco">&#8600; you asked for this</span>
 
       {/* ── The Room ── */}
       <div className="room">
@@ -232,7 +232,7 @@ export default function NigelPage() {
             </div>
             <div>
               <div className="nigel-name"><span className="full">Nigel B. Pemberton</span></div>
-              <div className="nigel-bio">keeper of buried dreams · est. always</div>
+              <div className="nigel-bio">satirist-in-residence · assembled from quit dreams</div>
             </div>
           </div>
           <div className="room-status">
@@ -253,7 +253,7 @@ export default function NigelPage() {
                 <div className="av-mini" aria-hidden="true" />
                 <div className="note">
                   <span className="from">Nigel</span>
-                  oh. you came down. <em>good.</em> most people walk over me without noticing.
+                  right. you&apos;re here. <em>bold move.</em> most people avoid honest feedback like it&apos;s a gym membership.
                   <span className="stamp">~ N</span>
                 </div>
               </div>
@@ -261,8 +261,8 @@ export default function NigelPage() {
                 <div className="av-mini" aria-hidden="true" />
                 <div className="note">
                   <span className="from">Nigel</span>
-                  tell me a thing you&apos;ve been carrying. doesn&apos;t have to be big.
-                  i&apos;ll bury it for you.
+                  go on then. say something you already know is true but
+                  haven&apos;t said out loud yet. i won&apos;t sugarcoat it. actually i can&apos;t. it&apos;s not in my programming. or whatever i am.
                   <span className="stamp">~ N</span>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function NigelPage() {
 
         {/* Compose */}
         <div className="compose">
-          <span className="compose-label">&#8627; pass nigel a note —</span>
+          <span className="compose-label">&#8627; say something. nigel&apos;s ready —</span>
           {!hasMessages && (
             <div className="starters">
               {starters.map((s) => (
@@ -314,7 +314,7 @@ export default function NigelPage() {
               value={input}
               onChange={(e) => { setInput(e.target.value); autoResize(); }}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder="write something. anything. spelling doesn't matter down here."
+              placeholder="say it. nigel's heard worse."
               disabled={loading}
             />
             <button
@@ -328,7 +328,7 @@ export default function NigelPage() {
           </div>
         </div>
 
-        <span className="doodle-worm">&#8627; a worm just wandered through. nigel waved.</span>
+        <span className="doodle-worm">&#8627; nigel is writing material about you right now.</span>
       </div>
 
       <style>{`
