@@ -209,14 +209,14 @@ export default function AdminDashboard() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
                     <StatCard value={stats.users} label="users" color="var(--ink)" />
                     <StatCard value={stats.dreams} label="dreams" color="var(--accent-deep)" />
-                    <StatCard value={stats.sticky_decisions} label="decisions" color="var(--note-5)" />
+                    <StatCard value={stats.sticky_decisions} label="decisions" color="var(--ink-2)" />
                     <StatCard value={stats.votes} label="votes" color="var(--accent)" />
-                    <StatCard value={stats.vibe_searches} label="vibe searches" color="var(--note-1)" />
+                    <StatCard value={stats.vibe_searches} label="vibe searches" color="var(--accent)" />
                     <StatCard value={stats.bucket_items} label="bucket items" color="var(--accent-deep)" />
                     <StatCard value={stats.games_played} label="games played" color="var(--accent)" />
-                    <StatCard value={stats.personalities} label="personalities" color="var(--note-5)" />
+                    <StatCard value={stats.personalities} label="personalities" color="var(--ink-2)" />
                     <StatCard value={stats.telegram_links} label="telegram links" color="var(--ink)" />
-                    <StatCard value={stats.chat_messages} label="chat messages" color="var(--note-1)" />
+                    <StatCard value={stats.chat_messages} label="chat messages" color="var(--accent-deep)" />
                   </div>
                 </div>
 
