@@ -762,6 +762,37 @@ export default function NigelPage() {
           .note { max-width: 92%; }
           .scribble-r-deco { display: none; }
         }
+        @media (max-width: 560px) {
+          .nigel-page { padding: 40px 16px 32px !important; }
+          .room-hd { padding: 14px 16px 12px; }
+          .room-doings { display: none; }
+          .nigel-portrait { width: 42px; height: 42px; }
+          .nigel-portrait::before, .nigel-portrait::after { top: 14px; width: 5px; height: 5px; }
+          .nigel-portrait::before { left: 10px; }
+          .nigel-portrait::after { right: 10px; }
+          .nigel-portrait .specs { top: 12px; }
+          .nigel-portrait .specs::before, .nigel-portrait .specs::after { width: 10px; height: 10px; }
+          .nigel-name { font-size: 18px; }
+          .thread { padding: 20px 14px 8px; min-height: 280px; max-height: 420px; gap: 22px; }
+          .note { font-size: 16px; padding: 12px 14px 14px; }
+          .note .from { font-size: 8px; top: -9px; }
+          .note .stamp { font-size: 11px; }
+          .note::before { width: 26px; height: 11px; }
+          .msg-row .av-mini { width: 26px; height: 26px; }
+          .msg-row .av-mini::before, .msg-row .av-mini::after { top: 9px; width: 3px; height: 3px; }
+          .msg-row .av-mini::before { left: 6px; }
+          .msg-row .av-mini::after { right: 6px; }
+          .compose { padding: 14px 14px 16px; }
+          .compose-label { font-size: 18px; }
+          .compose-row { grid-template-columns: 1fr auto; gap: 10px; }
+          .compose-row .you-av { display: none; }
+          .compose-row textarea { font-size: 16px; min-height: 44px; }
+          .send-btn { padding: 8px 14px; font-size: 18px; }
+          .send-btn span:first-child { display: none; }
+          .send-btn .arrow { font-size: 20px; }
+          .starter { font-size: 12px; padding: 5px 10px; }
+          .doodle-worm { font-size: 14px; left: 14px; bottom: 4px; }
+        }
       `}</style>
     </div>
   );
