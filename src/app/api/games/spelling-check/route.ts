@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import { DICTIONARY } from "@/lib/words";
+import { DICTIONARY, WORDLE_ANSWERS } from "@/lib/words";
 import { FIVE_LETTER_WORDS } from "@/lib/wordlist";
 
-const DICT_SET = new Set(DICTIONARY);
+const LOCAL_WORDS = new Set([
+  ...DICTIONARY,
+  ...WORDLE_ANSWERS,
+  ...FIVE_LETTER_WORDS,
+]);
 const CACHE_HEADERS = { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" };
 
 export async function GET(request: Request) {
@@ -13,6 +17,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ valid: false });
   }
 
+  if (LOCAL_WORDS.has(word)) {
+    return NextResponse.json({ valid: true }, { headers: CACHE_HEADERS });
+  }
+
   try {
     const res = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
@@ -20,7 +28,6 @@ export async function GET(request: Request) {
     );
     return NextResponse.json({ valid: res.ok }, { headers: CACHE_HEADERS });
   } catch {
-    const valid = DICT_SET.has(word) || FIVE_LETTER_WORDS.has(word);
-    return NextResponse.json({ valid }, { headers: CACHE_HEADERS });
+    return NextResponse.json({ valid: false }, { headers: CACHE_HEADERS });
   }
 }
