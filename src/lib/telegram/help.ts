@@ -10,7 +10,7 @@ export async function handleHelp(chatId: number) {
       `🪞 *AI Personality Mirror*\n` +
       `/personality — Generate your profile\n` +
       `/chat — Talk to your future self\n` +
-      `/dugdug — Talk to dug-dug (the unhinged communal AI)\n` +
+      `/nigel — Talk to nigel (the unhinged communal AI)\n` +
       `/exit — Leave chat mode\n\n` +
       `🎲 *Sticky Decisions*\n` +
       `/sticky title | desc | opt1 | opt2 — Post a decision\n` +

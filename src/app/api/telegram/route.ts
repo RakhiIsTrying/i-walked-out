@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       await handlePersonality(chatId);
     } else if (text.startsWith("/chat")) {
       await handleChatMode(chatId);
-    } else if (text.startsWith("/dugdug")) {
+    } else if (text.startsWith("/nigel")) {
       await handleDugDugMode(chatId);
     } else if (text.startsWith("/exit")) {
       await handleExitChat(chatId);

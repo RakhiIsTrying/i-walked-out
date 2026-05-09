@@ -182,13 +182,13 @@ export async function handleFreeText(chatId: number, text: string) {
   if (intent === "chat") {
     await sendMessage(
       chatId,
-      "Sounds like you want to talk.\n• /chat — talk to your future self\n• /dugdug — talk to dug-dug (the unhinged communal AI)"
+      "Sounds like you want to talk.\n• /chat — talk to your future self\n• /nigel — talk to nigel (the unhinged communal AI)"
     );
     return;
   }
 
   await sendMessage(
     chatId,
-    "I'm not sure what you're going for. You can:\n• Just tell me a dream you gave up on\n• Ask me to help you decide something\n• Describe a vibe for life recs\n• Type /chat to talk to your future self\n• Type /dugdug to talk to dug-dug\n• Type /help for all commands"
+    "I'm not sure what you're going for. You can:\n• Just tell me a dream you gave up on\n• Ask me to help you decide something\n• Describe a vibe for life recs\n• Type /chat to talk to your future self\n• Type /nigel to talk to nigel\n• Type /help for all commands"
   );
 }

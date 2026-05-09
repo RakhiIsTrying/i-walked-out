@@ -105,7 +105,7 @@ export default function DugDugPage() {
     persistMsg("user", msg);
 
     try {
-      const res = await fetch("/api/dugdug", {
+      const res = await fetch("/api/nigel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

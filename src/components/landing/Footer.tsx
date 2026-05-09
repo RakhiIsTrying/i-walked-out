@@ -160,7 +160,7 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/dugdug" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--paper)", borderBottom: "1px solid transparent" }}>
+              <Link href="/nigel" style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--paper)", borderBottom: "1px solid transparent" }}>
                 Nigel Bottomsworth-Pemberton
               </Link>
             </li>

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         { command: "decisions", description: "Browse & vote on decisions" },
         { command: "personality", description: "Generate your personality" },
         { command: "chat", description: "Talk to your future self" },
-        { command: "dugdug", description: "Talk to dug-dug" },
+        { command: "nigel", description: "Talk to nigel" },
         { command: "exit", description: "Leave chat mode" },
         { command: "connect", description: "Link your account" },
         { command: "help", description: "All commands" },

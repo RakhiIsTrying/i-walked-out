@@ -16,7 +16,7 @@ export default function Navbar({ user }: { user: { email: string } | null }) {
     { href: "/feed", label: "Dead Dreams" },
     { href: "/sticky-decision", label: "Sticky Decision" },
     { href: "/vibe", label: "Vibe IRL" },
-    { href: "/dugdug", label: "Nigel Bottomsworth-Pemberton" },
+    { href: "/nigel", label: "Nigel Bottomsworth-Pemberton" },
     { href: "/games", label: "Games" },
     ...(user
       ? [
