@@ -90,6 +90,9 @@ export default function NigelPage() {
             setHydrated(true);
             return;
           }
+          localStorage.removeItem(NIGEL_STORAGE_KEY);
+          setHydrated(true);
+          return;
         }
       } catch {}
       const saved = loadChat();

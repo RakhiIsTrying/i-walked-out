@@ -49,6 +49,9 @@ export default function PersonalityChat({ profile, emptyText, subtitle }: Props)
             setHydrated(true);
             return;
           }
+          localStorage.removeItem(SELF_STORAGE_KEY);
+          setHydrated(true);
+          return;
         }
       } catch {}
       const saved = loadSelfChat();
