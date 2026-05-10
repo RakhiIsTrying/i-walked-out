@@ -64,7 +64,7 @@ export default function PersonalityPage() {
 
   return (
     <div className="page-in" style={{ padding: "72px 0 40px" }}>
-      <div className="wrap" style={{ maxWidth: 860 }}>
+      <div className="wrap" style={{ maxWidth: 1100 }}>
 
         {/* Header */}
         <header style={{ marginBottom: 40 }}>
@@ -115,7 +115,7 @@ export default function PersonalityPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
             {/* Two-column layout: Left = text, Right = traits */}
-            <div className="personality-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
+            <div className="personality-grid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 40, alignItems: "start" }}>
 
               {/* LEFT: Headline + Summary */}
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

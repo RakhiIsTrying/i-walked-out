@@ -17,40 +17,39 @@ function traitColor(value: number): string {
 
 export default function TraitBars({ profile }: { profile: PersonalityProfile }) {
   return (
-    <section>
-      <p style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 20, textAlign: "center" }}>
+    <section
+      style={{
+        background: "var(--paper)",
+        border: "1px solid var(--ink)",
+        borderRadius: 3,
+        padding: "24px 24px 20px",
+        boxShadow: "4px 5px 0 var(--paper-edge)",
+      }}
+    >
+      <p style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-3)", marginBottom: 18 }}>
         Personality Traits
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {traitKeys.map(({ key, label }) => {
           const value = profile.traits[key as keyof typeof profile.traits] as number;
           const barColor = traitColor(value);
           return (
-            <div
-              key={key}
-              style={{
-                background: "var(--paper)",
-                padding: "16px 20px",
-                borderRadius: 3,
-                border: "1px dashed var(--ink-3)",
-                position: "relative",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-                <span style={{ fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--ink-2)" }}>
+            <div key={key}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                <span style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-2)" }}>
                   {label}
                 </span>
-                <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, color: barColor, fontWeight: 600 }}>
+                <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 18, color: barColor, fontWeight: 600 }}>
                   {value}%
                 </span>
               </div>
-              <div style={{ height: 8, background: "var(--paper-deep)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: 6, background: "var(--paper-deep)", borderRadius: 3, overflow: "hidden" }}>
                 <div
                   style={{
                     height: "100%",
                     width: `${value}%`,
                     background: barColor,
-                    borderRadius: 4,
+                    borderRadius: 3,
                     transition: "width 1s cubic-bezier(0.16, 1, 0.3, 1)",
                   }}
                 />
