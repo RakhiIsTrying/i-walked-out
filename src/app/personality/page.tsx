@@ -114,99 +114,107 @@ export default function PersonalityPage() {
         {profile ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
-            {/* Headline */}
-            {profile.headline && (
-              <div
-                style={{
-                  background: "var(--ink)",
-                  color: "var(--paper)",
-                  border: "1px solid var(--ink)",
-                  borderRadius: 3,
-                  padding: "28px 28px",
-                  boxShadow: "4px 5px 0 var(--paper-edge)",
-                }}
-              >
-                <p
+            {/* Two-column layout: Left = text, Right = traits */}
+            <div className="personality-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
+
+              {/* LEFT: Headline + Summary */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {profile.headline && (
+                  <div
+                    style={{
+                      background: "var(--ink)",
+                      color: "var(--paper)",
+                      border: "1px solid var(--ink)",
+                      borderRadius: 3,
+                      padding: "28px 28px",
+                      boxShadow: "4px 5px 0 var(--paper-edge)",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontFamily: "var(--serif)",
+                        fontStyle: "italic",
+                        fontSize: "clamp(20px, 2.5vw, 26px)",
+                        lineHeight: 1.35,
+                        margin: 0,
+                        textAlign: "center",
+                      }}
+                    >
+                      &ldquo;{profile.headline}&rdquo;
+                    </p>
+                  </div>
+                )}
+
+                <div
                   style={{
-                    fontFamily: "var(--serif)",
-                    fontStyle: "italic",
-                    fontSize: "clamp(22px, 3vw, 28px)",
-                    lineHeight: 1.35,
-                    margin: 0,
-                    textAlign: "center",
+                    background: "var(--paper)",
+                    border: "1px solid var(--ink)",
+                    borderRadius: 3,
+                    padding: "36px 28px 28px",
+                    boxShadow: "4px 5px 0 var(--paper-edge)",
+                    position: "relative",
                   }}
                 >
-                  &ldquo;{profile.headline}&rdquo;
-                </p>
+                  <div
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: "10.5px",
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                      color: "var(--ink-3)",
+                      marginBottom: 14,
+                    }}
+                  >
+                    The reading
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: "var(--serif)",
+                      fontSize: 18,
+                      lineHeight: 1.55,
+                      color: "var(--ink)",
+                      whiteSpace: "pre-line",
+                      margin: 0,
+                    }}
+                  >
+                    {profile.summary}
+                  </p>
+                </div>
               </div>
-            )}
 
-            {/* Summary */}
-            <div
-              style={{
-                background: "var(--paper)",
-                border: "1px solid var(--ink)",
-                borderRadius: 3,
-                padding: "36px 28px 28px",
-                boxShadow: "4px 5px 0 var(--paper-edge)",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: "10.5px",
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  color: "var(--ink-3)",
-                  marginBottom: 14,
-                }}
-              >
-                The reading
-              </div>
-              <p
-                style={{
-                  fontFamily: "var(--serif)",
-                  fontSize: 19,
-                  lineHeight: 1.5,
-                  color: "var(--ink)",
-                  whiteSpace: "pre-line",
-                  margin: 0,
-                }}
-              >
-                {profile.summary}
-              </p>
-            </div>
+              {/* RIGHT: Traits + Decision Style */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <TraitBars profile={profile} />
 
-            <TraitBars profile={profile} />
-
-            {/* Decision Style */}
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <div
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: 12,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  padding: "14px 28px",
-                  border: "2px solid var(--ink)",
-                  borderRadius: 3,
-                  color: "var(--ink)",
-                  textAlign: "center",
-                }}
-              >
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 9,
-                    color: "var(--ink-3)",
-                    marginBottom: 4,
-                    letterSpacing: "0.2em",
-                  }}
-                >
-                  decision style
-                </span>
-                {profile.traits.decision_style}
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: 12,
+                      letterSpacing: "0.15em",
+                      textTransform: "uppercase",
+                      padding: "14px 28px",
+                      border: "2px solid var(--ink)",
+                      borderRadius: 3,
+                      color: "var(--ink)",
+                      textAlign: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 9,
+                        color: "var(--ink-3)",
+                        marginBottom: 4,
+                        letterSpacing: "0.2em",
+                      }}
+                    >
+                      decision style
+                    </span>
+                    {profile.traits.decision_style}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -217,6 +225,14 @@ export default function PersonalityPage() {
               emptyText={"Your future self is waiting...\nAsk anything about your decisions."}
               subtitle="Ask about decisions, regrets, or anything on your mind"
             />
+
+            <style>{`
+              @media (max-width: 768px) {
+                .personality-grid {
+                  grid-template-columns: 1fr !important;
+                }
+              }
+            `}</style>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
