@@ -35,10 +35,10 @@ export interface TangoPuzzle {
 export interface DailyPuzzles {
   date: string;
   wordle: WordlePuzzle;
-  crossword: CrosswordPuzzle;
+  crossword?: CrosswordPuzzle;
   crosswordMini?: CrosswordPuzzle;
   crosswordMidi?: CrosswordPuzzle;
-  spelling: SpellingPuzzle;
+  spelling?: SpellingPuzzle;
   sudoku: SudokuPuzzle;
   tango: TangoPuzzle;
 }

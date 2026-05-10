@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendMessage } from "@/lib/telegram";
 import { handleStart, handleConnect, handleLink } from "@/lib/telegram/auth";
-import { handleDream, handleFeed } from "@/lib/telegram/dreams";
+import { handleDream, handleFeed, handleDailyPrompt } from "@/lib/telegram/dreams";
 import { handleVibe, handleBucket } from "@/lib/telegram/vibe";
 import { handlePersonality, handleChatMode, handleExitChat, handleDugDugMode } from "@/lib/telegram/chat";
 import { handleSticky, handleDecisions, handleVote } from "@/lib/telegram/sticky";
@@ -94,6 +94,8 @@ export async function POST(request: Request) {
       await handleGamesStatus(chatId);
     } else if (text.startsWith("/bucket")) {
       await handleBucket(chatId, text);
+    } else if (text.startsWith("/prompt")) {
+      await handleDailyPrompt(chatId);
     } else if (text.startsWith("/help")) {
       await handleHelp(chatId);
     } else if (text.startsWith("/")) {

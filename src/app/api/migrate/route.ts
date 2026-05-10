@@ -47,6 +47,37 @@ export async function POST() {
     results.push("web_chat_history: created");
   }
 
+  const { error: eHL } = await db.rpc("exec_sql", {
+    query: `ALTER TABLE personality_profiles ADD COLUMN IF NOT EXISTS headline TEXT;`,
+  });
+  if (eHL) {
+    results.push(`headline column: may need manual add - ${eHL.message}`);
+  } else {
+    results.push("headline column: added to personality_profiles");
+  }
+
+  const { error: eND } = await db.rpc("exec_sql", {
+    query: `
+      CREATE TABLE IF NOT EXISTS nigel_daily (
+        date DATE PRIMARY KEY,
+        thought TEXT NOT NULL,
+        category TEXT,
+        emotion TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      );
+    `,
+  });
+  if (eND) {
+    const { error: fallbackND } = await db.from("nigel_daily").select("date").limit(1);
+    if (fallbackND) {
+      results.push(`nigel_daily: needs manual creation - ${fallbackND.message}`);
+    } else {
+      results.push("nigel_daily: already exists");
+    }
+  } else {
+    results.push("nigel_daily: created");
+  }
+
   const { error: e2 } = await db.rpc("exec_sql", {
     query: `
       CREATE TABLE IF NOT EXISTS chat_insights (
@@ -90,6 +121,16 @@ CREATE TABLE IF NOT EXISTS chat_insights (
   insights JSONB NOT NULL DEFAULT '{}',
   message_count INT DEFAULT 0,
   updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE personality_profiles ADD COLUMN IF NOT EXISTS headline TEXT;
+
+CREATE TABLE IF NOT EXISTS nigel_daily (
+  date DATE PRIMARY KEY,
+  thought TEXT NOT NULL,
+  category TEXT,
+  emotion TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- RLS policies (optional, admin client bypasses RLS):

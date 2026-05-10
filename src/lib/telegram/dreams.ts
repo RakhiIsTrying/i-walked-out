@@ -2,6 +2,7 @@ import { getAdmin } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { moderateTexts } from "@/lib/moderate";
 import { getUserLink } from "./helpers";
+import { getDailyPrompt } from "@/lib/daily-prompts";
 
 export async function handleDream(chatId: number, text: string) {
   const link = await getUserLink(chatId);
@@ -61,6 +62,15 @@ export async function handleDream(chatId: number, text: string) {
   await sendMessage(
     chatId,
     `Laid to rest: *${modTitle}*\n\n_${modDescription}_\n\nYour dream is in the graveyard now. Be gentle with yourself.`
+  );
+}
+
+export async function handleDailyPrompt(chatId: number) {
+  const today = new Date().toISOString().split("T")[0];
+  const prompt = getDailyPrompt(today);
+  await sendMessage(
+    chatId,
+    `*Today's prompt:*\n\n_${prompt}_\n\nJust reply with whatever comes to mind — it'll become a dead dream in the graveyard.`
   );
 }
 

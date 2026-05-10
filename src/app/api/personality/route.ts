@@ -41,13 +41,23 @@ export async function POST() {
     messages: [
       {
         role: "user",
-        content: `You are a personality psychologist analyzing someone through the dreams and ideas they ABANDONED. What people walk away from reveals deep truths about who they are.
+        content: `You are a brutally honest behavioral analyst. You analyze people through what they QUIT — not what they pursue. What someone walks away from exposes their real operating system: their fears, their ceilings, their self-deceptions.
 
 Here are their abandoned dreams:
 
 ${dreamsSummary}
 
-Analyze this person and return a JSON object (no markdown, just raw JSON) with this exact structure:
+Your job: read this person like a book. Be uncomfortably accurate. No flattery, no softening, no "but that's okay." Say what's actually happening beneath the surface. Be specific — reference their actual dreams, don't speak in generalities.
+
+RULES:
+- The summary must be ONE short paragraph (3-5 sentences max). Sharp. Direct. Second person ("You").
+- The headline must be ONE sentence that stops them in their tracks — the core truth they haven't admitted.
+- The blind_spots must be things they genuinely don't see about themselves, not repackaged compliments.
+- The archetype should sting a little. Not cute. Not flattering. Accurate. Think "The Professional Starter" or "The Escape Artist" or "The Comfort Addict."
+- Do NOT say anything encouraging, positive, or reassuring. This is a mirror, not a pep talk.
+- Be SPECIFIC to their dreams. "You quit the cafe idea not because it was impractical but because..." is good. "You tend to avoid challenges" is useless.
+
+Return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
   "traits": {
     "openness": <0-100>,
@@ -59,10 +69,12 @@ Analyze this person and return a JSON object (no markdown, just raw JSON) with t
     "decision_style": "<one of: impulsive, analytical, intuitive, avoidant, dependent>",
     "core_values": ["<value1>", "<value2>", "<value3>"],
     "fear_patterns": ["<fear1>", "<fear2>", "<fear3>"],
-    "aspiration_themes": ["<theme1>", "<theme2>", "<theme3>"]
+    "aspiration_themes": ["<theme1>", "<theme2>", "<theme3>"],
+    "blind_spots": ["<thing they don't see 1>", "<thing they don't see 2>", "<thing they don't see 3>"]
   },
-  "summary": "<2-3 paragraph personality summary written in second person ('You are...'). Be specific, insightful, and slightly poetic. Reference their actual abandoned dreams.>",
-  "archetype": "<A creative 2-3 word archetype like 'The Restless Builder' or 'The Cautious Dreamer'>"
+  "headline": "<ONE devastating sentence — the core truth about why they quit what they quit>",
+  "summary": "<ONE short paragraph, 3-5 sentences. Brutally honest. No fluff. Reference their specific dreams. Say what no one else will say to them.>",
+  "archetype": "<A sharp 2-4 word archetype that stings because it's accurate>"
 }`,
       },
     ],
@@ -91,10 +103,12 @@ Analyze this person and return a JSON object (no markdown, just raw JSON) with t
     }
   }
 
+  let saveError = null;
   const { error } = await supabase.from("personality_profiles").upsert(
     {
       user_id: user.id,
       traits: personality.traits,
+      headline: personality.headline || null,
       summary: personality.summary,
       archetype: personality.archetype,
       updated_at: new Date().toISOString(),
@@ -103,6 +117,20 @@ Analyze this person and return a JSON object (no markdown, just raw JSON) with t
   );
 
   if (error) {
+    const { error: e2 } = await supabase.from("personality_profiles").upsert(
+      {
+        user_id: user.id,
+        traits: personality.traits,
+        summary: personality.summary,
+        archetype: personality.archetype,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+    saveError = e2;
+  }
+
+  if (saveError) {
     return NextResponse.json(
       { error: "Failed to save personality" },
       { status: 500 }

@@ -10,6 +10,10 @@ import {
   generateSudoku,
   generateTango,
   generateDailyTheme,
+  fallbackWordle,
+  fallbackSudoku,
+  fallbackTango,
+  fallbackSpelling,
 } from "@/lib/generators";
 
 const MIN_DATE = "2026-05-05";
@@ -19,7 +23,6 @@ export async function GET(request: Request) {
   const dateParam = searchParams.get("date");
   const refresh = searchParams.get("refresh") === "true";
   const refreshGame = searchParams.get("game");
-  // Use IST (UTC+5:30) so puzzles refresh at midnight India time
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000;
   const today = new Date(now.getTime() + istOffset).toISOString().split("T")[0];
@@ -70,33 +73,55 @@ export async function GET(request: Request) {
     weekday: "long", month: "long", day: "numeric", year: "numeric",
   });
 
-  try {
-    const [theme, wordle, spelling, sudoku, tango] = await Promise.all([
-      generateDailyTheme(targetDate),
-      generateWordle(dateLabel),
-      generateSpellingBee(dateLabel),
-      generateSudoku(),
-      generateTango(dateLabel),
-    ]);
+  // Generate all puzzles in parallel — individual failures don't kill the rest
+  const results = await Promise.allSettled([
+    generateDailyTheme(targetDate),
+    generateWordle(dateLabel),
+    generateSpellingBee(dateLabel),
+    generateSudoku(),
+    generateTango(dateLabel),
+  ]);
 
-    const crossword = await generateCrosswordVariant("normal", theme);
-
-    const puzzles: DailyPuzzles = { date: targetDate, wordle, crossword, spelling, sudoku, tango };
-
-    try {
-      await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles });
-    } catch {}
-
-    return NextResponse.json(puzzles, { headers: { "Cache-Control": cacheHeader } });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.error("[daily] generation failed:", msg);
-    if (existing) {
-      return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
+  const names = ["theme", "wordle", "spelling", "sudoku", "tango"];
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === "rejected") {
+      console.error(`[daily] ${names[i]} AI failed, using fallback:`, (results[i] as PromiseRejectedResult).reason);
     }
-    return NextResponse.json(
-      { error: "Puzzle generation failed", detail: msg },
-      { status: 500 }
-    );
   }
+
+  const theme = results[0].status === "fulfilled" ? results[0].value : "Daily Puzzle";
+  const wordle = results[1].status === "fulfilled" ? results[1].value : fallbackWordle(targetDate);
+  const spelling = results[2].status === "fulfilled" ? results[2].value : fallbackSpelling(targetDate);
+  const sudoku = results[3].status === "fulfilled" ? results[3].value : fallbackSudoku(targetDate);
+  const tango = results[4].status === "fulfilled" ? results[4].value : fallbackTango(targetDate);
+
+  // Crossword: try normal (15x15), fall back to mini (5x5) if that fails
+  let crossword = existing?.crossword;
+  if (!crossword) {
+    try {
+      crossword = await generateCrosswordVariant("normal", theme);
+    } catch (e) {
+      console.error("[daily] normal crossword failed, trying mini:", e instanceof Error ? e.message : String(e));
+      try {
+        crossword = await generateCrosswordVariant("mini", theme);
+      } catch (e2) {
+        console.error("[daily] mini crossword also failed:", e2 instanceof Error ? e2.message : String(e2));
+      }
+    }
+  }
+
+  const puzzles: DailyPuzzles = {
+    date: targetDate,
+    wordle,
+    sudoku,
+    tango,
+    ...(spelling ? { spelling } : {}),
+    ...(crossword ? { crossword } : {}),
+  };
+
+  try {
+    await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles });
+  } catch {}
+
+  return NextResponse.json(puzzles, { headers: { "Cache-Control": cacheHeader } });
 }

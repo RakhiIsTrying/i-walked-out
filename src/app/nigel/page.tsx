@@ -784,12 +784,12 @@ export default function NigelPage() {
           .msg-row .av-mini::after { right: 6px; }
           .compose { padding: 14px 14px 16px; }
           .compose-label { font-size: 18px; }
-          .compose-row { grid-template-columns: 1fr auto; gap: 10px; }
+          .compose-row { grid-template-columns: 1fr; gap: 10px; }
           .compose-row .you-av { display: none; }
           .compose-row textarea { font-size: 16px; min-height: 44px; }
-          .send-btn { padding: 8px 14px; font-size: 18px; }
-          .send-btn span:first-child { display: none; }
-          .send-btn .arrow { font-size: 20px; }
+          .send-btn { padding: 10px 18px; font-size: 18px; width: 100%; justify-content: center; }
+          .send-btn span:first-child { display: inline; }
+          .send-btn .arrow { font-size: 18px; }
           .starter { font-size: 12px; padding: 5px 10px; }
           .doodle-worm { font-size: 14px; left: 14px; bottom: 4px; }
         }

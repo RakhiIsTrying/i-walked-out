@@ -114,6 +114,33 @@ export default function PersonalityPage() {
         {profile ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
+            {/* Headline */}
+            {profile.headline && (
+              <div
+                style={{
+                  background: "var(--ink)",
+                  color: "var(--paper)",
+                  border: "1px solid var(--ink)",
+                  borderRadius: 3,
+                  padding: "28px 28px",
+                  boxShadow: "4px 5px 0 var(--paper-edge)",
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "var(--serif)",
+                    fontStyle: "italic",
+                    fontSize: "clamp(22px, 3vw, 28px)",
+                    lineHeight: 1.35,
+                    margin: 0,
+                    textAlign: "center",
+                  }}
+                >
+                  &ldquo;{profile.headline}&rdquo;
+                </p>
+              </div>
+            )}
+
             {/* Summary */}
             <div
               style={{
@@ -135,16 +162,16 @@ export default function PersonalityPage() {
                   marginBottom: 14,
                 }}
               >
-                Personality Summary
+                The reading
               </div>
               <p
                 style={{
                   fontFamily: "var(--serif)",
-                  fontStyle: "italic",
-                  fontSize: 20,
-                  lineHeight: 1.45,
-                  color: "var(--ink-2)",
+                  fontSize: 19,
+                  lineHeight: 1.5,
+                  color: "var(--ink)",
                   whiteSpace: "pre-line",
+                  margin: 0,
                 }}
               >
                 {profile.summary}

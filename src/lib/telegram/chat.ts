@@ -21,13 +21,14 @@ export async function handlePersonality(chatId: number) {
 
   if (profile) {
     const traits = profile.traits || {};
+    const headlineText = profile.headline ? `\n_"${profile.headline}"_\n` : "";
     await sendMessage(
       chatId,
-      `🪞 *${profile.archetype}*\n\n${profile.summary}\n\n` +
-        `*Decision Style:* ${traits.decision_style || "unknown"}\n` +
-        `*Core Values:* ${(traits.core_values || []).join(", ")}\n` +
-        `*Fear Patterns:* ${(traits.fear_patterns || []).join(", ")}\n\n` +
-        `_Want to talk to your future self? Type /chat_`
+      `🪞 *${profile.archetype}*\n${headlineText}\n${profile.summary}\n\n` +
+        `*Decision Style:* ${(traits as Record<string, string>).decision_style || "unknown"}\n` +
+        `*Core Values:* ${((traits as Record<string, string[]>).core_values || []).join(", ")}\n` +
+        `*Fear Patterns:* ${((traits as Record<string, string[]>).fear_patterns || []).join(", ")}\n\n` +
+        `_Want to talk to your future self? Type /chat_\n_Run /personality again to regenerate._`
     );
     return;
   }
@@ -58,11 +59,21 @@ export async function handlePersonality(chatId: number) {
     messages: [
       {
         role: "user",
-        content: `You are a personality psychologist analyzing someone through the dreams they ABANDONED.
+        content: `You are a brutally honest behavioral analyst. You analyze people through what they QUIT — not what they pursue. What someone walks away from exposes their real operating system: their fears, their ceilings, their self-deceptions.
 
 Here are their abandoned dreams:
 
 ${dreamsSummary}
+
+Your job: read this person like a book. Be uncomfortably accurate. No flattery, no softening, no "but that's okay." Say what's actually happening beneath the surface. Be specific — reference their actual dreams, don't speak in generalities.
+
+RULES:
+- The summary must be ONE short paragraph (3-5 sentences max). Sharp. Direct. Second person ("You").
+- The headline must be ONE sentence that stops them in their tracks — the core truth they haven't admitted.
+- The blind_spots must be things they genuinely don't see about themselves, not repackaged compliments.
+- The archetype should sting a little. Not cute. Not flattering. Accurate.
+- Do NOT say anything encouraging, positive, or reassuring. This is a mirror, not a pep talk.
+- Be SPECIFIC to their dreams.
 
 Return a JSON object (no markdown, just raw JSON):
 {
@@ -76,10 +87,12 @@ Return a JSON object (no markdown, just raw JSON):
     "decision_style": "<impulsive|analytical|intuitive|avoidant|dependent>",
     "core_values": ["<value1>", "<value2>", "<value3>"],
     "fear_patterns": ["<fear1>", "<fear2>", "<fear3>"],
-    "aspiration_themes": ["<theme1>", "<theme2>", "<theme3>"]
+    "aspiration_themes": ["<theme1>", "<theme2>", "<theme3>"],
+    "blind_spots": ["<thing1>", "<thing2>", "<thing3>"]
   },
-  "summary": "<2-3 paragraph personality summary in second person>",
-  "archetype": "<Creative 2-3 word archetype>"
+  "headline": "<ONE devastating sentence — the core truth about why they quit>",
+  "summary": "<ONE short paragraph, 3-5 sentences. Brutally honest. No fluff.>",
+  "archetype": "<A sharp 2-4 word archetype that stings because it's accurate>"
 }`,
       },
     ],
@@ -103,10 +116,11 @@ Return a JSON object (no markdown, just raw JSON):
     return;
   }
 
-  await db.from("personality_profiles").upsert(
+  const { error: upsertErr } = await db.from("personality_profiles").upsert(
     {
       user_id: link.user_id,
       traits: personality.traits,
+      headline: personality.headline || null,
       summary: personality.summary,
       archetype: personality.archetype,
       updated_at: new Date().toISOString(),
@@ -114,11 +128,25 @@ Return a JSON object (no markdown, just raw JSON):
     { onConflict: "user_id" }
   );
 
+  if (upsertErr) {
+    await db.from("personality_profiles").upsert(
+      {
+        user_id: link.user_id,
+        traits: personality.traits,
+        summary: personality.summary,
+        archetype: personality.archetype,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+  }
+
   await db.from("profiles").update({ personality_generated: true }).eq("id", link.user_id);
 
+  const headlineText = personality.headline ? `\n\n_"${personality.headline}"_` : "";
   await sendMessage(
     chatId,
-    `🪞 *${personality.archetype}*\n\n${personality.summary}\n\n_Want to talk to your future self? Type /chat_`
+    `🪞 *${personality.archetype}*${headlineText}\n\n${personality.summary}\n\n_Want to talk to your future self? Type /chat_`
   );
 }
 

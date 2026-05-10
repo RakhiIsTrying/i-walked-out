@@ -4,3 +4,4 @@ export { generateCrossword, generateCrosswordVariant, generateDailyTheme } from 
 export { generateSpellingBee, buildSpellingResult, scoreSpellingWord } from "./spelling";
 export { generateSudoku, generateSudokuForDay } from "./sudoku";
 export { generateTango, generateTangoForDay } from "./tango";
+export { fallbackWordle, fallbackSudoku, fallbackTango, fallbackSpelling } from "./fallbacks";

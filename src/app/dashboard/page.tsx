@@ -6,6 +6,8 @@ import { Dream } from "@/lib/types";
 import DreamCard from "@/components/DreamCard";
 import DreamForm from "@/components/dashboard/DreamForm";
 import TelegramSection from "@/components/dashboard/TelegramSection";
+import DailyPromptCard from "@/components/dashboard/DailyPromptCard";
+import NigelThought from "@/components/dashboard/NigelThought";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -96,6 +98,12 @@ export default function DashboardPage() {
         </header>
 
         {showForm && <DreamForm onSubmitted={handleFormSubmitted} />}
+
+        {/* Daily Prompt + Nigel Thought */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))", gap: 20, margin: "32px 0" }}>
+          <DailyPromptCard onRespond={() => setShowForm(true)} />
+          <NigelThought />
+        </div>
 
         {/* Onboarding */}
         {!loading && (dreamCount < 3 || !personalityReady) && (

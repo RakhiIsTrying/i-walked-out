@@ -24,6 +24,7 @@ export interface PersonalityProfile {
   id: string;
   user_id: string;
   traits: PersonalityTraits;
+  headline?: string;
   summary: string;
   archetype: string;
   updated_at: string;
@@ -40,6 +41,7 @@ export interface PersonalityTraits {
   core_values: string[];
   fear_patterns: string[];
   aspiration_themes: string[];
+  blind_spots?: string[];
 }
 
 export interface StickyDecision {

@@ -6,6 +6,7 @@ export async function handleHelp(chatId: number) {
     `*I Walked Out — Commands*\n\n` +
       `👻 *Dead Dreams*\n` +
       `/dream title | desc | category — Log a dream\n` +
+      `/prompt — Today's daily reflection prompt\n` +
       `/feed — Browse the graveyard\n\n` +
       `🪞 *AI Personality Mirror*\n` +
       `/personality — Generate your profile\n` +

@@ -373,27 +373,38 @@ export default function GamesPage() {
                 {active === "sudoku" && <SudokuGame puzzle={puzzles?.sudoku} playDate={playDate} />}
                 {active === "spelling" && <SpellingBeeGame puzzle={puzzles?.spelling} playDate={playDate} />}
                 {active === "crossword" && (
-                  <>
-                    {puzzles?.crossword?.theme && (
-                      <h2 style={{
-                        fontFamily: "var(--serif)",
-                        fontStyle: "italic",
-                        fontWeight: 400,
-                        fontSize: 24,
-                        lineHeight: 1.2,
-                        textAlign: "center",
-                        color: "var(--accent)",
-                        margin: "0 0 20px",
-                      }}>
-                        Theme: {puzzles.crossword.theme}
-                      </h2>
-                    )}
-                    <CrosswordGame
-                      puzzle={puzzles?.crossword}
-                      playDate={playDate}
-                      variant={crosswordVariant}
-                    />
-                  </>
+                  puzzles?.crossword ? (
+                    <>
+                      {puzzles.crossword.theme && (
+                        <h2 style={{
+                          fontFamily: "var(--serif)",
+                          fontStyle: "italic",
+                          fontWeight: 400,
+                          fontSize: 24,
+                          lineHeight: 1.2,
+                          textAlign: "center",
+                          color: "var(--accent)",
+                          margin: "0 0 20px",
+                        }}>
+                          Theme: {puzzles.crossword.theme}
+                        </h2>
+                      )}
+                      <CrosswordGame
+                        puzzle={puzzles.crossword}
+                        playDate={playDate}
+                        variant={crosswordVariant}
+                      />
+                    </>
+                  ) : (
+                    <div style={{ textAlign: "center", padding: 60 }}>
+                      <p style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 20, color: "var(--ink-3)", marginBottom: 16 }}>
+                        Crossword is still brewing for {isToday ? "today" : formatDate(playDate)}.
+                      </p>
+                      <button onClick={() => fetchPuzzles(playDate)} className="btn-outline" style={{ fontSize: 13 }}>
+                        try again
+                      </button>
+                    </div>
+                  )
                 )}
                 {active === "tango" && <TangoGame puzzle={puzzles?.tango} playDate={playDate} />}
               </>

@@ -21,6 +21,9 @@ export default function TagsGrid({ profile }: { profile: PersonalityProfile }) {
       <TagCard title="Core Values" tags={profile.traits.core_values} color="var(--accent)" />
       <TagCard title="Fear Patterns" tags={profile.traits.fear_patterns} color="var(--accent)" />
       <TagCard title="Aspiration Themes" tags={profile.traits.aspiration_themes} color="var(--ink-2)" />
+      {profile.traits.blind_spots && profile.traits.blind_spots.length > 0 && (
+        <TagCard title="Blind Spots" tags={profile.traits.blind_spots} color="var(--ink)" />
+      )}
     </div>
   );
 }
