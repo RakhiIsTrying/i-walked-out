@@ -19,30 +19,43 @@ export async function handleVibe(chatId: number, text: string) {
 
   await sendMessage(chatId, "Translating your vibe...");
 
+  const seed = Math.floor(Math.random() * 9000) + 1000;
+  const decades = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"];
+  const forcedDecade = decades[Math.floor(Math.random() * decades.length)];
+
   const completion = await getAI().chat.completions.create({
     model: MODEL,
     max_tokens: 1000,
+    temperature: 1.4,
     messages: [
       {
         role: "user",
-        content: `You are a "Vibe Coding IRL" engine. The user types a vibe, you translate it into real-life recommendations.
+        content: `You are a "Vibe Coding IRL" engine. Feel the EMOTION in the user's words and translate it into real-life discoveries.
 
 The user's vibe: "${query}"
 
-Return a JSON object (no markdown, just raw JSON):
-{
-  "place": "<Specific real place — include city/country>",
-  "movie": "<Specific movie to watch>",
-  "tv_show": "<Specific TV show to binge>",
-  "food": "<Specific dish or food experience>",
-  "game": "<Specific game to play>",
-  "song": "<Specific song — include artist>",
-  "music_album": "<Specific album to listen front-to-back — include artist>",
-  "youtube": "<Specific YouTube video title + channel to search for>",
-  "vibe_summary": "<1-2 sentence poetic interpretation>"
-}
+SEED: ${seed} — randomize picks based on this.
 
-Be unexpected, specific, and interesting.`,
+RULES:
+- Match the emotional frequency, not keywords. Feel what they MEAN.
+- The movie or tv_show must be from the ${forcedDecade} or earlier — dig deep.
+- NEVER pick: Lost in Translation, Eternal Sunshine, Amélie, Into the Wild, Her, Grand Budapest Hotel.
+- NEVER pick Radiohead, Bon Iver, or Tame Impala for music.
+- Song and album must be from DIFFERENT artists.
+- Be specific: exact dish, exact neighborhood, exact episode.
+
+Return JSON only (no markdown):
+{
+  "place": "<Specific place — neighborhood, market, bench, not just a city>",
+  "movie": "<Obscure > obvious. Must FEEL like this vibe>",
+  "tv_show": "<Specific show, name season/episode if relevant>",
+  "food": "<Specific dish at a specific restaurant>",
+  "game": "<Game that puts you in this emotional state>",
+  "song": "<Song — different artist from album below>",
+  "music_album": "<Full album, front-to-back — different artist from song>",
+  "youtube": "<Specific video — essays or short films preferred>",
+  "vibe_summary": "<What emotion you detected and why these picks fit>"
+}`,
       },
     ],
   });

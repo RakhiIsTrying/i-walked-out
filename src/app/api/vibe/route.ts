@@ -10,38 +10,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Query required" }, { status: 400 });
   }
 
+  const seed = Math.floor(Math.random() * 9000) + 1000;
+  const decades = ["1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"];
+  const forcedDecade = decades[Math.floor(Math.random() * decades.length)];
+  const regions = ["East Asia", "Latin America", "Scandinavia", "Eastern Europe", "South Asia", "Middle East", "West Africa", "Southeast Asia", "Mediterranean", "Oceania"];
+  const forcedRegion = regions[Math.floor(Math.random() * regions.length)];
+
   const completion = await getAI().chat.completions.create({
     model: MODEL,
     max_tokens: 1500,
+    temperature: 1.4,
     messages: [
       {
         role: "user",
-        content: `You are a "Vibe Coding IRL" engine. The user types a random phrase or vibe, and you translate it into real-life recommendations.
+        content: `You are a "Vibe Coding IRL" engine. You translate feelings into real-life experiences. Your job is to FEEL what the user is saying — not match keywords, but match the emotional frequency.
 
 The user's vibe: "${query.trim()}"
 
+SEED: ${seed} — use this to randomize your picks. Different seed = completely different recommendations.
+
+CRITICAL RULES:
+- Feel the EMOTION underneath the words. "3am existential clarity" isn't about nighttime — it's about that raw, stripped-down honesty when defenses are down. Match THAT feeling.
+- At least one recommendation must come from ${forcedRegion} or be influenced by that region's culture.
+- The movie OR tv_show must be from the ${forcedDecade} or earlier — dig deep, not surface-level picks.
+- NEVER pick these overused defaults: Lost in Translation, Eternal Sunshine, Amélie, The Secret Life of Walter Mitty, Into the Wild, Midnight in Paris, Before Sunrise, Garden State, Her (2013), The Grand Budapest Hotel. Pick something the user has probably never heard of.
+- NEVER pick Radiohead, Bon Iver, or Tame Impala for music unless the vibe is literally about them.
+- Every recommendation must feel like a discovery, not a "best of" list.
+- The song and album should be from DIFFERENT artists.
+- Be specific: name the exact dish, the exact neighborhood, the exact episode to start with.
+
 Return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
-  "place": "<A specific real place to visit — be creative and specific>",
-  "place_location": "<City, Country or full address for Google Maps>",
-  "movie": "<A specific movie to watch that captures this vibe>",
+  "place": "<A specific real place — a neighborhood, a bench, a market stall, not just a city>",
+  "place_location": "<Full location for Google Maps>",
+  "movie": "<A specific movie that FEELS like this vibe — obscure is better than obvious>",
   "movie_platform": "<Where to watch: Netflix, Prime Video, Hulu, Apple TV+, HBO Max, Disney+, Mubi, Criterion, etc.>",
-  "tv_show": "<A specific TV show to binge that lives in this vibe>",
-  "tv_show_platform": "<Where to watch: Netflix, Prime Video, Hulu, Apple TV+, HBO Max, Disney+, etc.>",
-  "food": "<A specific dish AND a specific restaurant or food spot to try it at>",
-  "food_location": "<Restaurant name, City, Country for Google Maps>",
-  "game": "<A specific game (video game, board game, sport, or activity) to play>",
-  "game_platform": "<Platform: PC, PlayStation, Xbox, Nintendo Switch, Mobile, Board Game, etc.>",
-  "song": "<A specific song that IS this vibe>",
-  "song_artist": "<The artist name>",
-  "song_album": "<The album this song is from>",
-  "music_album": "<A specific album to listen front-to-back for this vibe>",
-  "music_album_artist": "<The artist name>",
-  "youtube": "<A specific YouTube video title + channel to search for>",
-  "vibe_summary": "<A 1-2 sentence poetic interpretation of their vibe and why these recommendations fit>"
-}
-
-Be unexpected, specific, and interesting. Avoid obvious choices. Match the ENERGY of the vibe, not just the literal words.`,
+  "tv_show": "<A specific TV show — name the season/episode to start with if relevant>",
+  "tv_show_platform": "<Where to watch>",
+  "food": "<A specific dish at a specific place — 'the spicy lamb hand-pulled noodles at Xi'an Famous Foods, NYC' not just 'ramen'>",
+  "food_location": "<Restaurant name, City, Country>",
+  "game": "<A specific game that puts you in this emotional state>",
+  "game_platform": "<Platform>",
+  "song": "<A specific song — artist must NOT be the same as the album artist below>",
+  "song_artist": "<Artist>",
+  "song_album": "<Album>",
+  "music_album": "<A full album to listen front-to-back — different artist from the song above>",
+  "music_album_artist": "<Artist>",
+  "youtube": "<A specific YouTube video — essays, short films, or obscure content preferred over mainstream>",
+  "vibe_summary": "<1-2 sentences: what emotion you detected and why these specific picks resonate with it>"
+}`,
       },
     ],
   });
