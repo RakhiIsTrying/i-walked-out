@@ -28,11 +28,17 @@ function seededShuffle<T>(arr: T[], rng: () => number): T[] {
 
 // ── Wordle: pick from static word list by date ──
 
-export function fallbackWordle(dateStr: string): WordlePuzzle {
+export function fallbackWordle(dateStr: string, recentWords?: Set<string>): WordlePuzzle {
   const seed = dateToSeed(dateStr);
   const rng = mulberry32(seed * 2654435761);
-  const idx = Math.floor(rng() * WORDLE_ANSWERS.length);
-  return { answer: WORDLE_ANSWERS[idx].toUpperCase() };
+  const shuffled = seededShuffle([...WORDLE_ANSWERS], rng);
+  for (const word of shuffled) {
+    const upper = word.toUpperCase();
+    if (!recentWords || !recentWords.has(upper)) {
+      return { answer: upper };
+    }
+  }
+  return { answer: shuffled[0].toUpperCase() };
 }
 
 // ── Sudoku: permute a known valid grid ──

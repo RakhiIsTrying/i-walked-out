@@ -14,6 +14,8 @@ import {
   fallbackSudoku,
   fallbackTango,
   fallbackSpelling,
+  getRecentWordleWords,
+  dedupeWordle,
 } from "@/lib/generators";
 
 const MIN_DATE = "2026-05-05";
@@ -90,7 +92,9 @@ export async function GET(request: Request) {
   }
 
   const theme = results[0].status === "fulfilled" ? results[0].value : "Daily Puzzle";
-  const wordle = results[1].status === "fulfilled" ? results[1].value : fallbackWordle(targetDate);
+  const recentWords = await getRecentWordleWords();
+  const rawWordle = results[1].status === "fulfilled" ? results[1].value : fallbackWordle(targetDate, recentWords);
+  const wordle = dedupeWordle(rawWordle, recentWords, targetDate);
   const spelling = results[2].status === "fulfilled" ? results[2].value : fallbackSpelling(targetDate);
   const sudoku = results[3].status === "fulfilled" ? results[3].value : fallbackSudoku(targetDate);
   const tango = results[4].status === "fulfilled" ? results[4].value : fallbackTango(targetDate);
