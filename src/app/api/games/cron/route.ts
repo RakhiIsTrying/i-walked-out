@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/supabase/admin";
+import { notifyDailyPuzzles } from "@/lib/notifications";
 import {
   DailyPuzzles,
   generateWordle,
@@ -12,6 +13,7 @@ import {
   fallbackSudoku,
   fallbackTango,
   fallbackSpelling,
+  fallbackCrossword,
   getRecentWordleWords,
   dedupeWordle,
 } from "@/lib/generators";
@@ -68,7 +70,8 @@ async function generateForDate(targetDate: string): Promise<{ date: string; stat
     try {
       crossword = await generateCrosswordVariant("mini", theme);
     } catch (e2) {
-      console.error(`[cron] mini crossword also failed for ${targetDate}:`, e2 instanceof Error ? e2.message : String(e2));
+      console.error(`[cron] mini crossword also failed for ${targetDate}, using deterministic fallback:`, e2 instanceof Error ? e2.message : String(e2));
+      crossword = fallbackCrossword(targetDate);
     }
   }
 
@@ -107,9 +110,18 @@ export async function GET(request: Request) {
       generateForDate(tomorrow),
     ]);
 
+    // Notify users about today's puzzles (deduped internally)
+    let notifyResult = null;
+    try {
+      notifyResult = await notifyDailyPuzzles(today);
+    } catch (e) {
+      console.error("[cron] notifications failed:", e instanceof Error ? e.message : String(e));
+    }
+
     return NextResponse.json({
       ok: true,
       results: [todayResult, tomorrowResult],
+      notifications: notifyResult,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

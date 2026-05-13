@@ -14,6 +14,7 @@ import {
   fallbackSudoku,
   fallbackTango,
   fallbackSpelling,
+  fallbackCrossword,
   getRecentWordleWords,
   dedupeWordle,
 } from "@/lib/generators";
@@ -50,6 +51,13 @@ export async function GET(request: Request) {
   } catch {}
 
   if (existing && !refresh && !refreshGame) {
+    if (!existing.crossword) {
+      const cw = fallbackCrossword(targetDate);
+      if (cw) {
+        existing.crossword = cw;
+        try { await getAdmin().from("daily_puzzles").upsert({ date: targetDate, puzzles: existing }); } catch {}
+      }
+    }
     return NextResponse.json(existing, { headers: { "Cache-Control": cacheHeader } });
   }
 
@@ -109,7 +117,8 @@ export async function GET(request: Request) {
       try {
         crossword = await generateCrosswordVariant("mini", theme);
       } catch (e2) {
-        console.error("[daily] mini crossword also failed:", e2 instanceof Error ? e2.message : String(e2));
+        console.error("[daily] mini crossword also failed, using deterministic fallback:", e2 instanceof Error ? e2.message : String(e2));
+        crossword = fallbackCrossword(targetDate) ?? undefined;
       }
     }
   }

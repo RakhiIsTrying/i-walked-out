@@ -35,12 +35,14 @@ export async function aiCall(
   maxTokens: number,
   temperature: number,
   maxRetries = 2,
+  overrideModel?: string,
 ) {
   const ai = getGamesAI();
+  const model = overrideModel || GAMES_MODEL;
   for (let retry = 0; retry < maxRetries; retry++) {
     try {
       return await (ai.chat.completions.create as Function)({
-        model: GAMES_MODEL,
+        model,
         messages,
         max_tokens: maxTokens,
         temperature,

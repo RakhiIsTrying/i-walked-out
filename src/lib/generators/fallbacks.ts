@@ -1,6 +1,7 @@
-import { WordlePuzzle, SudokuPuzzle, TangoPuzzle, SpellingPuzzle } from "./types";
+import { WordlePuzzle, SudokuPuzzle, TangoPuzzle, SpellingPuzzle, CrosswordPuzzle } from "./types";
 import { WORDLE_ANSWERS, DICTIONARY } from "@/lib/words";
 import { scoreSpellingWord } from "./spelling";
+import { parseCrosswordGrid, numberGrid } from "./crossword";
 
 function mulberry32(seed: number) {
   return function () {
@@ -232,4 +233,108 @@ export function fallbackSpelling(dateStr: string): SpellingPuzzle | null {
   }
 
   return null;
+}
+
+// ── Crossword: deterministic 5×5 mini via backtracking ──
+
+let _cwWords4: string[] | null = null;
+let _cwWords5: string[] | null = null;
+let _cwPrefixes4: Set<string> | null = null;
+let _cwPrefixes5: Set<string> | null = null;
+let _cwSet4: Set<string> | null = null;
+let _cwSet5: Set<string> | null = null;
+
+function getCWData() {
+  if (_cwWords4) return { w4: _cwWords4, w5: _cwWords5!, p4: _cwPrefixes4!, p5: _cwPrefixes5!, s4: _cwSet4!, s5: _cwSet5! };
+
+  const all5 = [...new Set([...DICTIONARY.filter(w => w.length === 5), ...WORDLE_ANSWERS].map(w => w.toUpperCase()))];
+  const all4 = [...new Set(DICTIONARY.filter(w => w.length === 4).map(w => w.toUpperCase()))];
+
+  _cwWords4 = all4;
+  _cwWords5 = all5;
+  _cwSet4 = new Set(all4);
+  _cwSet5 = new Set(all5);
+
+  _cwPrefixes4 = new Set<string>();
+  for (const w of all4) for (let i = 1; i <= 4; i++) _cwPrefixes4.add(w.slice(0, i));
+
+  _cwPrefixes5 = new Set<string>();
+  for (const w of all5) for (let i = 1; i <= 5; i++) _cwPrefixes5.add(w.slice(0, i));
+
+  return { w4: _cwWords4, w5: _cwWords5, p4: _cwPrefixes4, p5: _cwPrefixes5, s4: _cwSet4, s5: _cwSet5 };
+}
+
+export function fallbackCrossword(dateStr: string): CrosswordPuzzle | null {
+  const seed = dateToSeed(dateStr);
+  const rng = mulberry32(seed * 2654435761 + 137);
+  const { w4, w5, p4, p5, s4, s5 } = getCWData();
+
+  const sh4 = seededShuffle([...w4], rng);
+  const sh5 = seededShuffle([...w5], rng);
+
+  // Template: #.... / ..... / ..... / ..... / ....#
+  const grid: string[] = ["", "", "", "", ""];
+
+  function colPrefix(col: number, upToRow: number): string {
+    const start = col === 0 ? 1 : 0;
+    let s = "";
+    for (let r = start; r <= upToRow; r++) s += grid[r][col];
+    return s;
+  }
+
+  function validNext(col: number, row: number): Set<string> | null {
+    const prefix = row > 0 ? colPrefix(col, row - 1) : (col === 0 ? "" : "");
+    const len = (col === 0 || col === 4) ? 4 : 5;
+    if (prefix.length >= len) return null;
+    const pSet = len === 4 ? p4 : p5;
+    const wSet = len === 4 ? s4 : s5;
+    const valid = new Set<string>();
+    for (let ch = 65; ch <= 90; ch++) {
+      const letter = String.fromCharCode(ch);
+      const ext = prefix + letter;
+      if (ext.length === len ? wSet.has(ext) : pSet.has(ext)) valid.add(letter);
+    }
+    return valid;
+  }
+
+  function fillRow(ri: number): boolean {
+    const first = ri === 0, last = ri === 4;
+    const words = (first || last) ? sh4 : sh5;
+    const sc = first ? 1 : 0;
+    const ec = last ? 3 : 4;
+    const wl = ec - sc + 1;
+
+    const constraints: (Set<string> | null)[] = [];
+    for (let c = sc; c <= ec; c++) constraints.push(validNext(c, ri));
+
+    for (const word of words) {
+      if (word.length !== wl) continue;
+      let ok = true;
+      for (let i = 0; i < wl; i++) {
+        const cs = constraints[i];
+        if (cs && !cs.has(word[i])) { ok = false; break; }
+      }
+      if (!ok) continue;
+
+      grid[ri] = first ? "#" + word : last ? word + "#" : word;
+      if (ri === 4) return true;
+      if (fillRow(ri + 1)) return true;
+    }
+    grid[ri] = "";
+    return false;
+  }
+
+  if (!fillRow(0)) return null;
+
+  const rawGrid = parseCrosswordGrid(grid);
+  const { numbers, acrossWords, downWords } = numberGrid(rawGrid);
+
+  return {
+    size: 5,
+    grid: rawGrid,
+    numbers,
+    acrossClues: acrossWords.map(w => ({ num: w.num, clue: `${w.word.length}-letter word` })),
+    downClues: downWords.map(w => ({ num: w.num, clue: `${w.word.length}-letter word` })),
+    theme: "Daily Mini",
+  };
 }

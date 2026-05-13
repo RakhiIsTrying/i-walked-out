@@ -1,6 +1,7 @@
 import { CrosswordPuzzle, CrosswordVariant } from "./types";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { extractJSON, cleanAIResponse, aiCall } from "./ai-utils";
+import { MODEL } from "@/lib/ai";
 
 const CW_TEMPLATE = [
   "....#.....#....",
@@ -227,7 +228,7 @@ export async function generateCrosswordVariant(
           content: buildGridPrompt(variant, templateStr, size, theme),
         },
       ];
-      const res = await aiCall(messages, maxTokens, 0.7 + attempt * 0.15, 1);
+      const res = await aiCall(messages, maxTokens, 0.7 + attempt * 0.15, 1, MODEL);
       const text = cleanAIResponse(res.choices[0]?.message?.content?.trim() ?? "");
       const parsed = extractJSON(text);
 
