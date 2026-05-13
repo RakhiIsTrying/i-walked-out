@@ -18,7 +18,7 @@ import {
   dedupeWordle,
 } from "@/lib/generators";
 
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 function getISTDate(offsetDays = 0): string {
   const now = new Date();

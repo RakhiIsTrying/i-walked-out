@@ -213,10 +213,10 @@ export async function generateCrosswordVariant(
   const size = template.length;
   const templateStr = template.join("\n");
 
-  const maxAttempts = 3;
+  const maxAttempts = 2;
   let lastError = "";
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1000));
     try {
       const messages: ChatCompletionMessageParam[] = [
         {
