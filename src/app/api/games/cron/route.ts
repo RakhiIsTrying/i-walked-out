@@ -105,18 +105,19 @@ export async function GET(request: Request) {
     const today = getISTDate(0);
     const tomorrow = getISTDate(1);
 
-    const [todayResult, tomorrowResult] = await Promise.all([
-      generateForDate(today),
-      generateForDate(tomorrow),
-    ]);
+    // Generate today first (usually already cached — instant)
+    const todayResult = await generateForDate(today);
 
-    // Notify users about today's puzzles (deduped internally)
+    // Send notifications before the slow tomorrow generation
     let notifyResult = null;
     try {
       notifyResult = await notifyDailyPuzzles(today);
     } catch (e) {
       console.error("[cron] notifications failed:", e instanceof Error ? e.message : String(e));
     }
+
+    // Generate tomorrow (slow — AI crossword etc.)
+    const tomorrowResult = await generateForDate(tomorrow);
 
     return NextResponse.json({
       ok: true,
